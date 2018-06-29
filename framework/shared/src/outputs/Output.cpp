@@ -248,6 +248,53 @@ void AlignedPointCloudOutput::Recalculate()
 	target.insert({latest_ts, new_pc});
 }
 
+AlignedTrajectoryOutput::AlignedTrajectoryOutput(const std::string &name, AlignmentOutput *alignment, BaseOutput *trajectory_output) : DerivedOutput(name, values::VT_TRAJECTORY, {alignment, trajectory_output}), alignment_(alignment), trajectory_(trajectory_output)
+{
+	SetKeepOnlyMostRecent(true);
+}
+
+AlignedTrajectoryOutput::~AlignedTrajectoryOutput()
+{
+
+}
+
+void AlignedTrajectoryOutput::Recalculate()
+{
+	assert(GetKeepOnlyMostRecent());
+	auto &target = GetCachedValueMap();
+
+	for(auto i : target) {
+		delete i.second;
+	}
+	target.clear();
+
+	if(!trajectory_->IsActive() || trajectory_->GetValues().empty() || !alignment_->IsActive() || alignment_->GetValues().empty()) {
+		return;
+	}
+
+	auto latest_data_point = trajectory_->GetMostRecentValue();
+	auto latest_trajectory = (values::TrajectoryValue*)latest_data_point.second;
+	auto latest_ts = latest_data_point.first;
+
+	auto latest_alignment = ((values::TypedValue<Eigen::Matrix4f>*)alignment_->GetMostRecentValue().second)->GetValue();
+
+	values::Trajectory *t = new values::Trajectory();
+	for (auto &point : latest_trajectory->GetPoints()) {
+		auto &pose = point.second.GetValue();
+
+		if ((pose.array().abs() == std::numeric_limits<float>::infinity()).any())
+			continue;
+
+		Eigen::Matrix4f transformed_pose = latest_alignment * pose;
+
+		t->push_back(point.first, transformed_pose);
+	}
+
+	auto new_trajectory = new values::TrajectoryValue(*t);
+	target.insert({latest_ts, new_trajectory});
+}
+
+
 PoseToXYZOutput::PoseToXYZOutput(BaseOutput* pose_output) : BaseOutput(pose_output->GetName() + " (XYZ)", values::ValueDescription({{"X", values::VT_DOUBLE}, {"Y", values::VT_DOUBLE}, {"Z", values::VT_DOUBLE}})), pose_output_(pose_output)
 {
 

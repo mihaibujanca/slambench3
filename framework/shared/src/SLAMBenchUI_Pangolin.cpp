@@ -284,6 +284,18 @@ bool SLAMBenchUI_Pangolin::DrawPoseOutput(slambench::outputs::BaseOutput* output
 	return true;
 }
 
+bool SLAMBenchUI_Pangolin::DrawTrajectoryOutput(slambench::outputs::BaseOutput* output)
+{
+	assert(output->GetType() == slambench::values::VT_TRAJECTORY);
+
+        const slambench::values::TrajectoryValue *trajectory = static_cast<const slambench::values::TrajectoryValue*>(output->GetMostRecentValue().second);
+        slambench::outputs::TrajectoryValueWrapper wrapper(trajectory);
+
+	// TODO: Add UI controls for the trajectory color?
+	drawTrajectory(&wrapper, 0.9, 1, 0.9, showEveryPose->Ref().Get());
+	return true;
+}
+
 bool SLAMBenchUI_Pangolin::DrawPointCloudOutput(slambench::outputs::BaseOutput* output)
 {
 	assert(output->GetType() == slambench::values::VT_POINTCLOUD);
@@ -724,6 +736,8 @@ bool SLAMBenchUI_Pangolin::DrawOutput(slambench::outputs::BaseOutput* output)
 	switch(output->GetType()) {
 	case slambench::values::VT_POSE:
 		return DrawPoseOutput(output);
+	case slambench::values::VT_TRAJECTORY:
+		return DrawTrajectoryOutput(output);
 	case slambench::values::VT_COLOUREDPOINTCLOUD:
 		return DrawColouredPointCloudOutput(output);
 	case slambench::values::VT_POINTCLOUD:
@@ -735,6 +749,8 @@ bool SLAMBenchUI_Pangolin::DrawOutput(slambench::outputs::BaseOutput* output)
 	case slambench::values::VT_STRING:
 		return DrawString(output);
 	default:
+		std::string type = slambench::values::TypeAsString(output->GetType());
+		std::cerr << "Warning: No handler to draw output " << output->GetName() << " of type " << type << std::endl;
 		return false;
 	}
 }

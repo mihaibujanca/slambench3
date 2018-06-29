@@ -102,6 +102,13 @@ int main(int argc, char * argv[])
 					auto pc_aligned = new slambench::outputs::AlignedPointCloudOutput(pointcloud->GetName() + "(Aligned)", alignment, pointcloud);
 					lib->GetOutputManager().RegisterOutput(pc_aligned);
 				}
+
+				// try and align the trajectories
+				slambench::outputs::BaseOutput *trajectoryOutput = lib->GetOutputManager().GetMainOutput(slambench::values::VT_TRAJECTORY);
+				if(trajectoryOutput != nullptr) {
+					auto traj_aligned = new slambench::outputs::AlignedTrajectoryOutput(trajectoryOutput->GetName() + "(Aligned)", alignment, trajectoryOutput);
+					lib->GetOutputManager().RegisterOutput(traj_aligned);
+				}
 			}
 		}
 

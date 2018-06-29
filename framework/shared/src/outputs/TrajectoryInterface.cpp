@@ -54,3 +54,16 @@ void PoseOutputTrajectoryInterface::recalculate() const {
 		newest_point_ = cached_traj_.rbegin()->first;
 	}
 }
+
+
+TrajectoryValueWrapper::TrajectoryValueWrapper(const TrajectoryValue *t) : trajectoryValue(t) {
+}
+
+values::PoseValue TrajectoryValueWrapper::Get(const TimeStamp &when) const {
+	return trajectoryValue->GetPoints().at(when);
+}
+
+values::TrajectoryValue::pose_container_t TrajectoryValueWrapper::GetAll() const {
+	return trajectoryValue->GetPoints();
+}
+

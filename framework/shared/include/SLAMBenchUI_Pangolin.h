@@ -38,6 +38,7 @@ class SLAMBenchUI_Pangolin : public SLAMBenchUI
 		void AddFollowControls();
 		
 		bool DrawPoseOutput(slambench::outputs::BaseOutput *output);
+		bool DrawTrajectoryOutput(slambench::outputs::BaseOutput *output);
 		bool DrawPointCloudOutput(slambench::outputs::BaseOutput *output);
 		bool DrawColouredPointCloudOutput(slambench::outputs::BaseOutput *output);
 		bool DrawFrameOutput(slambench::outputs::BaseOutput *output);

@@ -194,7 +194,7 @@ namespace slambench {
 			
 			TrajectoryValue() : Value(VT_TRAJECTORY) {}
 			TrajectoryValue(const pose_container_t &trajectory) : Value(VT_TRAJECTORY), poses_(trajectory) {}
-			const pose_container_t &GetPoints() { return poses_; }
+			const pose_container_t &GetPoints() const { return poses_; }
 		private:
 			pose_container_t poses_;
 		};

@@ -142,6 +142,20 @@ namespace slambench {
 			AlignmentOutput *alignment_;
 			BaseOutput *pointcloud_;
 		};
+
+		/**
+		 * An output which returns an aligned trajectory
+		 */
+		class AlignedTrajectoryOutput : public DerivedOutput {
+			public:
+				AlignedTrajectoryOutput(const std::string &name, AlignmentOutput *, BaseOutput *trajectory_output);
+				virtual ~AlignedTrajectoryOutput();
+
+				void Recalculate() override;
+			private:
+				AlignmentOutput *alignment_;
+				BaseOutput *trajectory_;
+		};
 		
 		class PoseToXYZOutput : public BaseOutput {
 		public:
