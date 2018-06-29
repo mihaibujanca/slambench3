@@ -254,6 +254,11 @@ usecases:
 	@echo    "    available targets are : svo"
 	@echo ""
 
+	@echo -n "  - BundleFusion [Dai et al, ACM TOG'17]: "; if [ -f benchmarks/bundlefusion ] ; then echo -e "\033[1;32mFound\033[0m" ; else echo -e "\033[1;31mNot found (make bundlefusion)\033[0m" ; fi
+	@echo    "    repository: https://github.com/niessner/BundleFusion"
+	@echo    "    available targets are : bundlefusion"
+	@echo ""
+
 	@echo "If you want to test SLAMBench with existing SLAM algorithms, once you have download it please run \"make slambench APPS=slam1,slam2,...\""
 	@echo "   e.g. make slambench APPS=kfusion,orbslam2"
 	@echo "   You can also use \"make slambench APPS=all\" to compile them all."
@@ -395,9 +400,24 @@ kfusion:
 	@echo "cmake_minimum_required(VERSION 2.8)"   > benchmarks/kfusion/CMakeLists.txt
 	@echo "explore_implementations ( $@ src/* )"     >> benchmarks/$@/CMakeLists.txt
 
+bundlefusion:
+	@echo "================================================================================================================="
+	@echo    "  - BundleFusion [Dai et al. ACM TOG'17]: " 
+	@echo    "    repository: https://github.com/niessner/BundleFusion"
+	@echo    "    Used repository: https://github.com/Paul92/BundleFusion"  
+	@echo "================================================================================================================="
+	@echo ""
+	@echo "Are you sure you want to download this use-case (y/n) ?" && ${GET_REPLY} && echo REPLY=$$REPLY && if [ ! "$$REPLY" == "y" ] ; then echo -e "\nExit."; false; else echo -e "\nDownload starts."; fi
+	mkdir benchmarks/bundlefusion/src/ -p
+	rm benchmarks/bundlefusion/src/original -rf
+	git clone   https://github.com/Paul92/BundleFusion.git  benchmarks/bundlefusion/src/original
+	@echo "cmake_minimum_required(VERSION 2.8)"   > benchmarks/bundlefusion/CMakeLists.txt
+	@echo "explore_implementations ( $@ src/* )"     >> benchmarks/$@/CMakeLists.txt
+	cd benchmarks/bundlefusion/src/original; git submodule init && git submodule update
+	cd benchmarks/bundlefusion/src/original/external/mLib; git apply ../../mlibPatch.patch
 
-.PHONY: efusion infinitam kfusion lsdslam monoslam okvis orbslam2 ptam svo
-algorithms : efusion infinitam kfusion lsdslam monoslam okvis orbslam2 ptam svo
+.PHONY: efusion infinitam kfusion lsdslam monoslam okvis orbslam2 ptam svo bundlefusion
+algorithms : efusion infinitam kfusion lsdslam monoslam okvis orbslam2 ptam svo bundlefusion
 
 
 datasets :
