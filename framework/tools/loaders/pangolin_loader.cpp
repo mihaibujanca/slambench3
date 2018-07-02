@@ -138,6 +138,8 @@ int main(int argc, char * argv[])
 		stay_on = false;
 		pangolin_thread.join();
 
+                delete config;
+
 	} catch (const SLAMBenchException& e) {
 
 		std::cout << "An error occurred during the execution." << std::endl;
