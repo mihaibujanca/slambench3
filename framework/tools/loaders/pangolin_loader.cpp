@@ -98,8 +98,14 @@ int main(int argc, char * argv[])
 
 				// try and align a pointcloud
 				slambench::outputs::BaseOutput *pointcloud = lib->GetOutputManager().GetMainOutput(slambench::values::VT_POINTCLOUD);
+				slambench::outputs::BaseOutput *colouredpointcloud = lib->GetOutputManager().GetMainOutput(slambench::values::VT_COLOUREDPOINTCLOUD);
 				if(pointcloud != nullptr) {
 					auto pc_aligned = new slambench::outputs::AlignedPointCloudOutput(pointcloud->GetName() + "(Aligned)", alignment, pointcloud);
+					lib->GetOutputManager().RegisterOutput(pc_aligned);
+				}
+
+				if(colouredpointcloud != nullptr) {
+					auto pc_aligned = new slambench::outputs::AlignedColouredPointCloudOutput(colouredpointcloud->GetName() + "(Aligned)", alignment, colouredpointcloud);
 					lib->GetOutputManager().RegisterOutput(pc_aligned);
 				}
 			}
