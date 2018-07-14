@@ -396,8 +396,8 @@ kfusion:
 	@echo "explore_implementations ( $@ src/* )"     >> benchmarks/$@/CMakeLists.txt
 
 
-.PHONY: efusion infinitam kfusion lsdslam monoslam okvis orbslam2 ptam svo
-algorithms : efusion infinitam kfusion lsdslam monoslam okvis orbslam2 ptam svo
+.PHONY: efusion infinitam kfusion lsdslam monoslam okvis orbslam2 ptam svo semanticfusion
+algorithms : efusion infinitam kfusion lsdslam monoslam okvis orbslam2 ptam svo semanticfusion
 
 
 datasets :
