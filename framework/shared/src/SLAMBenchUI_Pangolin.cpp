@@ -437,7 +437,7 @@ bool SLAMBenchUI_Pangolin::DrawColouredPointCloudOutput(slambench::outputs::Base
 	glDrawArrays(GL_POINTS, 0, size);
 
 	glDisableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_COLOR_ARRAY);
+	glDisableClientState(GL_COLOR_ARRAY);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
