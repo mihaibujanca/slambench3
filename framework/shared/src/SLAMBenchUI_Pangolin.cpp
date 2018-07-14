@@ -52,25 +52,25 @@ SLAMBenchUI_Pangolin::SLAMBenchUI_Pangolin() : SLAMBenchUI() {
 	pangolin::Display("cam").SetBounds(0.0, 1.0f, 0.0f, 1.0f, 640 / 480.0).SetHandler(new pangolin::Handler3D(s_cam))
 					.SetLock(pangolin::LockRight, pangolin::LockTop);
 
-	pangolin::CreatePanel("ui").SetBounds(0.0, 1.0, 0.0, pangolin::Attach::Pix(panel_width));
+	pangolin::CreatePanel("slambenchui").SetBounds(0.0, 1.0, 0.0, pangolin::Attach::Pix(panel_width));
 
-	frameCount = new pangolin::Var<long long>("ui.Frame", 0);
-	TVM = new pangolin::Var<long long>("ui.Total Virtual Memory (MB)", 0);
-	CVM = new pangolin::Var<long long>("ui.Used Virtual Memory (MB)", 0);
-	VSIZE = new pangolin::Var<long long>("ui.Process Virtual Memory (MB)", 0);
-	TPM = new pangolin::Var<long long>("ui.Total Physical Memory (MB)", 0);
-	CPM = new pangolin::Var<long long>("ui.Used  Physical Memory (MB)", 0);
-	VRSS = new pangolin::Var<long long>("ui.Process Physical Memory (MB)", 0);
+	frameCount = new pangolin::Var<long long>("slambenchui.Frame", 0);
+	TVM = new pangolin::Var<long long>("slambenchui.Total Virtual Memory (MB)", 0);
+	CVM = new pangolin::Var<long long>("slambenchui.Used Virtual Memory (MB)", 0);
+	VSIZE = new pangolin::Var<long long>("slambenchui.Process Virtual Memory (MB)", 0);
+	TPM = new pangolin::Var<long long>("slambenchui.Total Physical Memory (MB)", 0);
+	CPM = new pangolin::Var<long long>("slambenchui.Used  Physical Memory (MB)", 0);
+	VRSS = new pangolin::Var<long long>("slambenchui.Process Physical Memory (MB)", 0);
 
 
-	showEveryPose = new pangolin::Var<int>("ui.Show every poses", 0, 0, 100);
+	showEveryPose = new pangolin::Var<int>("slambenchui.Show every poses", 0, 0, 100);
 
 	if(CanFreeRun()) {
-		freeRunning = new pangolin::Var<bool>("ui.Free Running", true, true);
+		freeRunning = new pangolin::Var<bool>("slambenchui.Free Running", true, true);
 	}
 
 	if(CanStep()) {
-		nextFrame = new pangolin::Var<bool>("ui.Next Frame", false, false);
+		nextFrame = new pangolin::Var<bool>("slambenchui.Next Frame", false, false);
 	}
 	unFollow=NULL;
 
@@ -92,13 +92,13 @@ SLAMBenchUI_Pangolin::~SLAMBenchUI_Pangolin() {
 void SLAMBenchUI_Pangolin::AddFollowControls()
 {
 
-	pangolin::Var<bool> categoryText("ui.description.Camera Pose", false,false);
+	pangolin::Var<bool> categoryText("slambenchui.description.Camera Pose", false,false);
 
 	for(auto output_mgr : GetOutputManagers()) {
 		const std::string &prefix = output_mgr.first;
 		for(auto output : *output_mgr.second) {
 			slambench::outputs::BaseOutput* bo = output.second;
-			std::string panelname = "ui.output." + prefix + "." + bo->GetName();
+			std::string panelname = "slambenchui.output." + prefix + "." + bo->GetName();
 
 			switch(bo->GetType()) {
 			case slambench::values::VT_POSE:
@@ -114,14 +114,14 @@ void SLAMBenchUI_Pangolin::AddFollowControls()
 void SLAMBenchUI_Pangolin::AddBackgroundControls()
 {
 
-	pangolin::Var<bool> categoryText("ui.description.Backgrounds", false,false);
+	pangolin::Var<bool> categoryText("slambenchui.description.Backgrounds", false,false);
 
 	for(auto output_mgr : GetOutputManagers()) {
 		const std::string &prefix = output_mgr.first;
 
 		for(auto output : *output_mgr.second) {
 			slambench::outputs::BaseOutput* bo = output.second;
-			std::string panelname = "ui.output." + prefix + "." + bo->GetName();
+			std::string panelname = "slambenchui.output." + prefix + "." + bo->GetName();
 
 			switch(bo->GetType()) {
 			case slambench::values::VT_FRAME:
@@ -140,7 +140,7 @@ void SLAMBenchUI_Pangolin::AddControlsForOutput(const std::string &prefix, slamb
 
 
 
-	std::string button_name = "ui.output." + prefix + "." + output->GetName() ;
+	std::string button_name = "slambenchui.output." + prefix + "." + output->GetName() ;
 
 
 	if(output->GetType() == slambench::values::VT_STRING) {
@@ -593,6 +593,7 @@ bool SLAMBenchUI_Pangolin::DrawQueuedFrames() {
 			break;
 		default:
 			// unknown type!
+                        std::cerr << "Pixel format unsupporteed for displaying frame" << std::endl;
 			abort();
 		}
 
