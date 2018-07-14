@@ -94,6 +94,9 @@ public :
 			config->reader = new ICLReader("");
 		} else if (dataset_name == "svo") {
 			config->reader = new SVOReader("");
+		} else {
+			std::cout << "Dataset " << dataset_name << " not found" << std::endl;
+			exit(1);
 		}
 
 		if (config->reader) {
@@ -181,8 +184,11 @@ int main(int argc, char * argv[]) {
 
 	bool res = main->Run();
 
-	std::cout << std::endl << "Done." << std::endl;
-
-	assert(res);
-
+	if (!res) {
+		std::cout << "Dataset generation failed" << std::endl;
+		return EXIT_FAILURE;
+	} else {
+		std::cout << "Done" << std::endl;
+		return 0;
+	}
 }
