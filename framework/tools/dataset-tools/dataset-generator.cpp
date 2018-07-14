@@ -38,6 +38,7 @@
 #include "./include/ICLNUIM.h"
 #include "./include/TUM.h"
 #include "./include/SVO.h"
+#include "./include/NYURGBD.h"
 
 using namespace slambench::io;
 
@@ -94,6 +95,8 @@ public :
 			config->reader = new ICLReader("");
 		} else if (dataset_name == "svo") {
 			config->reader = new SVOReader("");
+		} else if (dataset_name == "nyurgbd") {
+			config->reader = new NYURGBDReader("");
 		} else {
 			std::cout << "Dataset " << dataset_name << " not found" << std::endl;
 			exit(1);
@@ -163,9 +166,9 @@ int main(int argc, char * argv[]) {
 
 	if ( main->dataset == "" ) {
 		std::cout << " Please define the dataset type using the -d argument. " << std::endl;
-		std::cout << " Possible values are: iclnuim tum  eurocmav icl svo" << std::endl;
+		std::cout << " Possible values are: iclnuim tum eurocmav icl svo nyurgbd" << std::endl;
 		std::cout << " To have details of arguments for any type of dataset you are interested by," << std::endl;
-		std::cout << " Please run the help mode for this dataset (e.g "  << argv[0] << "-d tum" << std::endl;
+		std::cout << " Please run the help mode for this dataset (e.g " << argv[0] << " -d tum)" << std::endl;
 		return EXIT_FAILURE;
 	}
 
