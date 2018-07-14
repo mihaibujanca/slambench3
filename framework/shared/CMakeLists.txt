@@ -120,6 +120,10 @@ endif(PAPI_FOUND)
 add_library(slambench-metrics ${MetricFiles})
 SET_TARGET_PROPERTIES(slambench-metrics PROPERTIES COMPILE_FLAGS "${common_properties}")
 
+if (PAPI_FOUND)
+    target_link_libraries(slambench-metrics ${PAPI_LIBRARIES})
+endif(PAPI_FOUND)
+
 add_library(slambench-io 
 	${sensors_files}
 	src/io/core/Core.cpp
