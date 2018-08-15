@@ -12,8 +12,10 @@
 #include "outputs/OutputManagerWriter.h"
 
 #include "io/sensor/Sensor.h"
+#include "io/sensor/CameraSensor.h"
 #include "io/sensor/GroundTruthSensor.h"
 #include "io/sensor/PointCloudSensor.h"
+#include "io/sensor/LabelledCameraSensor.h"
 #include "io/format/PointCloud.h"
 
 using namespace slambench::outputs;
@@ -68,6 +70,8 @@ slambench::outputs::Output *createGTOutput(const slambench::io::Sensor* sensor) 
 		return new slambench::outputs::Output("Trajectory", slambench::values::VT_POSE, true);
 	} else if(sensor->GetType() == slambench::io::PointCloudSensor::kPointCloudType) {
 		return new slambench::outputs::Output("PointCloud", slambench::values::VT_POINTCLOUD, true);
+	} else if(sensor->GetType() == slambench::io::LabelledCameraSensor::kLabelType) {
+		return new slambench::outputs::Output("LabelledCameraSensor", slambench::values::VT_LABELLEDFRAME, true);
 	} else {
 		// unknown GT type
 		assert(false);
@@ -107,7 +111,6 @@ void OutputManager::LoadGTOutputsFromSLAMFile(io::SensorCollection& sensors, io:
 			Eigen::Matrix4f K;
 			memcpy(K.data(), i->GetData(), i->GetSize());
 
-			i->FreeData();
 			
 			output->AddPoint(i->Timestamp, new slambench::values::PoseValue(K));
 		}
@@ -117,7 +120,6 @@ void OutputManager::LoadGTOutputsFromSLAMFile(io::SensorCollection& sensors, io:
 		if (with_point_cloud and i->FrameSensor->GetType() == slambench::io::PointCloudSensor::kPointCloudType) {
 			
 			slambench::io::PointCloud *pc = slambench::io::PointCloud::FromRaw((char*)i->GetData());
-			i->FreeData();
 			
 			slambench::values::PointCloudValue *pcv = new slambench::values::PointCloudValue();
 			for(auto p : pc->Get()) {
@@ -127,5 +129,21 @@ void OutputManager::LoadGTOutputsFromSLAMFile(io::SensorCollection& sensors, io:
 			output->AddPoint(i->Timestamp, pcv);
 		}
 
-	}
+
+                if (i->FrameSensor->GetType() == slambench::io::LabelledCameraSensor::kLabelType) {
+
+                    if (i->GetSize() == 0)
+                        continue;
+
+                    auto sensor = reinterpret_cast<slambench::io::LabelledCameraSensor*>(i->FrameSensor);
+
+                    void* data = i->GetData();
+
+                    auto frameValue = new slambench::values::LabelledFrameValue(sensor->Width, sensor->Height, sensor->labelMap, data);
+
+                    output->AddPoint(i->Timestamp, frameValue);
+                }
+
+                i->FreeData();
+        }
 }

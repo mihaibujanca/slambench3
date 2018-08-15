@@ -25,10 +25,10 @@ if (CMAKE_COMPILER_IS_GNUCC)
   endif()
 endif()
 
-set(OPTFLAGS "-O3")
+#set(OPTFLAGS "-O3")
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g ${OPTFLAGS}                 -Wall -Wno-unknown-pragmas -Wextra  -Wno-error=deprecated-declarations -Wno-error=unused-result -Wno-error=reorder ")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g ${OPTFLAGS} --std=c++11 -Wall -Wno-unknown-pragmas -Wextra  -Wno-error=deprecated-declarations -Wno-error=unused-result -Wno-error=reorder ")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g ${OPTFLAGS}                 -Wall -g -Wno-unknown-pragmas -Wextra  -Wno-error=deprecated-declarations -Wno-error=unused-result -Wno-error=reorder ")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g ${OPTFLAGS} --std=c++11 -Wall -g -Wno-unknown-pragmas -Wextra  -Wno-error=deprecated-declarations -Wno-error=unused-result -Wno-error=reorder ")
 
 
 if(APPLE)

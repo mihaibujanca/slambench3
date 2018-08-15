@@ -38,6 +38,9 @@ if (OpenNI_FOUND)
 	message(STATUS "SLAMBENCH WILL NOT USE OPENNI 1.2 !!")
 endif(OpenNI_FOUND)
 
+find_package(OpenCV REQUIRED)
+message("OPENCV INCLUDE DIRS ${OpenCV_INCLUDE_DIRS}")
+
 cmake_minimum_required(VERSION 2.8)
 
 ########## GLUT GUI Library ####################
@@ -77,7 +80,11 @@ SET(MetricFiles
     src/metrics/RPEMetric.cpp
     src/metrics/PowerMetric.cpp
     src/metrics/DurationMetric.cpp
+    src/metrics/DoubleMetric.cpp
     src/metrics/MemoryMetric.cpp
+    src/metrics/SemanticPixelMetric.cpp
+    src/metrics/ConfusionMatrixMetric.cpp
+    src/metrics/SemanticMetric.cpp
     src/metrics/memory_utils/CUDAMonitor.cpp
     src/metrics/Metric.cpp
     src/metrics/MetricManager.cpp
@@ -163,7 +170,7 @@ add_library(slambench-utils
 
 target_include_directories(slambench-io  PRIVATE ${Boost_INCLUDE_DIRS})
 target_include_directories(slambench-metrics PRIVATE ${Boost_INCLUDE_DIRS})
-target_link_libraries(slambench-io PRIVATE slambench-utils pthread  ${Boost_LIBRARIES})
+target_link_libraries(slambench-io PRIVATE slambench-utils pthread  ${Boost_LIBRARIES} ${OpenCV_LIBRARIES})
 
 SET(EXTRA_LIBS_FOR_MEMORY "")
 

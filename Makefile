@@ -415,6 +415,7 @@ datasets :
 	@echo "   - ICL-NUIM dataset [Handa et al, ICRA'14]: https://www.doc.ic.ac.uk/~ahanda/VaFRIC/iclnuim.html"
 	@echo "   - EuRoC MAV Dataset [Burri et al, IJJR'16]: https://projects.asl.ethz.ch/datasets/doku.php"
 	@echo "   - SVO sample dataset [Forster et al, ICRA 2014]: https://github.com/uzh-rpg/rpg_svo"
+	@echo "   - NYURGBDv2 [Silberman et al, ECCV 2012]: https://cs.nyu.edu/~silberman/datasets/nyu_depth_v2.html"
 	@echo "================================================================================================================="
 
 datasetslist:
@@ -486,12 +487,22 @@ datasetslist:
 	@echo "make datasets/SVO/artificial.slam"
 	@echo ""
 	@echo ""
+	@echo "### NYURGBDv2 dataset"
+	@echo ""
+	@echo "make ./datasets/NYURGBDv2/<sequence>_<sequence_id>.slam"
+	@echo ""
+	@echo "e.g."
+	@echo "make ./datasets/NYURGBDv2/bathroom_0003.slam"
+	@echo "make ./datasets/NYURGBDv2/office_0005.slam"
+	@echo ""
+	@echo ""
 	@echo "================================================================================================================="
 	@echo -e "If you are using one of those dataset, \033[1;31mplease refer to their respective publications\033[0m:"
 	@echo "   - TUM RGB-D SLAM dataset [Sturm et al, IROS'12]: https://vision.in.tum.de/data/datasets/rgbd-dataset"
 	@echo "   - ICL-NUIM dataset [Handa et al, ICRA'14]: https://www.doc.ic.ac.uk/~ahanda/VaFRIC/iclnuim.html"
 	@echo "   - EuRoC MAV Dataset [Burri et al, IJJR'16]: https://projects.asl.ethz.ch/datasets/doku.php"
 	@echo "   - SVO sample dataset [Forster et al, ICRA 2014]: https://github.com/uzh-rpg/rpg_svo"
+	@echo "   - NYURGBDv2 [Silberman et al, ECCV 2012]: https://cs.nyu.edu/~silberman/datasets/nyu_depth_v2.html"
 	@echo "================================================================================================================="
 
 .PHONY: slambench benchmarks benchmarkslist datasets datasetslist
@@ -583,6 +594,13 @@ datasets/SVO/artificial.dir: ./datasets/SVO/artificial.tar.gz
 datasets/SVO/artificial.slam: ./datasets/SVO/artificial.dir
 	if [ ! -e ./build/bin/dataset-generator ] ; then make slambench ; fi
 	./build/bin/dataset-generator -d svo -i $</sin2_tex2_h1_v8_d -o $@  
+
+
+#### NYURGBDv2
+###############
+datasets/NYURGBDv2/%.slam:
+	mkdir -p datasets/NYURGBDv2
+	./get_nyurgbd.sh $@
 
 
 #### ORBSLAM Voc

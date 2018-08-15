@@ -92,7 +92,6 @@ void Value::Dispatch(ConstValueDispatch* vd) const
 
 FrameValue::FrameValue(const FrameValue& other) : Value(VT_FRAME), width_(other.width_), height_(other.height_), pxl_format_(other.pxl_format_), data_(other.data_) 
 {
-
 }
 
 FrameValue::FrameValue(uint32_t width, uint32_t height, slambench::io::pixelformat::EPixelFormat pxl_format, void* data) : Value(VT_FRAME), width_(width), height_(height), pxl_format_(pxl_format)
@@ -111,6 +110,31 @@ FrameValue::FrameValue(uint32_t width, uint32_t height, slambench::io::pixelform
 	size_t datasize = width * height * depth;
 	data_.resize(datasize);
 }
+
+LabelledFrameValue::LabelledFrameValue(uint32_t width, uint32_t height,
+                                       const std::map<int, std::string> &map, void *data) :
+    Value(VT_LABELLEDFRAME),
+    width_(width),
+    height_(height),
+    map_(map)
+{
+	size_t datasize = width * height * 2;
+	data_.resize(datasize);
+	memcpy(data_.data(), data, datasize);
+}
+
+LabelledFrameValue::LabelledFrameValue(uint32_t width, uint32_t height,
+                                       const std::map<int, std::string> &map) :
+    Value(VT_LABELLEDFRAME),
+    width_(width),
+    height_(height),
+    map_(map)
+{
+	size_t datasize = width * height * 2;
+	data_.resize(datasize);
+}
+
+
 
 ValueCollectionValue::~ValueCollectionValue() {
 	for(auto i : values_) {

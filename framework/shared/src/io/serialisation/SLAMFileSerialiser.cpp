@@ -12,8 +12,10 @@
 #include "io/serialisation/SLAMFrameSerialiser.h"
 
 #include "io/SLAMFile.h"
+#include "io/SLAMFrame.h"
 
 #include <stdexcept>
+#include <iostream>
 
 using namespace slambench::io;
 

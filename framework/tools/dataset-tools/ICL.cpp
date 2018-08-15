@@ -140,7 +140,7 @@ bool analyseIclFolder(const std::string &dirname) {
 				return false;
 			}
 		}
-	} catch (boost::filesystem::filesystem_error e)  {
+	} catch (boost::filesystem::filesystem_error &e)  {
 		std::cerr << "I/O Error with directory " << dirname << std::endl;
 		std::cerr << e.what() << std::endl;
 		return false;
@@ -721,6 +721,8 @@ SLAMFile* ICLReader::GenerateSLAMFile () {
 
 
 
+constexpr CameraSensor::intrinsics_t ICLReader::fr1_intrinsics_rgb;
+constexpr DepthSensor::intrinsics_t  ICLReader::fr1_intrinsics_depth;
 
 
 

@@ -448,6 +448,88 @@ bool SLAMBenchUI_Pangolin::DrawColouredPointCloudOutput(slambench::outputs::Base
 
 }
 
+bool SLAMBenchUI_Pangolin::DrawSemanticPointCloudOutput(slambench::outputs::BaseOutput* output)
+{
+	assert(output->GetType() == slambench::values::VT_SEMANTICPOINTCLOUD);
+	output->SetKeepOnlyMostRecent(true);
+	if(!output->IsActive() or output->GetValues().empty()) {
+		return true;
+	}
+
+#ifdef HARRY_SPEEDUP
+
+	auto timestamp = output->GetMostRecentValue().first;
+	const slambench::values::SemanticPointCloudValue *latest_pc = static_cast<const slambench::values::SemanticPointCloudValue*>(output->GetMostRecentValue().second);
+	size_t size = latest_pc->GetPoints().size();
+
+	bool new_output = false;
+	if(!pointcloud_state_.count(output)) {
+		glCreateBuffers(1, &pointcloud_state_[output].VBO);
+		new_output = true;
+	}
+
+	auto &state = pointcloud_state_[output];
+	glBindBuffer(GL_ARRAY_BUFFER, state.VBO);
+	if(new_output || state.timestamp != timestamp) {
+		glBufferData(GL_ARRAY_BUFFER, sizeof(slambench::values::Point3DF) * size, latest_pc->GetPoints().data(), GL_STATIC_DRAW);
+		state.timestamp = timestamp;
+	}
+
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glMultMatrixf((GLfloat*)latest_pc->GetTransform().data());
+
+	glVertexPointer(3, GL_FLOAT, sizeof(slambench::values::SemanticPoint3DF), 0);
+	glColorPointer(3, GL_UNSIGNED_BYTE, sizeof(slambench::values::SemanticPoint3DF), (void*)offsetof(slambench::values::SemanticPoint3DF, R));
+
+
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_COLOR_ARRAY);
+
+	glDrawArrays(GL_POINTS, 0, size);
+
+	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_COLOR_ARRAY);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	glPopMatrix();
+
+	return true;
+#else
+
+	const slambench::values::SemanticPointCloudValue *latest_pc = static_cast<const slambench::values::SemanticPointCloudValue*>(output->GetValues().rbegin()->second);
+	size_t size = latest_pc->GetPoints().size();
+
+
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(slambench::values::Point3DF) * size, latest_pc->GetPoints().data(), GL_STATIC_DRAW);
+
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glMultMatrixf((GLfloat*)latest_pc->GetTransform().data());
+
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glVertexPointer(3, GL_FLOAT, sizeof(slambench::values::SemanticPoint3DF), 0);
+	glColorPointer(3, GL_UNSIGNED_BYTE, sizeof(slambench::values::SemanticPoint3DF), (void*)offsetof(slambench::values::SemanticPoint3DF, R));
+
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_COLOR_ARRAY);
+
+	glDrawArrays(GL_POINTS, 0, size);
+
+	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_COLOR_ARRAY);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	glPopMatrix();
+
+	return true;
+#endif
+
+}
+
 bool SLAMBenchUI_Pangolin::EnqueueFrame(slambench::values::FrameValue *frame) {
 	frames_.push_back(*frame);
 	return true;
@@ -729,6 +811,8 @@ bool SLAMBenchUI_Pangolin::DrawOutput(slambench::outputs::BaseOutput* output)
 		return DrawPoseOutput(output);
 	case slambench::values::VT_COLOUREDPOINTCLOUD:
 		return DrawColouredPointCloudOutput(output);
+	case slambench::values::VT_SEMANTICPOINTCLOUD:
+		return DrawSemanticPointCloudOutput(output);
 	case slambench::values::VT_POINTCLOUD:
 		return DrawPointCloudOutput(output);
 	case slambench::values::VT_FRAME:

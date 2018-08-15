@@ -20,7 +20,7 @@ SLAMFrameSerialiser::SLAMFrameSerialiser(FILE *target) : Serialiser(target) {
 
 bool SLAMFrameSerialiser::Serialise(SLAMFrame &frame) {
 	void *frame_data = frame.GetData();
-	if(frame_data == nullptr) {
+	if(frame_data == nullptr && frame.GetSize() != 0) {
 		printf("Could not get frame data\n");
 		return false;
 	}
@@ -28,7 +28,7 @@ bool SLAMFrameSerialiser::Serialise(SLAMFrame &frame) {
 		decltype(frame.Timestamp) timestamp;
 		decltype(frame.FrameSensor->Index) index;
 	} __attribute__((packed)) data;
-	
+
 	data.timestamp = frame.Timestamp;
 	data.index = frame.FrameSensor->Index;
 	
@@ -37,9 +37,11 @@ bool SLAMFrameSerialiser::Serialise(SLAMFrame &frame) {
 		uint32_t data_size = frame.GetSize();
 		Write(&data_size, sizeof(data_size));
 	}
-	Write(frame_data, frame.GetSize());
+	if(frame_data != nullptr) {
+	    Write(frame_data, frame.GetSize());
+	}
 	
 	frame.FreeData();
-	
+
 	return true;
 }

@@ -66,7 +66,7 @@ bool analyseTUMFolder(const std::string &dirname) {
 				return false;
 			}
 		}
-	} catch (boost::filesystem::filesystem_error e)  {
+	} catch (boost::filesystem::filesystem_error &e)  {
 		std::cerr << "I/O Error with directory " << dirname << std::endl;
 		std::cerr << e.what() << std::endl;
 		return false;
@@ -521,7 +521,30 @@ SLAMFile* TUMReader::GenerateSLAMFile () {
 	}
 
 
+// Static definitions
 
+constexpr CameraSensor::intrinsics_t TUMReader::fr1_intrinsics_rgb  ;
+constexpr DepthSensor::intrinsics_t  TUMReader::fr1_intrinsics_depth;
+constexpr CameraSensor::intrinsics_t TUMReader::fr2_intrinsics_rgb;
+constexpr DepthSensor::intrinsics_t  TUMReader::fr2_intrinsics_depth;
+
+
+constexpr float TUMReader::fr1_fps;
+constexpr float TUMReader::fr1_bf;
+constexpr float TUMReader::fr1_ThDepth;
+constexpr float TUMReader::fr1_DepthMapFactor;
+
+constexpr float TUMReader::fr2_fps;
+constexpr float TUMReader::fr2_bf;
+constexpr float TUMReader::fr2_ThDepth;
+constexpr float TUMReader::fr2_DepthMapFactor;
+
+
+constexpr CameraSensor::distortion_coefficients_t TUMReader::fr1_distortion_rgb;
+constexpr CameraSensor::distortion_coefficients_t TUMReader::fr2_distortion_rgb;
+
+constexpr DepthSensor::distortion_coefficients_t  TUMReader::fr1_distortion_depth;
+constexpr DepthSensor::distortion_coefficients_t  TUMReader::fr2_distortion_depth;
 
 
 
