@@ -22,6 +22,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <metrics/DurationMetric.h>
+#include "ColumnWriter.h"
+
 
 std::string alignment_technique = "original";
 std::string default_alignment_technique = "original";
@@ -41,12 +44,13 @@ int main(int argc, char * argv[])
 		// Start the argument processing
 		//***************************************************************************************
 
-
 		config->getParameters().push_back(&alignment_type_parameter);
 		config->GetParameterManager().ReadArgumentsOrQuit(argc, argv, config);
 		//***************************************************************************************
 		// At this point the datasets/libraries/sensors are loaded with their arguments set.
 		//***************************************************************************************
+
+                std::cout << "Starting ... " << std::endl;
 
 
 		//***************************************************************************************
@@ -72,7 +76,11 @@ int main(int argc, char * argv[])
 		// We prepare the logging and create the global metrics
 		//***************************************************************************************
 
-		// N/A
+		config->start_statistics();
+		slambench::ColumnWriter cw (config->get_log_stream(), "\t");
+		cw.AddColumn(new slambench::RowNumberColumn());
+
+		auto duration_metric = new slambench::metrics::DurationMetric();
 
 		//***************************************************************************************
 		// We init the algos now because we need their output already
@@ -110,9 +118,26 @@ int main(int argc, char * argv[])
 					lib->GetOutputManager().RegisterOutput(traj_aligned);
 				}
 			}
+
 		}
 
+                bool have_timestamp = false;
+                for(auto lib : config->GetLoadedLibs()) {
+			// retrieve the trajectory of the lib
+			const auto lib_traj = lib->GetOutputManager().GetMainOutput(slambench::values::VT_POSE);
+			if (lib_traj == nullptr) {
+				std::cerr << "There is no output trajectory in the library outputs." << std::endl;
+				exit(1);
+			}
 
+			// Create timestamp column if we don't have one
+			if(!have_timestamp) {
+				have_timestamp = true;
+				cw.AddColumn(new slambench::OutputTimestampColumnInterface(lib_traj));
+			}
+
+			lib->GetMetricManager().AddFrameMetric(duration_metric);
+                }
 
 
 
@@ -128,6 +153,9 @@ int main(int argc, char * argv[])
 		//***************************************************************************************
 		// We Start the Experiment
 		//***************************************************************************************
+
+		config->AddFrameCallback([&cw]{cw.PrintRow();});
+		cw.PrintHeader();
 
 		SLAMBenchConfiguration::compute_loop_algorithm( config, &stay_on, ui);
 
