@@ -23,6 +23,9 @@
 #include <stdlib.h>
 
 #include <metrics/DurationMetric.h>
+#include <metrics/PointCloudMetric.h>
+#include <metrics/ATEMetric.h>
+#include <metrics/RPEMetric.h>
 #include "ColumnWriter.h"
 
 
@@ -50,7 +53,6 @@ int main(int argc, char * argv[])
 		// At this point the datasets/libraries/sensors are loaded with their arguments set.
 		//***************************************************************************************
 
-                std::cout << "Starting ... " << std::endl;
 
 
 		//***************************************************************************************
@@ -80,7 +82,6 @@ int main(int argc, char * argv[])
 		slambench::ColumnWriter cw (config->get_log_stream(), "\t");
 		cw.AddColumn(new slambench::RowNumberColumn());
 
-		auto duration_metric = new slambench::metrics::DurationMetric();
 
 		//***************************************************************************************
 		// We init the algos now because we need their output already
@@ -90,11 +91,30 @@ int main(int argc, char * argv[])
 
 		config->InitAlgorithms();
 
+		bool have_timestamp = false;
+
 		// If a ground truth is available, produce an aligned trajectory for each algorithm
-		if(gt_trajectory) {
-			for(auto lib : config->GetLoadedLibs()) {
+		for(auto lib : config->GetLoadedLibs()) {
 				// trajectory
 				slambench::outputs::BaseOutput *trajectory = lib->GetOutputManager().GetMainOutput(slambench::values::VT_POSE);
+				const auto lib_traj = lib->GetOutputManager().GetMainOutput(slambench::values::VT_POSE);
+				if (lib_traj == nullptr) {
+					std::cerr << "There is no output trajectory in the library outputs." << std::endl;
+					exit(1);
+				}
+
+				// Create timestamp column if we don't have one
+				if(!have_timestamp) {
+					have_timestamp = true;
+					cw.AddColumn(new slambench::OutputTimestampColumnInterface(lib_traj));
+				}
+
+
+				auto duration_metric = new slambench::metrics::DurationMetric();
+				lib->GetMetricManager().AddFrameMetric(duration_metric);
+				cw.AddColumn(new slambench::ValueLibColumnInterface(lib, duration_metric, lib->GetMetricManager().GetFramePhase()));
+
+			if(gt_trajectory) {
 
 				// produce an alignment
 				auto alignment = new slambench::outputs::AlignmentOutput("Alignment", new slambench::outputs::PoseOutputTrajectoryInterface(gt_trajectory), trajectory, alignment_method);
@@ -109,6 +129,11 @@ int main(int argc, char * argv[])
 				if(pointcloud != nullptr) {
 					auto pc_aligned = new slambench::outputs::AlignedPointCloudOutput(pointcloud->GetName() + "(Aligned)", alignment, pointcloud);
 					lib->GetOutputManager().RegisterOutput(pc_aligned);
+
+					const slambench::outputs::BaseOutput *gt_pointcloud = config->GetGroundTruth().GetMainOutput(slambench::values::VT_POINTCLOUD);
+					auto pointcloud_metric = new slambench::metrics::PointCloudMetric(pc_aligned, gt_pointcloud);
+					lib->GetMetricManager().AddFrameMetric(pointcloud_metric);
+					cw.AddColumn(new slambench::ValueLibColumnInterface(lib, pointcloud_metric, lib->GetMetricManager().GetFramePhase()));
 				}
 
 				// try and align the trajectories
@@ -117,28 +142,34 @@ int main(int argc, char * argv[])
 					auto traj_aligned = new slambench::outputs::AlignedTrajectoryOutput(trajectoryOutput->GetName() + "(Aligned)", alignment, trajectoryOutput);
 					lib->GetOutputManager().RegisterOutput(traj_aligned);
 				}
+
+
+				// Add ATE metric
+				auto ate_metric = new slambench::metrics::ATEMetric(new slambench::outputs::PoseOutputTrajectoryInterface(aligned), new slambench::outputs::PoseOutputTrajectoryInterface(gt_trajectory));
+				if (ate_metric->GetValueDescription().GetStructureDescription().size() > 0) {
+					lib->GetMetricManager().AddFrameMetric(ate_metric);
+					cw.AddColumn(new slambench::CollectionValueLibColumnInterface(lib, ate_metric, lib->GetMetricManager().GetFramePhase()));
+				}
+
+				// Add RPE metric
+				auto rpe_metric = new slambench::metrics::RPEMetric(new slambench::outputs::PoseOutputTrajectoryInterface(aligned), new slambench::outputs::PoseOutputTrajectoryInterface(gt_trajectory));
+				lib->GetMetricManager().AddFrameMetric(rpe_metric);
+				cw.AddColumn(new slambench::CollectionValueLibColumnInterface(lib, rpe_metric, lib->GetMetricManager().GetFramePhase()));
+
+				// Add ATE metric
+				auto ate_optimized_metric = new slambench::metrics::ATEMetric(new slambench::outputs::PoseOutputTrajectoryInterface(aligned), new slambench::outputs::PoseOutputTrajectoryInterface(gt_trajectory));
+				if (ate_metric->GetValueDescription().GetStructureDescription().size() > 0) {
+					lib->GetMetricManager().AddFrameMetric(ate_optimized_metric);
+					cw.AddColumn(new slambench::CollectionValueLibColumnInterface(lib, ate_optimized_metric, lib->GetMetricManager().GetFramePhase()));
+				}
+
+				// Add RPE metric
+				auto rpe_optimized_metric = new slambench::metrics::RPEMetric(new slambench::outputs::PoseOutputTrajectoryInterface(aligned), new slambench::outputs::PoseOutputTrajectoryInterface(gt_trajectory));
+				lib->GetMetricManager().AddFrameMetric(rpe_optimized_metric);
+				cw.AddColumn(new slambench::CollectionValueLibColumnInterface(lib, rpe_optimized_metric, lib->GetMetricManager().GetFramePhase()));
 			}
 
 		}
-
-                bool have_timestamp = false;
-                for(auto lib : config->GetLoadedLibs()) {
-			// retrieve the trajectory of the lib
-			const auto lib_traj = lib->GetOutputManager().GetMainOutput(slambench::values::VT_POSE);
-			if (lib_traj == nullptr) {
-				std::cerr << "There is no output trajectory in the library outputs." << std::endl;
-				exit(1);
-			}
-
-			// Create timestamp column if we don't have one
-			if(!have_timestamp) {
-				have_timestamp = true;
-				cw.AddColumn(new slambench::OutputTimestampColumnInterface(lib_traj));
-			}
-
-			lib->GetMetricManager().AddFrameMetric(duration_metric);
-                }
-
 
 
 		//***************************************************************************************
