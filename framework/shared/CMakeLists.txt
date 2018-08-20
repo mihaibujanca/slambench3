@@ -66,10 +66,6 @@ add_library(slambench-c-wrapper
 )
 SET_TARGET_PROPERTIES(slambench-c-wrapper  PROPERTIES COMPILE_FLAGS "-fPIC")
 
-
-
-
-
 SET(MetricFiles 
     src/ColumnWriter.cpp
     src/metrics/Phase.cpp
@@ -78,6 +74,7 @@ SET(MetricFiles
     src/metrics/PowerMetric.cpp
     src/metrics/DurationMetric.cpp
     src/metrics/MemoryMetric.cpp
+    src/metrics/PointCloudMetric.cpp
     src/metrics/memory_utils/CUDAMonitor.cpp
     src/metrics/Metric.cpp
     src/metrics/MetricManager.cpp
@@ -120,6 +117,11 @@ endif(PAPI_FOUND)
 add_library(slambench-metrics ${MetricFiles})
 SET_TARGET_PROPERTIES(slambench-metrics PROPERTIES COMPILE_FLAGS "${common_properties}")
 
+if (PAPI_FOUND)
+    target_link_libraries(slambench-metrics ${PAPI_LIBRARIES})
+endif(PAPI_FOUND)
+
+
 add_library(slambench-io 
 	${sensors_files}
 	src/io/core/Core.cpp
@@ -156,9 +158,18 @@ add_library(slambench-utils
     src/ParameterManager
 )
 
+find_package(PCL 1.5)
+## FIXME: PCL by using UseVTK.cmake corrupts COMPILE_DEFINITIONS
+get_directory_property(DirDefs  COMPILE_DEFINITIONS )
+message(STATUS "VTK FIX:Previous properties=${DirDefs}")
+set_directory_properties(PROPERTIES COMPILE_DEFINITIONS "")
+
+add_definitions(${PCL_DEFINITIONS})
+link_directories(${PCL_LIBRARY_DIRS})
 
 target_include_directories(slambench-io  PRIVATE ${Boost_INCLUDE_DIRS})
-target_include_directories(slambench-metrics PRIVATE ${Boost_INCLUDE_DIRS})
+target_include_directories(slambench-metrics PRIVATE ${Boost_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS})
+target_link_libraries(slambench-metrics ${PCL_LIBRARIES})
 target_link_libraries(slambench-io PRIVATE slambench-utils pthread  ${Boost_LIBRARIES})
 
 SET(EXTRA_LIBS_FOR_MEMORY "")
