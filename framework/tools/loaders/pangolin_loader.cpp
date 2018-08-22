@@ -40,19 +40,24 @@ TypedParameter<std::string> dictionary_filepath_parameter("d", "dictionary", "Fi
 
 
 std::map<int, int> read_dictionary(const std::string &dictionary_filename) {
-    std::map<int, int> dictionary;
+	std::map<int, int> dictionary;
 
-    std::ifstream dictionary_reader(dictionary_filename);
+	std::ifstream dictionary_reader(dictionary_filename);
+	if (!dictionary_reader.good()) {
+		const std::string message = "Could not load dictonary file: " + dictionary_filename;
+		std::cerr << message << std::endl;
+		throw message;
+	}
 
-    std::string dump;
-    std::getline(dictionary_reader, dump);
-    std::getline(dictionary_reader, dump);
+	std::string dump;
+	std::getline(dictionary_reader, dump);
+	std::getline(dictionary_reader, dump);
 
-    int gt_class, algo_class;
-    while (dictionary_reader >> gt_class >> algo_class)
-        dictionary[gt_class] = algo_class;
+	int gt_class, algo_class;
+	while (dictionary_reader >> gt_class >> algo_class)
+		dictionary[gt_class] = algo_class;
 
-    return dictionary;
+	return dictionary;
 }
 
 
@@ -117,6 +122,7 @@ int main(int argc, char * argv[])
 		//***************************************************************************************
 
 		config->InitAlgorithms();
+
 
 		// If a ground truth is available, produce an aligned trajectory for each algorithm
 		if(gt_trajectory) {
