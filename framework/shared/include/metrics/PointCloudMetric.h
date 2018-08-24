@@ -11,14 +11,12 @@ namespace slambench {
 
         class PointCloudMetric : public Metric {
             private:
-                const slambench::outputs::BaseOutput * const tested;
-                const slambench::outputs::BaseOutput * const gt;
+                const slambench::outputs::BaseOutput * const heatmap_pointcloud;
 
                 slambench::TimeStamp lastMeasurement;
 
             public:
-                PointCloudMetric(const slambench::outputs::BaseOutput * const tested,
-                                 const slambench::outputs::BaseOutput * const gt);
+                PointCloudMetric(const slambench::outputs::BaseOutput * const heatmap_pointcloud);
 
                 ~PointCloudMetric() = default;
 

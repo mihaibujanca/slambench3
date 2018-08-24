@@ -41,6 +41,7 @@ class SLAMBenchUI_Pangolin : public SLAMBenchUI
 		bool DrawTrajectoryOutput(slambench::outputs::BaseOutput *output);
 		bool DrawPointCloudOutput(slambench::outputs::BaseOutput *output);
 		bool DrawColouredPointCloudOutput(slambench::outputs::BaseOutput *output);
+		bool DrawHeatMapPointCloudOutput(slambench::outputs::BaseOutput *output);
 		bool DrawFrameOutput(slambench::outputs::BaseOutput *output);
 		bool DrawOutput(slambench::outputs::BaseOutput *output);
 		bool DrawList(slambench::outputs::BaseOutput *output);

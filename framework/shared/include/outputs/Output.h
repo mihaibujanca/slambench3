@@ -19,6 +19,7 @@
 #include <map>
 #include <set>
 #include <vector>
+#include <functional>
 
 namespace slambench {
 	namespace outputs {
@@ -157,6 +158,23 @@ namespace slambench {
 				BaseOutput *trajectory_;
 		};
 		
+		/**
+		 * An output which shows the quality of the reconstruction
+		 */
+		class PointCloudHeatMap : public DerivedOutput {
+		public:
+			PointCloudHeatMap(const std::string &name,
+							  BaseOutput *gt_pointcloud, BaseOutput *pointcloud,
+							  const std::function<values::ColoredPoint3DF(const values::HeatMapPoint3DF&)> &convert);
+			virtual ~PointCloudHeatMap();
+
+			void Recalculate() override;
+			std::function<values::ColoredPoint3DF(const values::HeatMapPoint3DF&)> convert;
+		private:
+			BaseOutput *gt_pointcloud;
+			BaseOutput *pointcloud;
+		};
+
 		class PoseToXYZOutput : public BaseOutput {
 		public:
 			PoseToXYZOutput(BaseOutput *pose_output);

@@ -412,7 +412,6 @@ bool SLAMBenchUI_Pangolin::DrawColouredPointCloudOutput(slambench::outputs::Base
 	glVertexPointer(3, GL_FLOAT, sizeof(slambench::values::ColoredPoint3DF), 0);
 	glColorPointer(3, GL_UNSIGNED_BYTE, sizeof(slambench::values::ColoredPoint3DF), (void*)offsetof(slambench::values::ColoredPoint3DF, R));
 
-
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
 
@@ -444,10 +443,12 @@ glVertexPointer(3, GL_FLOAT, sizeof(slambench::values::ColoredPoint3DF), 0);
 	glColorPointer(3, GL_UNSIGNED_BYTE, sizeof(slambench::values::ColoredPoint3DF), (void*)offsetof(slambench::values::ColoredPoint3DF, R));
 
 	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_COLOR_ARRAY);
 
 	glDrawArrays(GL_POINTS, 0, size);
 
 	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_COLOR_ARRAY);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -457,6 +458,54 @@ glVertexPointer(3, GL_FLOAT, sizeof(slambench::values::ColoredPoint3DF), 0);
 #endif
 
 }
+
+bool SLAMBenchUI_Pangolin::DrawHeatMapPointCloudOutput(slambench::outputs::BaseOutput* output)
+{
+	assert(output->GetType() == slambench::values::VT_HEATMAPPOINTCLOUD);
+	output->SetKeepOnlyMostRecent(true);
+	if(!output->IsActive() or output->GetValues().empty()) {
+		return true;
+	}
+
+#ifdef HARRY_SPEEDUP
+
+	std::cerr << "WARNINIG: No support for HARRY_SPEEDUP for HeatMap drawing" << std::endl;
+
+#endif
+
+	const auto heatmap_output = reinterpret_cast<slambench::outputs::PointCloudHeatMap*>(output);
+	const slambench::values::HeatMapPointCloudValue *latest_pc = static_cast<const slambench::values::HeatMapPointCloudValue*>(output->GetValues().rbegin()->second);
+	const slambench::values::ColoredPointCloudValue coloredHeatmap(*latest_pc, heatmap_output->convert);
+
+	size_t size = coloredHeatmap.GetPoints().size();
+
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(slambench::values::ColoredPoint3DF) * size, coloredHeatmap.GetPoints().data(), GL_STATIC_DRAW);
+
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glMultMatrixf((GLfloat*)coloredHeatmap.GetTransform().data());
+
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glVertexPointer(3, GL_FLOAT, sizeof(slambench::values::ColoredPoint3DF), 0);
+	glColorPointer(3, GL_UNSIGNED_BYTE, sizeof(slambench::values::ColoredPoint3DF), (void*)offsetof(slambench::values::ColoredPoint3DF, R));
+
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_COLOR_ARRAY);
+
+	glDrawArrays(GL_POINTS, 0, size);
+
+	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_COLOR_ARRAY);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	glPopMatrix();
+
+	return true;
+
+}
+
 
 bool SLAMBenchUI_Pangolin::EnqueueFrame(slambench::values::FrameValue *frame) {
 	frames_.push_back(*frame);
@@ -740,6 +789,8 @@ bool SLAMBenchUI_Pangolin::DrawOutput(slambench::outputs::BaseOutput* output)
 		return DrawTrajectoryOutput(output);
 	case slambench::values::VT_COLOUREDPOINTCLOUD:
 		return DrawColouredPointCloudOutput(output);
+	case slambench::values::VT_HEATMAPPOINTCLOUD:
+		return DrawHeatMapPointCloudOutput(output);
 	case slambench::values::VT_POINTCLOUD:
 		return DrawPointCloudOutput(output);
 	case slambench::values::VT_FRAME:

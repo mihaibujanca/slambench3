@@ -53,8 +53,6 @@ int main(int argc, char * argv[])
 		// At this point the datasets/libraries/sensors are loaded with their arguments set.
 		//***************************************************************************************
 
-
-
 		//***************************************************************************************
 		// We initialise the configuration, means to retrieve groundtruth and set the alignement
 		//***************************************************************************************
@@ -95,24 +93,22 @@ int main(int argc, char * argv[])
 
 		// If a ground truth is available, produce an aligned trajectory for each algorithm
 		for(auto lib : config->GetLoadedLibs()) {
-				// trajectory
-				slambench::outputs::BaseOutput *trajectory = lib->GetOutputManager().GetMainOutput(slambench::values::VT_POSE);
-				const auto lib_traj = lib->GetOutputManager().GetMainOutput(slambench::values::VT_POSE);
-				if (lib_traj == nullptr) {
-					std::cerr << "There is no output trajectory in the library outputs." << std::endl;
-					exit(1);
-				}
+			// trajectory
+			slambench::outputs::BaseOutput *trajectory = lib->GetOutputManager().GetMainOutput(slambench::values::VT_POSE);
+			if (trajectory == nullptr) {
+				std::cerr << "There is no output trajectory in the library outputs." << std::endl;
+				exit(1);
+			}
 
-				// Create timestamp column if we don't have one
-				if(!have_timestamp) {
-					have_timestamp = true;
-					cw.AddColumn(new slambench::OutputTimestampColumnInterface(lib_traj));
-				}
+			// Create timestamp column if we don't have one
+			if(!have_timestamp) {
+				have_timestamp = true;
+				cw.AddColumn(new slambench::OutputTimestampColumnInterface(trajectory));
+			}
 
-
-				auto duration_metric = new slambench::metrics::DurationMetric();
-				lib->GetMetricManager().AddFrameMetric(duration_metric);
-				cw.AddColumn(new slambench::ValueLibColumnInterface(lib, duration_metric, lib->GetMetricManager().GetFramePhase()));
+			auto duration_metric = new slambench::metrics::DurationMetric();
+			lib->GetMetricManager().AddFrameMetric(duration_metric);
+			cw.AddColumn(new slambench::ValueLibColumnInterface(lib, duration_metric, lib->GetMetricManager().GetFramePhase()));
 
 			if(gt_trajectory) {
 
@@ -120,6 +116,7 @@ int main(int argc, char * argv[])
 				auto alignment = new slambench::outputs::AlignmentOutput("Alignment", new slambench::outputs::PoseOutputTrajectoryInterface(gt_trajectory), trajectory, alignment_method);
 				alignment->SetActive(true);
 				alignment->SetKeepOnlyMostRecent(true);
+
 
 				auto aligned = new slambench::outputs::AlignedPoseOutput(trajectory->GetName() + " (Aligned)", alignment, trajectory);
 				lib->GetOutputManager().RegisterOutput(aligned);
@@ -130,8 +127,22 @@ int main(int argc, char * argv[])
 					auto pc_aligned = new slambench::outputs::AlignedPointCloudOutput(pointcloud->GetName() + "(Aligned)", alignment, pointcloud);
 					lib->GetOutputManager().RegisterOutput(pc_aligned);
 
-					const slambench::outputs::BaseOutput *gt_pointcloud = config->GetGroundTruth().GetMainOutput(slambench::values::VT_POINTCLOUD);
-					auto pointcloud_metric = new slambench::metrics::PointCloudMetric(pc_aligned, gt_pointcloud);
+					slambench::outputs::BaseOutput *gt_pointcloud = config->GetGroundTruth().GetMainOutput(slambench::values::VT_POINTCLOUD);
+
+
+										 srand (time(NULL));
+					std::function<slambench::values::ColoredPoint3DF(const slambench::values::HeatMapPoint3DF&)> convert =
+									[](const slambench::values::HeatMapPoint3DF &val) {
+										auto v = val.value * 10000;
+										return slambench::values::ColoredPoint3DF(val.X, val.Y, val.Z, v, v, 0);
+									};
+
+					auto heatmap = new slambench::outputs::PointCloudHeatMap(pointcloud->GetName() + "(Heatmap)", gt_pointcloud, pc_aligned, convert);
+					heatmap->SetActive(true);
+					heatmap->SetKeepOnlyMostRecent(true);
+					lib->GetOutputManager().RegisterOutput(heatmap);
+
+					auto pointcloud_metric = new slambench::metrics::PointCloudMetric(heatmap);
 					lib->GetMetricManager().AddFrameMetric(pointcloud_metric);
 					cw.AddColumn(new slambench::ValueLibColumnInterface(lib, pointcloud_metric, lib->GetMetricManager().GetFramePhase()));
 				}
@@ -169,6 +180,11 @@ int main(int argc, char * argv[])
 				cw.AddColumn(new slambench::CollectionValueLibColumnInterface(lib, rpe_optimized_metric, lib->GetMetricManager().GetFramePhase()));
 			}
 
+//			const slambench::outputs::BaseOutput *pointcloud = lib->GetOutputManager().GetMainOutput(slambench::values::VT_POINTCLOUD);
+//			const slambench::outputs::BaseOutput *gt_pointcloud = config->GetGroundTruth().GetMainOutput(slambench::values::VT_POINTCLOUD);
+//
+//			if (pointcloud != nullptr && gt_pointcloud != nullptr) {
+//			}
 		}
 
 
