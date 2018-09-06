@@ -215,15 +215,19 @@ namespace slambench {
 			ColoredPoint3DF() : X(0), Y(0), Z(0) , R(0), G(0), B(0) {}
 			ColoredPoint3DF(float x, float y, float z) : X(x), Y(y), Z(z), R(0), G(0), B(0) {}
 			float X, Y, Z;
-			uint8_t   R, G, B;
+			uint8_t R, G, B;
 		};
 
 		class SemanticPoint3DF {
 		public:
-			SemanticPoint3DF() : X(0), Y(0), Z(0) , R(0), G(0), B(0) {}
-			SemanticPoint3DF(float x, float y, float z) : X(x), Y(y), Z(z), R(0), G(0), B(0) {}
+			SemanticPoint3DF() : SemanticPoint3DF(0, 0, 0, 0, 0, 0, 0) {}
+			SemanticPoint3DF(float x, float y, float z,
+					 uint8_t r, uint8_t g, uint8_t b,
+					 int cls) :
+			    X(x), Y(y), Z(z), R(r), G(g), B(b), cls(cls) {}
 			float X, Y, Z;
 			uint8_t R, G, B;
+			int cls;
 		};
 
 
@@ -358,6 +362,7 @@ namespace slambench {
 		template<> struct TypeForVT<VT_TRAJECTORY> { typedef TrajectoryValue type; };
 		template<> struct TypeForVT<VT_POSE> { typedef PoseValue type; };
 		template<> struct TypeForVT<VT_POINTCLOUD> { typedef PointCloudValue type; };
+		template<> struct TypeForVT<VT_SEMANTICPOINTCLOUD> { typedef SemanticPointCloudValue type; };
 		template<> struct TypeForVT<VT_MATRIX> { typedef TypedValue<Eigen::Matrix4f> type; };
 	
 		template<> struct VTForType<uint64_t> { static constexpr ValueType value() { return VT_U64; } };
