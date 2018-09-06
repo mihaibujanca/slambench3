@@ -29,7 +29,11 @@ OutputManager::~OutputManager()
 
 BaseOutput* OutputManager::GetOutput(const std::string& outputname)
 {
-	return output_map_.at(outputname);
+	try {
+		return output_map_.at(outputname);
+	} catch (std::out_of_range &e) {
+		return nullptr;
+	}
 }
 
 BaseOutput* OutputManager::GetMainOutput(slambench::values::ValueType type)
