@@ -39,11 +39,9 @@
 #include "./include/TUM.h"
 #include "./include/SVO.h"
 #include "./include/NYURGBD.h"
+#include "./include/scannet.h"
 
 using namespace slambench::io;
-
-
-
 
 
 class MainComponent : public ParameterComponent {
@@ -97,6 +95,8 @@ public :
 			config->reader = new SVOReader("");
 		} else if (dataset_name == "nyurgbd") {
 			config->reader = new NYURGBDReader("");
+		} else if (dataset_name == "scannet") {
+			config->reader = new ScannetReader("");
 		} else {
 			std::cout << "Dataset " << dataset_name << " not found" << std::endl;
 			exit(1);
