@@ -36,14 +36,13 @@ void ConfusionMatrixMetric::printConfusionMatrix(const cv::Mat &confusion,
                                                  const std::map<int, std::string> &gt_map,
                                                  const std::map<int, std::string> &pred_map) {
 
-    std::cout << std::endl;
-    std::cout << std::endl;
-    std::cout << std::setw(25) << " ";
+    std::stringstream str;
+
+    str << std::setw(25) << " ";
     for (int i = 0; i < confusion.cols; i++) {
-        std::cout << std::setw(12) << pred_map.at(i) <<  "(" << std::setw(2) << i << ")";
+        str << std::setw(12) << pred_map.at(i) <<  "(" << std::setw(2) << i << ")";
     }
 
-    std::cout << std::endl;
     for (int row = 0; row < confusion.rows; row++) {
         bool print = false;
         int sum = 0;
@@ -61,14 +60,18 @@ void ConfusionMatrixMetric::printConfusionMatrix(const cv::Mat &confusion,
                 class_name << "unknown";
             }
             class_name << "(" << std::setw(2) << row << ")";
-            std::cout << std::setw(25) << class_name.str() << " ";
+            str << std::setw(25) << class_name.str() << " ";
 
             for (int col = 0; col < confusion.cols; col++) {
-                std::cout << std::setw(15) << confusion.at<ushort>(row, col) << " ";
+                str << std::setw(15) << confusion.at<ushort>(row, col) << " ";
             }
-            std::cout << std::endl;
+            str << std::endl;
         }
     }
+
+    std::cout << std::endl;
+    std::cout << std::endl;
+    std::cout << str.str();
     std::cout << std::endl;
     std::cout << std::endl;
 }
@@ -165,10 +168,16 @@ Value *ConfusionMatrixMetric::GetValue(Phase* /* unused */) {
 
         try {
             printConfusionMatrix(confusion, gt_map, pred_map);
+        } catch (const std::out_of_range &e) {
+            std::cout << "Exception thrown during confusion display 1: " << e.what() << std::endl;
+        }
+
+        try {
             printConfusionMatrix(confusionTranslated, translated_map, pred_map);
         } catch (const std::out_of_range &e) {
-            std::cout << "Exception thrown during confusion display: " << e.what() << std::endl;
+            std::cout << "Exception thrown during confusion display 2: " << e.what() << std::endl;
         }
+
 
         averageClassAccuracy = findAverageClassAccuracy(confusionTranslated);
         averageClassRecall   = findAverageClassRecall(confusionTranslated);
