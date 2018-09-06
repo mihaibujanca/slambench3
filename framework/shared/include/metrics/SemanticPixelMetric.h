@@ -15,10 +15,12 @@ namespace slambench {
                 const slambench::outputs::BaseOutput * const tested_segmentation;
                 const slambench::outputs::BaseOutput * const ground_truth;
 
-                enum MatchStatus { UNKNOWN, FAILED, MATCHED};
+                enum MatchStatus { UNKNOWN, FAILED, MATCHED };
 
-                cv::Mat_<MatchStatus> getMatched(const cv::Mat_<ushort> &pred,
-                                                 const cv::Mat_<ushort> &gt);
+                typedef std::vector<std::vector<SemanticPixelMetric::MatchStatus>> MatchStatusMatrix;
+
+                MatchStatusMatrix getMatched(const cv::Mat_<ushort> &pred,
+                                             const cv::Mat_<ushort> &gt);
 
                 template <typename PixelType>
                 MatchStatus match(const PixelType &classified, const PixelType &translated_ground_truth) {
@@ -42,7 +44,7 @@ namespace slambench {
 
                 ~SemanticPixelMetric() = default;
 
-                void viewMatches(const cv::Mat &mat);
+                void viewMatches(const MatchStatusMatrix &mat);
 
                 const slambench::values::ValueDescription& GetValueDescription() const override;
                 const std::string& GetDescription() const override;

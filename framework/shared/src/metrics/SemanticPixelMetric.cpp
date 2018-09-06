@@ -36,27 +36,33 @@ void SemanticPixelMetric::MeasureStart(Phase* /* unused */) { }
 
 void SemanticPixelMetric::MeasureEnd(Phase* /* unused */) { }
 
-cv::Mat_<SemanticPixelMetric::MatchStatus> SemanticPixelMetric::getMatched(const cv::Mat_<ushort> &pred,
-                                                                           const cv::Mat_<ushort> &gt) {
+SemanticPixelMetric::MatchStatusMatrix SemanticPixelMetric::getMatched(const cv::Mat_<ushort> &pred,
+                                                                       const cv::Mat_<ushort> &gt) {
     assert(pred.size() == gt.size());
 
-    cv::Mat_<SemanticPixelMetric::MatchStatus> matches(pred.size());
+    std::cout << pred.size() << std::endl;
+
+    SemanticPixelMetric::MatchStatusMatrix matches(pred.rows, std::vector<MatchStatus>(pred.cols));
 
     for (int row = 0; row < gt.rows; row++) {
         for (int col = 0; col < gt.cols; col++) {
-            matches(row, col) = match(pred(row, col), gt(row, col));
+            matches[row][col] = match(pred(row, col), gt(row, col));
         }
     }
 
     return matches;
 }
 
-void SemanticPixelMetric::viewMatches(const cv::Mat &matches) {
-    cv::Mat viz(matches.size(), CV_8UC1);
+void SemanticPixelMetric::viewMatches(const SemanticPixelMetric::MatchStatusMatrix &matches) {
 
-    for (int row = 0; row < matches.rows; row++) {
-        for (int col = 0; col < matches.cols; col++) {
-            const auto value = matches.at<MatchStatus>(row, col);
+    cv::Mat viz(matches.size(), matches.at(0).size(), CV_8UC1);
+    for(int i=0; i<viz.rows; ++i)
+         for(int j=0; j<viz.cols; ++j)
+               viz.at<uchar>(i, j) = static_cast<uchar>(matches.at(i).at(j));
+
+    for (size_t row = 0; row < matches.size(); row++) {
+        for (size_t col = 0; col < matches[row].size(); col++) {
+            const auto value = matches.at(row).at(col);
             auto &target = viz.at<uchar>(row, col);
             if (value == UNKNOWN)
                 target = 128;
@@ -69,7 +75,6 @@ void SemanticPixelMetric::viewMatches(const cv::Mat &matches) {
 
     cv::namedWindow("win");
     cv::imshow("win", viz);
-    cv::waitKey(0);
 }
 
 
@@ -79,7 +84,6 @@ Value *SemanticPixelMetric::GetValue(Phase* /* unused */) {
     const outputs::BaseOutput::timestamp_t timestamp = tested_segmented_frame.first;
     
     outputs::Output::value_map_t gt_segmented_frames = ground_truth->GetValues();
-
 
     auto gt_entry = gt_segmented_frames.find(timestamp);
     if (gt_entry == gt_segmented_frames.end()) {
@@ -93,23 +97,27 @@ Value *SemanticPixelMetric::GetValue(Phase* /* unused */) {
 
         cv::Mat translated = sm.getTranslatedMap();
 
-        cv::Mat_<MatchStatus> matches = getMatched(sm.getPred(), sm.getTranslatedMap());
+        cv::namedWindow("pred");
+        cv::namedWindow("translated");
+        cv::namedWindow("gt");
+        cv::imshow("pred", sm.getPred() * 1000);
+        cv::imshow("translated", sm.getTranslatedMap() * 1000);
+        cv::imshow("gt", sm.getGT() * 1000);
+
+        const auto matches = getMatched(sm.getPred(), sm.getTranslatedMap());
 
         int totalPixels = 0;
         int correctPixels = 0;
 
-        for (int row = 0; row < matches.rows; row++)
-            for (int col = 0; col < matches.cols; col++) {
-                auto px = matches.at<MatchStatus>(row, col);
+        for (const auto &row : matches)
+            for (const auto &px : row) {
                 if (px == MATCHED)
                     correctPixels++;
                 if (px != UNKNOWN)
                     totalPixels++;
             }
 
-        //viewMatches(matches);
-
-
+        viewMatches(matches);
 
         double prob = correctPixels / (double)(totalPixels) * 100;
 
