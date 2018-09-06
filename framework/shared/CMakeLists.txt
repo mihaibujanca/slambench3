@@ -83,6 +83,7 @@ SET(MetricFiles
     src/metrics/DoubleMetric.cpp
     src/metrics/MemoryMetric.cpp
     src/metrics/SemanticPixelMetric.cpp
+    src/metrics/SemanticPointcloudMetric.cpp
     src/metrics/ConfusionMatrixMetric.cpp
     src/metrics/SemanticMetric.cpp
     src/metrics/memory_utils/CUDAMonitor.cpp
@@ -167,10 +168,17 @@ add_library(slambench-utils
     src/ParameterManager
 )
 
+find_package(PCL 1.5)
+## FIXME: PCL by using UseVTK.cmake corrupts COMPILE_DEFINITIONS
+get_directory_property(DirDefs  COMPILE_DEFINITIONS )
+message(STATUS "VTK FIX:Previous properties=${DirDefs}")
+set_directory_properties(PROPERTIES COMPILE_DEFINITIONS "")
+ add_definitions(${PCL_DEFINITIONS})
+link_directories(${PCL_LIBRARY_DIRS})
 
 target_include_directories(slambench-io  PRIVATE ${Boost_INCLUDE_DIRS})
-target_include_directories(slambench-metrics PRIVATE ${Boost_INCLUDE_DIRS})
-target_link_libraries(slambench-io PRIVATE slambench-utils pthread  ${Boost_LIBRARIES} ${OpenCV_LIBRARIES})
+target_include_directories(slambench-metrics PRIVATE ${Boost_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS})
+target_link_libraries(slambench-io PRIVATE slambench-utils pthread  ${Boost_LIBRARIES} ${OpenCV_LIBRARIES} ${PCL_LIBRARIES})
 
 SET(EXTRA_LIBS_FOR_MEMORY "")
 
