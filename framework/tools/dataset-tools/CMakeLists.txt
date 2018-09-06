@@ -14,11 +14,11 @@ target_link_libraries(io-readply slambench-io slambench-metrics)
 
 add_executable(io-inspect-file io-inspect.cpp)
 target_link_libraries(io-inspect-file PRIVATE -Wl,--whole-archive slambench-io slambench-metrics -Wl,--no-whole-archive)
-	
+
 if (Boost_FOUND)
 
 	IF (LIBYAML_FOUND)
-    	add_library(EUROCMAV EUROCMAV.cpp)
+	add_library(EUROCMAV EUROCMAV.cpp)
 		target_link_libraries(EUROCMAV slambench-io ${Boost_LIBRARIES} ${LIBYAML_LIBRARY})
 		target_include_directories(EUROCMAV PRIVATE ${Boost_INCLUDE_DIRS}  ${LIBYAML_INCLUDE_DIR})
 	ENDIF (LIBYAML_FOUND)
@@ -27,28 +27,30 @@ if (Boost_FOUND)
 	target_link_libraries(SVO slambench-io ${Boost_LIBRARIES})
 	target_include_directories(SVO PRIVATE ${Boost_INCLUDE_DIRS})
 	
-	
 	add_library(ICL ICL.cpp)
 	target_link_libraries(ICL slambench-io ${Boost_LIBRARIES})
 	target_include_directories(ICL PRIVATE ${Boost_INCLUDE_DIRS})
 	
-	
-    add_library(TUM TUM.cpp)
+	add_library(TUM TUM.cpp)
 	target_link_libraries(TUM slambench-io ${Boost_LIBRARIES})
 	target_include_directories(TUM PRIVATE ${Boost_INCLUDE_DIRS})
 	
-    add_library(ICLNUIM ICLNUIM.cpp)
+	add_library(ICLNUIM ICLNUIM.cpp)
 	target_link_libraries(ICLNUIM slambench-io)
 	target_include_directories(ICLNUIM PRIVATE ${Boost_INCLUDE_DIRS})
-    
+
 	add_library(NYURGBD NYURGBD.cpp)
 	target_link_libraries(NYURGBD slambench-io)
 	target_include_directories(NYURGBD PRIVATE ${Boost_INCLUDE_DIRS})
-		
+
+	add_library(scannet scannet.cpp)
+	target_link_libraries(scannet slambench-io)
+	target_include_directories(scannet PRIVATE ${Boost_INCLUDE_DIRS})
+
 	add_executable(dataset-generator dataset-generator.cpp)
-	target_link_libraries(dataset-generator TUM ICLNUIM ICL EUROCMAV SVO NYURGBD slambench-metrics slambench-utils)
-	
+	target_link_libraries(dataset-generator TUM ICLNUIM ICL EUROCMAV SVO NYURGBD scannet slambench-metrics slambench-utils)
+
 else (Boost_FOUND)
-    message(STATUS "Dataset generators require Boost.")
+	message(STATUS "Dataset generators require Boost.")
 endif(Boost_FOUND)
 
