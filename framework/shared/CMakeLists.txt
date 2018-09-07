@@ -176,9 +176,12 @@ set_directory_properties(PROPERTIES COMPILE_DEFINITIONS "")
  add_definitions(${PCL_DEFINITIONS})
 link_directories(${PCL_LIBRARY_DIRS})
 
+set(PCL_MY_LIBRARIES "-lpcl_features -lpcl_io -lOpenNI -lOpenNI2 -lpcl_filters -lpcl_sample_consensus -lpcl_search -lpcl_kdtree -lflann -lflann_cpp -lpcl_octree -lpcl_common")
+
 target_include_directories(slambench-io  PRIVATE ${Boost_INCLUDE_DIRS})
 target_include_directories(slambench-metrics PRIVATE ${Boost_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS})
-target_link_libraries(slambench-io PRIVATE slambench-utils pthread  ${Boost_LIBRARIES} ${OpenCV_LIBRARIES} ${PCL_LIBRARIES})
+target_link_libraries(slambench-metrics PRIVATE ${PCL_MY_LIBRARIES})
+target_link_libraries(slambench-io PRIVATE slambench-utils pthread  ${Boost_LIBRARIES} ${OpenCV_LIBRARIES})
 
 SET(EXTRA_LIBS_FOR_MEMORY "")
 
