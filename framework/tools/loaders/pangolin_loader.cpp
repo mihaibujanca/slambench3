@@ -130,11 +130,10 @@ int main(int argc, char * argv[])
 					slambench::outputs::BaseOutput *gt_pointcloud = config->GetGroundTruth().GetMainOutput(slambench::values::VT_POINTCLOUD);
 
 
-										 srand (time(NULL));
-					std::function<slambench::values::ColoredPoint3DF(const slambench::values::HeatMapPoint3DF&)> convert =
-									[](const slambench::values::HeatMapPoint3DF &val) {
-										auto v = val.value * 10000;
-										return slambench::values::ColoredPoint3DF(val.X, val.Y, val.Z, v, v, 0);
+					std::function<slambench::values::ColoredPoint3DF(const slambench::values::HeatMapPoint3DF&, double, double)> convert =
+									[](const slambench::values::HeatMapPoint3DF &val, double min, double max) {
+                                                                                const double finalValue = (val.value - min) * 255 / (max - min);
+										return slambench::values::ColoredPoint3DF(val.X, val.Y, val.Z, finalValue, 0, 0);
 									};
 
 					auto heatmap = new slambench::outputs::PointCloudHeatMap(pointcloud->GetName() + "(Heatmap)", gt_pointcloud, pc_aligned, convert);
@@ -152,6 +151,18 @@ int main(int argc, char * argv[])
 				if(trajectoryOutput != nullptr) {
 					auto traj_aligned = new slambench::outputs::AlignedTrajectoryOutput(trajectoryOutput->GetName() + "(Aligned)", alignment, trajectoryOutput);
 					lib->GetOutputManager().RegisterOutput(traj_aligned);
+
+					// Add ATE metric
+					auto ate_optimized_metric = new slambench::metrics::ATEMetric(new slambench::outputs::TrajectoryOutputInterface(traj_aligned), new slambench::outputs::PoseOutputTrajectoryInterface(gt_trajectory));
+					if (ate_optimized_metric->GetValueDescription().GetStructureDescription().size() > 0) {
+						lib->GetMetricManager().AddFrameMetric(ate_optimized_metric);
+						cw.AddColumn(new slambench::CollectionValueLibColumnInterface(lib, ate_optimized_metric, lib->GetMetricManager().GetFramePhase()));
+					}
+
+					// Add RPE metric
+					auto rpe_optimized_metric = new slambench::metrics::RPEMetric(new slambench::outputs::TrajectoryOutputInterface(traj_aligned), new slambench::outputs::PoseOutputTrajectoryInterface(gt_trajectory));
+					lib->GetMetricManager().AddFrameMetric(rpe_optimized_metric);
+					cw.AddColumn(new slambench::CollectionValueLibColumnInterface(lib, rpe_optimized_metric, lib->GetMetricManager().GetFramePhase()));
 				}
 
 
@@ -167,17 +178,6 @@ int main(int argc, char * argv[])
 				lib->GetMetricManager().AddFrameMetric(rpe_metric);
 				cw.AddColumn(new slambench::CollectionValueLibColumnInterface(lib, rpe_metric, lib->GetMetricManager().GetFramePhase()));
 
-				// Add ATE metric
-				auto ate_optimized_metric = new slambench::metrics::ATEMetric(new slambench::outputs::PoseOutputTrajectoryInterface(aligned), new slambench::outputs::PoseOutputTrajectoryInterface(gt_trajectory));
-				if (ate_metric->GetValueDescription().GetStructureDescription().size() > 0) {
-					lib->GetMetricManager().AddFrameMetric(ate_optimized_metric);
-					cw.AddColumn(new slambench::CollectionValueLibColumnInterface(lib, ate_optimized_metric, lib->GetMetricManager().GetFramePhase()));
-				}
-
-				// Add RPE metric
-				auto rpe_optimized_metric = new slambench::metrics::RPEMetric(new slambench::outputs::PoseOutputTrajectoryInterface(aligned), new slambench::outputs::PoseOutputTrajectoryInterface(gt_trajectory));
-				lib->GetMetricManager().AddFrameMetric(rpe_optimized_metric);
-				cw.AddColumn(new slambench::CollectionValueLibColumnInterface(lib, rpe_optimized_metric, lib->GetMetricManager().GetFramePhase()));
 			}
 
 //			const slambench::outputs::BaseOutput *pointcloud = lib->GetOutputManager().GetMainOutput(slambench::values::VT_POINTCLOUD);

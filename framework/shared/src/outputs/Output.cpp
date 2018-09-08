@@ -303,7 +303,7 @@ void AlignedTrajectoryOutput::Recalculate()
 
 PointCloudHeatMap::PointCloudHeatMap(const std::string &name,
 				     BaseOutput *gt_pointcloud, BaseOutput *pointcloud,
-				     const std::function<values::ColoredPoint3DF(const values::HeatMapPoint3DF&)> &convert) :
+				     const std::function<values::ColoredPoint3DF(const values::HeatMapPoint3DF&, double, double)> &convert) :
     DerivedOutput(name, values::VT_HEATMAPPOINTCLOUD, {gt_pointcloud, pointcloud}, false),
     gt_pointcloud(gt_pointcloud), pointcloud(pointcloud), convert(convert)
 { }

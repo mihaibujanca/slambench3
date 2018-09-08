@@ -58,6 +58,16 @@ namespace slambench {
 			values::PoseValue Get(const TimeStamp &when) const override;
 			values::TrajectoryValue::pose_container_t GetAll() const override;
 		};
+
+		class TrajectoryOutputInterface : public TrajectoryInterface {
+			private:
+				const BaseOutput *trajectory_output;
+			public:
+				TrajectoryOutputInterface(const BaseOutput *t);
+
+				values::PoseValue Get(const TimeStamp &when) const override; 
+				values::TrajectoryValue::pose_container_t GetAll() const override;
+		};
 	}
 }
 

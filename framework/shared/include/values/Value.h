@@ -282,14 +282,19 @@ namespace slambench {
 
 			ColoredPointCloudValue() : Value(VT_COLOUREDPOINTCLOUD), points_(std::make_shared<point_container_t>()), transform_(Eigen::Matrix4f::Identity()) { }
 			ColoredPointCloudValue(const ColoredPointCloudValue &other) : Value(VT_COLOUREDPOINTCLOUD), points_(other.points_), transform_(other.transform_) { }
-			ColoredPointCloudValue(const HeatMapPointCloudValue &other, std::function<ColoredPoint3DF(const HeatMapPoint3DF&)> convert) :
+			ColoredPointCloudValue(const HeatMapPointCloudValue &other, std::function<ColoredPoint3DF(const HeatMapPoint3DF&, double, double)> convert) :
 						Value(VT_HEATMAPPOINTCLOUD),
 						points_(std::make_shared<point_container_t>()),
 						transform_(Eigen::Matrix4f::Identity()) {
 				const auto otherValues = other.GetPoints();
 				points_->reserve(otherValues.size());
+				double max = 0, min = std::numeric_limits<double>::max();
+				for (const auto &otherValue : otherValues) {
+					min = std::min(otherValue.value, min);
+					max = std::max(otherValue.value, max);
+				}
 				for (const auto &otherValue : otherValues)
-					points_->push_back(convert(otherValue));
+					points_->push_back(convert(otherValue, min, max));
 			}
 			virtual ~ColoredPointCloudValue() { }
 

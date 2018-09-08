@@ -165,11 +165,11 @@ namespace slambench {
 		public:
 			PointCloudHeatMap(const std::string &name,
 							  BaseOutput *gt_pointcloud, BaseOutput *pointcloud,
-							  const std::function<values::ColoredPoint3DF(const values::HeatMapPoint3DF&)> &convert);
+							  const std::function<values::ColoredPoint3DF(const values::HeatMapPoint3DF&, double, double)> &convert);
 			virtual ~PointCloudHeatMap();
 
 			void Recalculate() override;
-			std::function<values::ColoredPoint3DF(const values::HeatMapPoint3DF&)> convert;
+			std::function<values::ColoredPoint3DF(const values::HeatMapPoint3DF&, double, double)> convert;
 		private:
 			BaseOutput *gt_pointcloud;
 			BaseOutput *pointcloud;

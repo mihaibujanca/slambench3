@@ -27,10 +27,10 @@ constexpr int COMPUTE_EVERY_FRAMES = 20;
 
 Value *PointCloudMetric::GetValue(Phase* /* unused */) {
 
-    if (heatmap_pointcloud->Empty())
-        return new slambench::values::TypeForVT<slambench::values::VT_DOUBLE>::type(std::nan(""));
+	if (heatmap_pointcloud->Empty())
+	    return new slambench::values::TypeForVT<slambench::values::VT_DOUBLE>::type(std::nan(""));
 
-    const outputs::Output::value_map_t::value_type tested_frame = heatmap_pointcloud->GetMostRecentValue();
+	const outputs::Output::value_map_t::value_type tested_frame = heatmap_pointcloud->GetMostRecentValue();
 	const auto pcv = reinterpret_cast<const values::HeatMapPointCloudValue*>(tested_frame.second);
 
 	double total = 0;
@@ -38,7 +38,9 @@ Value *PointCloudMetric::GetValue(Phase* /* unused */) {
 		total += value.value;
 	}
 
-    return new slambench::values::TypeForVT<slambench::values::VT_DOUBLE>::type(total);
+	const double average = total / pcv->GetPoints().size();
+
+	return new slambench::values::TypeForVT<slambench::values::VT_DOUBLE>::type(average);
 
 }
 
