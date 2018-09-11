@@ -600,7 +600,7 @@ datasets/SVO/artificial.slam: ./datasets/SVO/artificial.dir
 ###############
 datasets/NYURGBDv2/%.slam:
 	mkdir -p datasets/NYURGBDv2
-	./get_nyurgbd.sh $@
+	./scripts/get_nyurgbd.sh $@
 
 
 #### ORBSLAM Voc
