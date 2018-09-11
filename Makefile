@@ -416,6 +416,7 @@ datasets :
 	@echo "   - EuRoC MAV Dataset [Burri et al, IJJR'16]: https://projects.asl.ethz.ch/datasets/doku.php"
 	@echo "   - SVO sample dataset [Forster et al, ICRA 2014]: https://github.com/uzh-rpg/rpg_svo"
 	@echo "   - NYURGBDv2 [Silberman et al, ECCV 2012]: https://cs.nyu.edu/~silberman/datasets/nyu_depth_v2.html"
+	@echo "   - ScanNet [Dai et al, CVPR 2017]: http://www.scan-net.org/"
 	@echo "================================================================================================================="
 
 datasetslist:
@@ -494,6 +495,14 @@ datasetslist:
 	@echo "e.g."
 	@echo "make ./datasets/NYURGBDv2/bathroom_0003.slam"
 	@echo "make ./datasets/NYURGBDv2/office_0005.slam"
+	@echo ""
+	@echo ""
+	@echo "### Scannet dataset"
+	@echo ""
+	@echo "Only the following two sequences are currently supported"
+	@echo ""
+	@echo "make ./datasets/scannet/scene0187_01.slam"
+	@echo "make ./datasets/scannet/scene0423_01.slam"
 	@echo ""
 	@echo ""
 	@echo "================================================================================================================="
@@ -600,8 +609,14 @@ datasets/SVO/artificial.slam: ./datasets/SVO/artificial.dir
 ###############
 datasets/NYURGBDv2/%.slam:
 	mkdir -p datasets/NYURGBDv2
-	./get_nyurgbd.sh $@
+	./scripts/get_nyurgbd.sh $@
 
+
+#### ScanNet
+###############
+./datasets/scannet/%.slam:
+	if [ ! -e ./build/bin/dataset-generator ] ; then make slambench ; fi
+	./build/bin/dataset-generator -d scannet -i $(basename $@) -o $@
 
 #### ORBSLAM Voc
 #################
