@@ -1,4 +1,5 @@
 #include "metrics/ConfusionMatrixMetric.h"
+#include <set>
 
 using namespace slambench::metrics;
 using namespace slambench::values;
@@ -42,6 +43,7 @@ void ConfusionMatrixMetric::printConfusionMatrix(const cv::Mat &confusion,
     for (int i = 0; i < confusion.cols; i++) {
         str << std::setw(12) << pred_map.at(i) <<  "(" << std::setw(2) << i << ")";
     }
+    str << std::endl;
 
     for (int row = 0; row < confusion.rows; row++) {
         bool print = false;
@@ -76,6 +78,22 @@ void ConfusionMatrixMetric::printConfusionMatrix(const cv::Mat &confusion,
     std::cout << std::endl;
 }
 
+int count_unique(const cv::Mat &pred) {
+    std::set<int> counter;
+
+    for (int row = 0; row < pred.rows; row++) {
+        for (int col = 0; col < pred.cols; col++) {
+            const auto val = pred.at<ushort>(row, col);
+            if (val)
+                counter.insert(val);
+        }
+    }
+
+    std::cout << counter.size() << " classes" << std::endl;
+
+    return counter.size();
+}
+
 cv::Mat ConfusionMatrixMetric::getConfusionMatrix(const cv::Mat &pred, const cv::Mat &gt) {
 
     double gt_min, gt_max;
@@ -99,33 +117,44 @@ cv::Mat ConfusionMatrixMetric::getConfusionMatrix(const cv::Mat &pred, const cv:
 
 double ConfusionMatrixMetric::classAccuracy(const cv::Mat &confusion, int classNo) {
     int sum = 0;
-    for (int i = 0; i < confusion.rows; i++)
-        sum += confusion.at<ushort>(i, classNo);
-    return (double)confusion.at<ushort>(classNo, classNo) / sum;
+    for (int i = 1; i < confusion.rows; i++)
+        sum += confusion.at<ushort>(classNo, i);
+    const double ret = (double)confusion.at<ushort>(classNo, classNo) / sum;
+    std::cout << "Accuracy of class " << classNo << " " << ret << std::endl;
+    return ret;
 }
 
 double ConfusionMatrixMetric::classRecall(const cv::Mat &confusion, int classNo) {
     int sum = 0;
-    for (int i = 0; i < confusion.cols; i++)
-        sum += confusion.at<ushort>(classNo, i);
-    if (sum == 0)
-        return 0;
-    return (double)confusion.at<ushort>(classNo, classNo) / sum;
+    for (int i = 1; i < confusion.cols; i++)
+        sum += confusion.at<ushort>(i, classNo);
+    const double ret = (double)confusion.at<ushort>(classNo, classNo) / sum;
+    std::cout << "Recall of class " << classNo << " " << ret << std::endl;
+    return ret;
 }
 
 double ConfusionMatrixMetric::findAverageClassAccuracy(const cv::Mat &confusion) {
-    const int noOfClasses = confusion.cols;
+    int noOfClasses = 0;
     double sum = 0;
-    for (int i = 0; i < noOfClasses; i++)
-        sum += classAccuracy(confusion, i);
+    for (int i = 1; i < confusion.cols; i++) {
+        const auto acc = classAccuracy(confusion, i);
+        if (!std::isnan(acc)) {
+            sum += acc;
+            noOfClasses++;
+        }
+    }
     return sum / noOfClasses * 100;
 }
 
 double ConfusionMatrixMetric::findAverageClassRecall(const cv::Mat &confusion) {
-    const int noOfClasses = confusion.cols;
+    int noOfClasses = 0;
     double sum = 0;
-    for (int i = 0; i < noOfClasses; i++) {
-        sum += classRecall(confusion, i);
+    for (int i = 0; i < confusion.cols; i++) {
+        const auto rec = classRecall(confusion, i);
+        if (!std::isnan(rec)) {
+            sum += rec;
+            noOfClasses++;
+        }
     }
     return sum / noOfClasses * 100;
 }

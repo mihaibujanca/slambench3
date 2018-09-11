@@ -85,6 +85,9 @@ Value *SemanticPixelMetric::GetValue(Phase* /* unused */) {
     
     outputs::Output::value_map_t gt_segmented_frames = ground_truth->GetValues();
 
+    static int frame_count = 0;
+    frame_count++;
+
     auto gt_entry = gt_segmented_frames.find(timestamp);
     if (gt_entry == gt_segmented_frames.end()) {
         return new slambench::values::TypeForVT<slambench::values::VT_DOUBLE>::type(std::nan(""));
@@ -104,6 +107,11 @@ Value *SemanticPixelMetric::GetValue(Phase* /* unused */) {
         cv::imshow("translated", sm.getTranslatedMap() * 1000);
         cv::imshow("gt", sm.getGT() * 1000);
 
+        cv::imwrite("pred.png", sm.getPred());
+        cv::imwrite("translated.png", sm.getTranslatedMap());
+        cv::imwrite("gt.png", sm.getGT());
+
+
         const auto matches = getMatched(sm.getPred(), sm.getTranslatedMap());
 
         int totalPixels = 0;
@@ -118,6 +126,8 @@ Value *SemanticPixelMetric::GetValue(Phase* /* unused */) {
             }
 
         viewMatches(matches);
+        if (frame_count == 525)
+            cv::waitKey();
 
         double prob = correctPixels / (double)(totalPixels) * 100;
 

@@ -25,7 +25,7 @@ namespace slambench {
                 template <typename PixelType>
                 MatchStatus match(const PixelType &classified, const PixelType &translated_ground_truth) {
 
-                    if (translated_ground_truth == 0)
+                    if (translated_ground_truth == 0 || classified == 0)
                         return UNKNOWN;
 
                     if (classified == translated_ground_truth)
