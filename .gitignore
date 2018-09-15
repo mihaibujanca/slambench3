@@ -6,6 +6,9 @@
 /build/
 /install/
 /android-build/
+*.cmake
+CMakeFiles
+
 
 # Eclipse and other IDE files
 .cproject

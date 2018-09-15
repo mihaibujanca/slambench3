@@ -7,6 +7,7 @@
 
  */
 
+#undef PAPI_MONITORING
 
 #ifdef PAPI_MONITORING
 #include "metrics/power_utils/PAPIMonitor.h"

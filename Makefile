@@ -611,7 +611,6 @@ datasets/NYURGBDv2/%.slam:
 	mkdir -p datasets/NYURGBDv2
 	./scripts/get_nyurgbd.sh $@
 
-
 #### ScanNet
 ###############
 ./datasets/scannet/%.slam:

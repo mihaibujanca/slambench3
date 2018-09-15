@@ -109,21 +109,24 @@ SET(MetricFiles
 
 set(common_properties "${common_properties}  -DXU3_MONITORING")
 list(APPEND MetricFiles src/metrics/power_utils/XU3Monitor.cpp)
-	
+
 ########## PAPI  MONITORING (optional) ####################
 # You need to install papi-devel and lm_sensors-devel
 ###########################################################
 
 find_package(PAPI)
 
+set(PAPI_LIBRARIES "/usr/local/lib/libpapi.so;/usr/lib/libsensors.so")
+message("LOOKING FOR PAPI")
 if (PAPI_FOUND) 
-   	include_directories(${PAPI_INCLUDE_DIRS})
-	set(common_properties "${common_properties}  -DPAPI_MONITORING")
+        message("PAPI FOUND")
+	include_directories(${PAPI_INCLUDE_DIRS})
+        set(common_properties "${common_properties} -DPAPI_MONITORING")
 	set(common_libraries   "${common_libraries}" ${PAPI_LIBRARIES})
-	list(APPEND MetricFiles src/metrics/power_utils/PAPIMonitor.cpp)
+        message("PAPI LIBRARIES ${PAPI_LIBRARIES}")
+        list(APPEND MetricFiles src/metrics/power_utils/PAPIMonitor.cpp)
 endif(PAPI_FOUND)
 
-	
 
 add_library(slambench-metrics ${MetricFiles})
 SET_TARGET_PROPERTIES(slambench-metrics PROPERTIES COMPILE_FLAGS "${common_properties}")

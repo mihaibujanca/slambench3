@@ -8,7 +8,7 @@
  */
 
 #include <cstring>
-#include </usr/include/papi.h>
+#include </usr/local/include/papi.h>
 #include "metrics/power_utils/PAPIMonitor.h"
 #include <iostream>
 

@@ -25,6 +25,7 @@
 #include "ColumnWriter.h"
 
 #include <metrics/SemanticPixelMetric.h>
+#include <metrics/SemanticPointcloudMetric.h>
 #include <metrics/ConfusionMatrixMetric.h>
 #include <metrics/DurationMetric.h>
 #include <metrics/DoubleMetric.h>
@@ -168,15 +169,39 @@ int main(int argc, char * argv[])
                             auto &gt_manager = config->GetGroundTruth();
                             auto gt_segmentation = gt_manager.GetMainOutput(slambench::values::VT_LABELLEDFRAME);
 
-                            auto semantic_metric = new slambench::metrics::SemanticPixelMetric(semantic_projection_output, gt_segmentation, class_dictionary);
-                            lib->GetMetricManager().AddFrameMetric(semantic_metric);
-                            cw.AddColumn(new slambench::ValueLibColumnInterface(lib, semantic_metric, lib->GetMetricManager().GetFramePhase()));
+                            if (gt_segmentation == nullptr) {
+                                std::cerr << "The dataset does not provide any semantic projection ground truth" << std::endl;
+                            } else {
+                                auto semantic_metric = new slambench::metrics::SemanticPixelMetric(semantic_projection_output, gt_segmentation, class_dictionary);
+                                lib->GetMetricManager().AddFrameMetric(semantic_metric);
+                                cw.AddColumn(new slambench::ValueLibColumnInterface(lib, semantic_metric, lib->GetMetricManager().GetFramePhase()));
 
-                            auto confusion_matrix_metric = new slambench::metrics::ConfusionMatrixMetric(semantic_projection_output, gt_segmentation, class_dictionary);
-                            lib->GetMetricManager().AddFrameMetric(confusion_matrix_metric);
-                            cw.AddColumn(new slambench::CollectionValueLibColumnInterface(lib, confusion_matrix_metric, lib->GetMetricManager().GetFramePhase()));
+                                auto confusion_matrix_metric = new slambench::metrics::ConfusionMatrixMetric(semantic_projection_output, gt_segmentation, class_dictionary);
+                                lib->GetMetricManager().AddFrameMetric(confusion_matrix_metric);
+                                cw.AddColumn(new slambench::CollectionValueLibColumnInterface(lib, confusion_matrix_metric, lib->GetMetricManager().GetFramePhase()));
+                            }
                         }
+
+                        auto semantic_pointcloud = lib->GetOutputManager().GetOutput("SemanticPointCloud");
+                        if (semantic_pointcloud == nullptr) {
+                            std::cerr << "The library does not set any semantic pointcloud output" << std::endl;
+                        } else {
+                            auto &gt_manager = config->GetGroundTruth();
+                            auto gt_semantic_pointcloud = gt_manager.GetMainOutput(slambench::values::VT_SEMANTICPOINTCLOUD);
+                            
+                            if (gt_semantic_pointcloud == nullptr) {
+                                std::cerr << "The dataset does not provide any semantic pointcloud ground truth" << std::endl;
+                            } else {
+                                auto semantic_pointcloud_metric = new slambench::metrics::SemanticPointCloudMetric(semantic_projection_output, gt_semantic_pointcloud);
+                                lib->GetMetricManager().AddFrameMetric(semantic_pointcloud_metric);
+                                cw.AddColumn(new slambench::ValueLibColumnInterface(lib, semantic_pointcloud_metric, lib->GetMetricManager().GetFramePhase()));
+                            }
+                        }
+
+
 		}
+
+                std::cout << "DONE INITIALIZATION" << std::endl;
 
 		//***************************************************************************************
 		// We Start the GUI
