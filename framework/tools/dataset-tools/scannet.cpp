@@ -275,6 +275,7 @@ bool ScannetReader::loadScannetLabelledData(const std::string &dirname,
     return true;
 }
 
+// TODO: Test this
 bool loadScannetPointCloud(const std::string &dirname, SLAMFile &file) {
 
     const std::string plyname = dirname + "/pointcloud.ply";
@@ -285,26 +286,26 @@ bool loadScannetPointCloud(const std::string &dirname, SLAMFile &file) {
 
     file.Sensors.AddSensor(pcd);
 
-   // labelled_sensor->labelMap = readLabels(dirname);
-	slambench::io::PlyReader plyreader;
-	std::ifstream plyfile_stream(plyname.c_str());
-	if(!plyfile_stream.good()) {
-		fprintf(stderr, "Could not open PLY file\n");
-		return false;
-	}
-	auto *pointcloud = plyreader.Read(plyfile_stream);
-	if(pointcloud == nullptr) {
-		fprintf(stderr, "Could not build point cloud\n");
-		return false;
-	}
-	auto rawpointcloud = pointcloud->ToRaw();
+    slambench::io::PlyReader plyreader;
+    std::ifstream plyfile_stream(plyname.c_str());
+    if(!plyfile_stream.good()) {
+            fprintf(stderr, "Could not open PLY file\n");
+            return false;
+    }
+    auto *pointcloud = plyreader.ReadColored(plyfile_stream);
+    if(pointcloud == nullptr) {
+            fprintf(stderr, "Could not build point cloud\n");
+            return false;
+    }
+    auto rawpointcloud = pointcloud->ToRaw();
 
-	SLAMInMemoryFrame *pcloudframe = new SLAMInMemoryFrame();
-	pcloudframe->FrameSensor = file.GetSensor(LabelledPointCloudSensor::kLabelledPointCloudType);
-	pcloudframe->Data = malloc(rawpointcloud.size());
-	pcloudframe->SetVariableSize(rawpointcloud.size());
-	memcpy(pcloudframe->Data, rawpointcloud.data(), rawpointcloud.size());
-	file.AddFrame(pcloudframe);
+    SLAMInMemoryFrame *pcloudframe = new SLAMInMemoryFrame();
+    pcloudframe->FrameSensor = file.GetSensor(LabelledPointCloudSensor::kLabelledPointCloudType);
+    pcloudframe->Data = malloc(rawpointcloud.size());
+    pcloudframe->SetVariableSize(rawpointcloud.size());
+    memcpy(pcloudframe->Data, rawpointcloud.data(), rawpointcloud.size());
+
+    file.AddFrame(pcloudframe);
 
 
     return true;
@@ -369,11 +370,12 @@ SLAMFile* ScannetReader::GenerateSLAMFile () {
         return nullptr;
     }
 
-    if (pointcloud && !loadScannetPointCloud(dirname, slamfile)) {
-        std::cout << "Error while loading Pointcloud information." << std::endl;
-        delete slamfilep;
-        return nullptr;
-    }
+    // TODO: Complete pointcloud functionality
+//    if (pointcloud && !loadScannetPointCloud(dirname, slamfile)) {
+//        std::cout << "Error while loading Pointcloud information." << std::endl;
+//        delete slamfilep;
+//        return nullptr;
+//    }
 
     std::cout << "DONE" << std::endl;
 
