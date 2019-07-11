@@ -28,10 +28,6 @@
 #include <fstream>
 #include <array>
 
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-
 using namespace slambench::io;
 
 constexpr int WIDTH = 640;

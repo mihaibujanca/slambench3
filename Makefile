@@ -396,6 +396,21 @@ kfusion:
 	@echo "explore_implementations ( $@ src/* )"     >> benchmarks/$@/CMakeLists.txt
 
 
+semanticfusion:
+	@echo "================================================================================================================="
+	@echo    "  - SemanticFusion [McCormac et al. ICRA'17]: "
+	@echo    "    repository: https://bitbucket.org/dysonroboticslab/semanticfusion"
+	@echo    "    Used repository: https://github.com/Paul92/SemanticFusion"
+	@echo "================================================================================================================="
+	@echo ""
+	@echo "Are you sure you want to download this use-case (y/n) ?" && ${GET_REPLY} && echo REPLY=$$REPLY && if [ ! "$$REPLY" == "y" ] ; then echo -e "\nExit."; false; else echo -e "\nDownload starts."; fi
+	mkdir benchmarks/semanticfusion/src/ -p
+	rm benchmarks/semanticfusion/src/original -rf
+	git clone --recursive  https://github.com/Paul92/SemanticFusion   benchmarks/semanticfusion/src/original
+	@echo "cmake_minimum_required(VERSION 2.8)"   > benchmarks/semanticfusion/CMakeLists.txt
+	@echo "explore_implementations ( $@ src/* )"     >> benchmarks/$@/CMakeLists.txt
+
+
 .PHONY: efusion infinitam kfusion lsdslam monoslam okvis orbslam2 ptam svo semanticfusion
 algorithms : efusion infinitam kfusion lsdslam monoslam okvis orbslam2 ptam svo semanticfusion
 

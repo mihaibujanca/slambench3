@@ -7,7 +7,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=unused-parameter -Wno-error=u
 
 
 find_package(Boost 1.54 REQUIRED COMPONENTS system filesystem program_options regex)
-find_package(LIBYAML REQUIRED)
 
 add_executable(io-readply io-readply.cpp)
 target_link_libraries(io-readply slambench-io slambench-metrics)
@@ -17,12 +16,6 @@ target_link_libraries(io-inspect-file PRIVATE -Wl,--whole-archive slambench-io s
 
 if (Boost_FOUND)
 
-	IF (LIBYAML_FOUND)
-	add_library(EUROCMAV EUROCMAV.cpp)
-		target_link_libraries(EUROCMAV slambench-io ${Boost_LIBRARIES} ${LIBYAML_LIBRARY})
-		target_include_directories(EUROCMAV PRIVATE ${Boost_INCLUDE_DIRS}  ${LIBYAML_INCLUDE_DIR})
-	ENDIF (LIBYAML_FOUND)
-	
 	add_library(SVO SVO.cpp)
 	target_link_libraries(SVO slambench-io ${Boost_LIBRARIES})
 	target_include_directories(SVO PRIVATE ${Boost_INCLUDE_DIRS})
@@ -48,7 +41,15 @@ if (Boost_FOUND)
 	target_include_directories(scannet PRIVATE ${Boost_INCLUDE_DIRS})
 
 	add_executable(dataset-generator dataset-generator.cpp)
-	target_link_libraries(dataset-generator TUM ICLNUIM ICL EUROCMAV SVO NYURGBD scannet slambench-metrics slambench-utils)
+	target_link_libraries(dataset-generator TUM ICLNUIM ICL SVO NYURGBD scannet slambench-metrics slambench-utils)
+
+	find_package(LIBYAML REQUIRED)
+	IF (LIBYAML_FOUND)
+		add_library(EUROCMAV EUROCMAV.cpp)
+		target_link_libraries(EUROCMAV slambench-io ${Boost_LIBRARIES} ${LIBYAML_LIBRARY})
+		target_include_directories(EUROCMAV PRIVATE ${Boost_INCLUDE_DIRS}  ${LIBYAML_INCLUDE_DIR})
+	ENDIF (LIBYAML_FOUND)
+	target_link_libraries(dataset-generator EUROCMAV)
 
 else (Boost_FOUND)
 	message(STATUS "Dataset generators require Boost.")

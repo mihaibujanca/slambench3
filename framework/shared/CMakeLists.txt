@@ -16,7 +16,7 @@ cmake_minimum_required(VERSION 2.8)
 
 ########## OpenNI 2.0 and OpenNI 1.5 (optional) ####################
 
-find_package(OpenNI2)
+find_package(OpenNI2 QUIET)
 
 if (OpenNI2_FOUND)
 	message(STATUS "SLAMBENCH will use OpenNI 2.X, include path = ${OPENNI2_INCLUDE_PATHS}")
@@ -27,7 +27,7 @@ if (OpenNI2_FOUND)
 	message(STATUS "SLAMBENCH WILL NOT USE OPENNI 2.X !!")
 endif(OpenNI2_FOUND)
 
-find_package(OpenNI)
+find_package(OpenNI QUIET)
 
 if (OpenNI_FOUND)
 	message(STATUS "SLAMBENCH will use OpenNI 1.5, include path = ${OPENNI_INCLUDE_DIR}")
@@ -83,7 +83,7 @@ SET(MetricFiles
     src/metrics/DoubleMetric.cpp
     src/metrics/MemoryMetric.cpp
     src/metrics/SemanticPixelMetric.cpp
-    src/metrics/SemanticPointcloudMetric.cpp
+#    src/metrics/SemanticPointcloudMetric.cpp
     src/metrics/ConfusionMatrixMetric.cpp
     src/metrics/SemanticMetric.cpp
     src/metrics/memory_utils/CUDAMonitor.cpp
@@ -162,25 +162,26 @@ add_library(slambench-io
 
 
 add_library(slambench-utils  
-	src/SLAMBenchConfiguration  
-	src/sb_malloc 
-	src/ParameterComponent
-    src/ParameterManager
+	src/SLAMBenchConfiguration.cpp
+	src/sb_malloc.cpp
+	src/ParameterComponent.cpp
+    src/ParameterManager.cpp
 )
 
-find_package(PCL 1.5)
+find_package(PCL REQUIRED)
 ## FIXME: PCL by using UseVTK.cmake corrupts COMPILE_DEFINITIONS
 get_directory_property(DirDefs  COMPILE_DEFINITIONS )
 message(STATUS "VTK FIX:Previous properties=${DirDefs}")
 set_directory_properties(PROPERTIES COMPILE_DEFINITIONS "")
- add_definitions(${PCL_DEFINITIONS})
+add_definitions(${PCL_DEFINITIONS})
 link_directories(${PCL_LIBRARY_DIRS})
 
-set(PCL_MY_LIBRARIES "-lpcl_features -lpcl_io -lOpenNI -lOpenNI2 -lpcl_filters -lpcl_sample_consensus -lpcl_search -lpcl_kdtree -lflann -lflann_cpp -lpcl_octree -lpcl_common")
+set(PCL_MY_LIBRARIES "-lpcl_features -lpcl_io -lpcl_filters -lpcl_sample_consensus -lpcl_kdtree -lflann -lflann_cpp -lpcl_octree -lpcl_common")
+set(OPENNI_MY_LIBRARIES " -lOpenNI -lOpenNI2")
 
 target_include_directories(slambench-io  PRIVATE ${Boost_INCLUDE_DIRS})
-target_include_directories(slambench-metrics PRIVATE ${Boost_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS})
-target_link_libraries(slambench-metrics PRIVATE ${PCL_MY_LIBRARIES})
+target_include_directories(slambench-metrics PRIVATE ${Boost_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
+target_link_libraries(slambench-metrics PRIVATE ${PCL_MY_LIBRARIES} ${OpenCV_LIBRARIES})
 target_link_libraries(slambench-io PRIVATE slambench-utils pthread  ${Boost_LIBRARIES} ${OpenCV_LIBRARIES})
 
 SET(EXTRA_LIBS_FOR_MEMORY "")
@@ -197,7 +198,7 @@ if (CUDA_FOUND)
   SET(EXTRA_LIBS_FOR_MEMORY "${EXTRA_LIBS_FOR_MEMORY};${CUDA_LIBRARIES}")
 ENDIF(CUDA_FOUND)
 
-  target_link_libraries(slambench-utils  "-Wl,--no-as-needed;${EXTRA_LIBS_FOR_MEMORY};-Wl,--as-needed")
+target_link_libraries(slambench-utils slambench-metrics "-Wl,--no-as-needed;${EXTRA_LIBS_FOR_MEMORY};-Wl,--as-needed")
 
 
 
