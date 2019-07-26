@@ -206,50 +206,50 @@ slambench: build/Makefile
 usecases: 
 	@echo ""
 	@echo "================================================================================================================="
-	@echo -e "Current list of compatible SLAM systems (alphabetical order). If you are using one of those SLAM algorithms, \033[1;31mplease refer to their respective publications\033[0m:"
+	@echo "Current list of compatible SLAM systems (alphabetical order). If you are using one of those SLAM algorithms, \033[1;31mplease refer to their respective publications\033[0m:"
 	@echo ""
 
-	@echo -n "  - ElasticFusion [Whelan et al, IJRR'16]: " ; if [ -f benchmarks/efusion ] ; then echo -e "\033[1;32mFound\033[0m" ; else echo -e "\033[1;31mNot found (make efusion)\033[0m" ; fi
+	@echo -n "  - ElasticFusion [Whelan et al, IJRR'16]: " ; if [ -d benchmarks/efusion ] ; then echo "\033[1;32mFound\033[0m" ; else echo "\033[1;31mNot found (make efusion)\033[0m" ; fi
 	@echo    "    repository: https://github.com/mp3guy/ElasticFusion"
 	@echo    "    available targets are : efusion"
 	@echo    ""
 
-	@echo -n "  - InfiniTAMv2 [Kahler et al, ISMAR'15]: " ; if [ -f benchmarks/infinitam ] ; then echo -e "\033[1;32mFound\033[0m" ; else echo -e "\033[1;31mNot found (make infinitam)\033[0m" ; fi
+	@echo -n "  - InfiniTAMv2 [Kahler et al, ISMAR'15]: " ; if [ -d benchmarks/infinitam ] ; then echo "\033[1;32mFound\033[0m" ; else echo "\033[1;31mNot found (make infinitam)\033[0m" ; fi
 	@echo    "    repository: https://github.com/ethz-asl/infinitam"
 	@echo    "    available targets are : infinitam"
 	@echo ""
 
-	@echo -n "  - KFusion [Newcombe et al. ISMAR'11]: " ; if [ -f benchmarks/kfusion ] ; then echo -e "\033[1;32mFound\033[0m" ; else echo -e "\033[1;31mNot found (make kfusion)\033[0m" ; fi
+	@echo -n "  - KFusion [Newcombe et al. ISMAR'11]: " ; if [ -d benchmarks/kfusion ] ; then echo "\033[1;32mFound\033[0m" ; else echo "\033[1;31mNot found (make kfusion)\033[0m" ; fi
 	@echo    "    repository: https://github.com/GerhardR/kfusion"
 	@echo    "    available targets are : kfusion"
 	@echo    ""
 
-	@echo -n "  - LSDSLAM [Engel et al, ECCV'14]: " ; if [ -f benchmarks/lsdslam ] ; then echo -e "\033[1;32mFound\033[0m" ; else echo -e "\033[1;31mNot found (make lsdslam)\033[0m" ; fi
+	@echo -n "  - LSDSLAM [Engel et al, ECCV'14]: " ; if [ -d benchmarks/lsdslam ] ; then echo "\033[1;32mFound\033[0m" ; else echo "\033[1;31mNot found (make lsdslam)\033[0m" ; fi
 	@echo    "    repository: https://github.com/tum-vision/lsd_slam"
 	@echo    "    available targets are : lsdslam"
 	@echo ""
 
-	@echo -n "  - MonoSLAM [Davison et al, TPAMI'07]: " ; if [ -f benchmarks/monoslam ] ; then echo -e "\033[1;32mFound\033[0m" ; else echo -e "\033[1;31mNot found (make monoslam)\033[0m" ; fi
+	@echo -n "  - MonoSLAM [Davison et al, TPAMI'07]: " ; if [ -d benchmarks/monoslam ] ; then echo "\033[1;32mFound\033[0m" ; else echo "\033[1;31mNot found (make monoslam)\033[0m" ; fi
 	@echo    "    repository: https://github.com/hanmekim/SceneLib2"
 	@echo    "    available targets are : monoslam"
 	@echo ""
 
-	@echo -n "  - OKVIS [Leutenegger et al, IJRR'15]: " ; if [ -f benchmarks/okvis ] ; then echo -e "\033[1;32mFound\033[0m" ; else echo -e "\033[1;31mNot found (make okvis)\033[0m" ; fi
+	@echo -n "  - OKVIS [Leutenegger et al, IJRR'15]: " ; if [ -d benchmarks/okvis ] ; then echo "\033[1;32mFound\033[0m" ; else echo "\033[1;31mNot found (make okvis)\033[0m" ; fi
 	@echo    "    repository: https://github.com/ethz-asl/okvis"
 	@echo    "    available targets are : okvis"
 	@echo ""
 
-	@echo -n "  - ORBSLAM2 [Mur-Artal et al, TOR'15 and TOR'17]: " ; if [ -f benchmarks/orbslam2 ] ; then echo -e "\033[1;32mFound\033[0m" ; else echo -e "\033[1;31mNot found (make orbslam2)\033[0m" ; fi
+	@echo -n "  - ORBSLAM2 [Mur-Artal et al, TOR'15 and TOR'17]: " ; if [ -d benchmarks/orbslam2 ] ; then echo "\033[1;32mFound\033[0m" ; else echo "\033[1;31mNot found (make orbslam2)\033[0m" ; fi
 	@echo    "    repository: https://github.com/raulmur/ORB_SLAM2"
 	@echo    "    available targets are : orbslam2"
 	@echo ""
 
-	@echo -n "  - PTAM [Klein et al, ISMAR'07 and ECCV'08]: " ; if [ -f benchmarks/ptam ] ; then echo -e "\033[1;32mFound\033[0m" ; else echo -e "\033[1;31mNot found (make ptam)\033[0m" ; fi
+	@echo -n "  - PTAM [Klein et al, ISMAR'07 and ECCV'08]: " ; if [ -d benchmarks/ptam ] ; then echo "\033[1;32mFound\033[0m" ; else echo "\033[1;31mNot found (make ptam)\033[0m" ; fi
 	@echo    "    repository: https://github.com/Oxford-PTAM/PTAM-GPL"
 	@echo    "    available targets are : ptam"
 	@echo ""
 
-	@echo -n "  - SVO [Forster et al, ICRA'14]: " ; if [ -f benchmarks/svo ] ; then echo -e "\033[1;32mFound\033[0m" ; else echo -e "\033[1;31mNot found (make svo)\033[0m" ; fi
+	@echo -n "  - SVO [Forster et al, ICRA'14]: " ; if [ -d benchmarks/svo ] ; then echo "\033[1;32mFound\033[0m" ; else echo "\033[1;31mNot found (make svo)\033[0m" ; fi
 	@echo    "    repository: https://github.com/uzh-rpg/rpg_svo"
 	@echo    "    available targets are : svo"
 	@echo ""
