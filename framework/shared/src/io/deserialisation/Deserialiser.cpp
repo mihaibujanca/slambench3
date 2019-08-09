@@ -11,10 +11,6 @@
 
 using namespace slambench::io;
 
-Deserialiser::Deserialiser(FILE *file) : _target_file(file) {
-	
-}
-
 FILE *Deserialiser::File() { 
 	return _target_file;
 }

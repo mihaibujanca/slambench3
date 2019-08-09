@@ -17,10 +17,6 @@
 
 using namespace slambench::io;
 
-SLAMFrameDeserialiser::SLAMFrameDeserialiser(FILE* file, SensorCollection& sensors, FrameBufferSource *fb_source) : Deserialiser(file), _sensors(sensors), _fb_source(fb_source) {
-
-}
-
 SLAMFrame* SLAMFrameDeserialiser::GetNextFrame() {
 	DeserialisedFrame *dsf = new DeserialisedFrame(*_fb_source->Next(), File());
 	

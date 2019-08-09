@@ -18,10 +18,6 @@
 
 using namespace slambench::io;
 
-SLAMFileHeaderDeserialiser::SLAMFileHeaderDeserialiser(FILE *file) : Deserialiser(file) {
-	
-}
-
 bool SLAMFileHeaderDeserialiser::Deserialise() {
 	// check magic number
 	SLAMFile::magic_num_t mnum;

@@ -19,10 +19,6 @@
 
 using namespace slambench::io;
 
-SLAMFileDeserialiser::SLAMFileDeserialiser(FILE *file, FrameBufferSource *fb_source) : Deserialiser(file), _fb_source(fb_source) {
-	
-}
-
 bool SLAMFileDeserialiser::Deserialise(SLAMFile &target) {
 	if(!DeserialiseHeader(target)) return false;
 	if(!DeserialiseFrames(target)) return false;

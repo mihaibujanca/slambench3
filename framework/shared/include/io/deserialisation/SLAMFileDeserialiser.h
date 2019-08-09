@@ -22,14 +22,12 @@ namespace slambench {
 		
 		class SLAMFileDeserialiser : public Deserialiser {
 		public:
-			SLAMFileDeserialiser(FILE *file, FrameBufferSource *framebuffer_source);
-			
+			SLAMFileDeserialiser(FILE *file, FrameBufferSource *fb_source) : Deserialiser(file), _fb_source(fb_source) {}
 			bool Deserialise(SLAMFile &target);
 			
 		private:
 			bool DeserialiseHeader(SLAMFile &target);
 			bool DeserialiseFrames(SLAMFile &target);
-			
 			bool DeserialiseFrame(SLAMFile &file, SLAMFrame *&frame);
 			
 			FrameBuffer *GetNextFramebuffer();

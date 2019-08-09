@@ -17,10 +17,6 @@
 
 using namespace slambench::io;
 
-SensorCollectionDeserialiser::SensorCollectionDeserialiser(std::FILE* _file) : Deserialiser(_file) {
-
-}
-
 bool SensorCollectionDeserialiser::Deserialise(SensorCollection& target) {
 	uint32_t sensor_count;
 	Read(&sensor_count, sizeof(sensor_count));

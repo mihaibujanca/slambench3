@@ -16,7 +16,7 @@ namespace slambench {
 	namespace io {
 		class Deserialiser {
 		public:
-			Deserialiser(FILE *target_file);
+			explicit Deserialiser(FILE *file) : _target_file(file) {}
 			
 			FILE *File();
 			

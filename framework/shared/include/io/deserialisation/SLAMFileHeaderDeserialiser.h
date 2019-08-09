@@ -11,7 +11,6 @@
 #define IO_SLAMFILEHEADERDESERIALISER_H
 
 #include "io/deserialisation/Deserialiser.h"
-#
 #include <cstdio>
 #include <cstdint>
 
@@ -20,10 +19,8 @@ namespace slambench {
 		
 		class SLAMFileHeaderDeserialiser : public Deserialiser {
 		public:
-			SLAMFileHeaderDeserialiser(std::FILE *_file);
-			
+			SLAMFileHeaderDeserialiser(std::FILE *file) : Deserialiser(file) {}
 			bool Deserialise();
-			
 		};
 	}
 }
