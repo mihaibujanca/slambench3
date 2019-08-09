@@ -26,9 +26,9 @@ namespace slambench {
 			
 			class MappedFile {
 			public:
-				MappedFile(void *mapped_ptr, size_t size);
-				MappedFile(MappedFile && other);
-				~MappedFile();
+				MappedFile(void *mapped_ptr, size_t size) : ptr_(mapped_ptr), size_(size) {}
+				MappedFile(MappedFile && other) noexcept : ptr_(other.ptr_), size_(other.size_) {}
+				~MappedFile() { if (ptr_) munmap(ptr_, size_); }
 				
 				const void *Get() { return ptr_; }
 				size_t Size() { return size_; }
@@ -43,4 +43,3 @@ namespace slambench {
 }
 
 #endif /* IO_CORE_H */
-

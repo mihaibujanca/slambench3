@@ -7,33 +7,15 @@
 
  */
 
-
-
 #include "io/core/Core.h"
 
 using namespace slambench::io::core;
 
- size_t slambench::io::core::FileSize(FILE *file)
+size_t slambench::io::core::FileSize(FILE *file)
 {
 	struct stat st;
 	fstat(fileno(file), &st);
 	return st.st_size;
-}
-
-MappedFile::MappedFile(void* mapped_ptr, size_t size) : ptr_(mapped_ptr), size_(size)
-{
-}
-
-MappedFile::MappedFile(MappedFile&& other) : ptr_(other.ptr_), size_(other.size_)
-{
-	other.ptr_ = nullptr;
-}
-
-MappedFile::~MappedFile()
-{
-	if (ptr_) {
-		munmap(ptr_, size_);
-	}
 }
 
 MappedFile slambench::io::core::ReadFile(const std::string &filename) 
