@@ -16,24 +16,12 @@
 
 using namespace slambench::io;
 
-InputInterface::~InputInterface() {
-
-}
-
-BasicInputInterface::BasicInputInterface(FrameStream& frames, SensorCollection& sensors) :_frames(frames), _sensors(sensors) {
-
-}
-
 FrameStream& BasicInputInterface::GetFrames() {
 	return _frames;
 }
 
 SensorCollection& BasicInputInterface::GetSensors() {
 	return _sensors;
-}
-
-FileInputInterface::FileInputInterface(SLAMFile& input_file) : _file(input_file), _stream(input_file) {
-
 }
 
 FrameStream& FileInputInterface::GetFrames() {
@@ -61,7 +49,6 @@ FileStreamInputInterface::FileStreamInputInterface(FILE* input_file, FrameBuffer
 		throw std::exception();
 	}
 }
-
 
 FrameStream& FileStreamInputInterface::GetFrames() {
 	return _deserialiser;

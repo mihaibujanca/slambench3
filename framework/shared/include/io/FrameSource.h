@@ -24,7 +24,7 @@ namespace slambench {
 		
 		class FrameStream {
 		public:
-			virtual ~FrameStream();
+			virtual ~FrameStream() = default;
 			
 			virtual SLAMFrame *GetNextFrame() = 0;
 			virtual bool HasNextFrame() = 0;
@@ -32,7 +32,7 @@ namespace slambench {
 		
 		class FrameCollection {
 		public:
-			virtual ~FrameCollection();
+			virtual ~FrameCollection() = default;
 			
 			virtual SLAMFrame *GetFrame(unsigned int index) = 0;
 			virtual unsigned int GetFrameCount() = 0;
@@ -40,7 +40,7 @@ namespace slambench {
 		
 		class FrameCollectionStream : public FrameStream {
 		public:
-			FrameCollectionStream(FrameCollection &base_collection);
+			explicit FrameCollectionStream(FrameCollection &base_collection) :  _collection(base_collection), _index(0) {};
 			
 			SLAMFrame* GetNextFrame() override;
 			bool HasNextFrame() override;
@@ -58,8 +58,8 @@ namespace slambench {
 		public:
 			class GTFrameCollection : public FrameCollection {
 			public:
-				GTFrameCollection(GTBufferingFrameStream &gt_stream);
-				virtual ~GTFrameCollection();
+				explicit GTFrameCollection(GTBufferingFrameStream &gt_stream) : gt_stream_(gt_stream) {};
+				~GTFrameCollection() override = default;
 				
 				unsigned int GetFrameCount() override;
 				SLAMFrame* GetFrame(unsigned int index) override;
@@ -67,8 +67,8 @@ namespace slambench {
 					GTBufferingFrameStream &gt_stream_;
 			};
 			
-			GTBufferingFrameStream(FrameStream &base_stream);
-			virtual ~GTBufferingFrameStream();
+			explicit GTBufferingFrameStream(FrameStream &base_stream);
+			~GTBufferingFrameStream() override = default;
 			
 			SLAMFrame* GetNextFrame() override;
 			bool HasNextFrame() override;
@@ -91,8 +91,12 @@ namespace slambench {
 		 */
 		class RealTimeFrameStream : public FrameStream {
 		public:
-			RealTimeFrameStream(FrameStream *base_stream, double multiplier, bool should_pause);
-			virtual ~RealTimeFrameStream();
+			RealTimeFrameStream(FrameStream *base_stream,
+			                    double multiplier,
+			                    bool should_pause) : base_stream_(base_stream),
+			                                         acceleration_(multiplier),
+			                                         should_pause_(should_pause) {}
+			~RealTimeFrameStream() override = default;
 			
 			SLAMFrame* GetNextFrame() override;
 			bool HasNextFrame() override;

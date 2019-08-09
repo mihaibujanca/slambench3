@@ -14,8 +14,6 @@
 #include "io/sensor/DepthSensor.h"
 
 #include "lodepng.h"
-#include "io/sensor/AccelerometerSensor.h"
-
 #include "io/core/Core.h"
 
 #include <vector>
@@ -27,8 +25,6 @@
 #include <iostream>
 
 using namespace slambench::io;
-
-SLAMFrame::~SLAMFrame() {}
 
 size_t SLAMFrame::GetSize() const {
 	if(FrameSensor->IsVariableSize()) {
@@ -58,8 +54,6 @@ void *SLAMInMemoryFrame::GetData() {
 void SLAMInMemoryFrame::FreeData() {
 	// do nothing
 }
-
-SLAMFileFrame::SLAMFileFrame() : _data(nullptr) {}
 
 void *SLAMFileFrame::GetData() {
 	if(_data != nullptr) return _data;
@@ -302,9 +296,6 @@ void *TxtFileFrame::LoadCameraFile() {
 	return data;
 }
 
-DeserialisedFrame::DeserialisedFrame(FrameBuffer &buffer, FILE *file) : _buffer(buffer), _file(file) {
-	
-}
 
 void DeserialisedFrame::SetOffset(size_t new_offset) {
 	_offset = new_offset;

@@ -18,7 +18,7 @@ namespace slambench {
 		class FrameBufferSource {
 		public:
 			virtual FrameBuffer *Next() = 0;
-			virtual ~FrameBufferSource() {};
+			virtual ~FrameBufferSource() = default;
 		};
 		
 		class SingleFrameBufferSource : public FrameBufferSource {

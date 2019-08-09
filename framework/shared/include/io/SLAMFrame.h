@@ -27,7 +27,7 @@ namespace slambench {
 		
 		class SLAMFrame {
 		public:
-			virtual ~SLAMFrame();
+			virtual ~SLAMFrame() = default;
 		
 			TimeStamp Timestamp;
 			Sensor *FrameSensor;
@@ -47,14 +47,14 @@ namespace slambench {
 		class SLAMInMemoryFrame : public SLAMFrame {
 		public:
 			void *Data;
-		
+
 			void *GetData() override;
 			void FreeData() override;
 		};
 		
 		class SLAMFileFrame : public SLAMFrame {
 		public:
-			SLAMFileFrame();
+			SLAMFileFrame() : ProcessCallback(nullptr), _data(nullptr) {}
 			
 			typedef void (*callback_t)(SLAMFileFrame *, void *);
 			callback_t ProcessCallback;
@@ -72,10 +72,8 @@ namespace slambench {
 		
 		class TxtFileFrame : public SLAMFileFrame {
 		public:
-			
 			pixelformat::EPixelFormat InputPixelFormat;
-			
-			
+
 		protected:
 			void *LoadFile() override;
 			
@@ -94,7 +92,7 @@ namespace slambench {
 		
 		class DeserialisedFrame : public SLAMFrame {
 		public:
-			DeserialisedFrame(FrameBuffer &buffer, FILE *file);
+			DeserialisedFrame(FrameBuffer &buffer, FILE *file) : _buffer(buffer), _file(file), _offset(0) {};
 			
 			void SetOffset(size_t data_offset);
 			

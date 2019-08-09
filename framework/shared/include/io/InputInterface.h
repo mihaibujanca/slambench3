@@ -24,18 +24,17 @@ namespace slambench {
 		
 		class InputInterface {
 		public:
-			virtual ~InputInterface();
-			
+			virtual ~InputInterface() = default;
 			virtual SensorCollection &GetSensors() = 0;
 			virtual FrameStream &GetFrames() = 0;
 		};
 		
 		class BasicInputInterface : public InputInterface {
 		public:
-			BasicInputInterface(FrameStream &frames, SensorCollection &sensors);
-			
+			explicit BasicInputInterface(FrameStream &frames, SensorCollection &sensors) :_frames(frames), _sensors(sensors) {}
 			FrameStream& GetFrames() override;
 			SensorCollection& GetSensors() override;
+
 		private:
 			FrameStream &_frames;
 			SensorCollection &_sensors;
@@ -43,10 +42,10 @@ namespace slambench {
 		
 		class FileInputInterface : public InputInterface {
 		public:
-			FileInputInterface(SLAMFile &input_file);
-			
+			explicit FileInputInterface(SLAMFile &input_file) : _file(input_file), _stream(input_file) {};
 			FrameStream& GetFrames() override;
 			SensorCollection& GetSensors() override;
+
 		private:
 			SLAMFile &_file;
 			FrameCollectionStream _stream;
@@ -55,9 +54,9 @@ namespace slambench {
 		class FileStreamInputInterface : public InputInterface {
 		public:
 			FileStreamInputInterface(FILE* input_file, FrameBufferSource *fb_source);
-			
 			FrameStream &GetFrames() override;
 			SensorCollection &GetSensors() override;
+
 		private:
 			SLAMFrameDeserialiser _deserialiser;
 			SensorCollection _sensors;

@@ -16,18 +16,6 @@
 
 using namespace slambench::io;
 
-FrameCollection::~FrameCollection() {
-
-}
-
-FrameStream::~FrameStream() {
-
-}
-
-FrameCollectionStream::FrameCollectionStream(FrameCollection& base_collection) : _collection(base_collection), _index(0) {
-
-}
-
 SLAMFrame* FrameCollectionStream::GetNextFrame() {
 	if(!HasNextFrame()) {
 		return nullptr;
@@ -37,16 +25,6 @@ SLAMFrame* FrameCollectionStream::GetNextFrame() {
 
 bool FrameCollectionStream::HasNextFrame() {
 	return _index < _collection.GetFrameCount();
-}
-
-GTBufferingFrameStream::GTFrameCollection::GTFrameCollection(GTBufferingFrameStream& gt_stream) : gt_stream_(gt_stream)
-{
-	
-}
-
-GTBufferingFrameStream::GTFrameCollection::~GTFrameCollection()
-{
-
 }
 
 SLAMFrame* GTBufferingFrameStream::GTFrameCollection::GetFrame(unsigned int index)
@@ -62,12 +40,6 @@ unsigned int GTBufferingFrameStream::GTFrameCollection::GetFrameCount()
 GTBufferingFrameStream::GTBufferingFrameStream(FrameStream& base_stream) : base_stream_(base_stream), buffered_frame_(nullptr)
 {
 	fastForward();
-}
-
-
-GTBufferingFrameStream::~GTBufferingFrameStream()
-{
-
 }
 
 SLAMFrame* GTBufferingFrameStream::GetNextFrame()
@@ -113,16 +85,6 @@ void GTBufferingFrameStream::fastForward()
 	}
 	
 	buffered_frame_ = next_frame;
-}
-
-RealTimeFrameStream::RealTimeFrameStream(FrameStream* base_stream, double multiplier, bool should_pause) : base_stream_(base_stream), acceleration_(multiplier), should_pause_(should_pause)
-{
-	
-}
-
-RealTimeFrameStream::~RealTimeFrameStream()
-{
-
 }
 
 bool RealTimeFrameStream::HasNextFrame()
