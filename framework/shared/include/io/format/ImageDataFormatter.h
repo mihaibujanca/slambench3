@@ -20,12 +20,12 @@
 namespace slambench {
 	namespace io {
 		template<pixelformat::EPixelFormat pxl_format> class PixelData {
-			PixelData(void *data);
+			explicit PixelData(void *data);
 		};
 		
 		template<> class PixelData<pixelformat::RGB_III_888> {
 		public:
-			PixelData(const void *data) { 
+			explicit PixelData(const void *data) {
 				const char *cdata = (const char*)data;
 				_r = (uint8_t) cdata[0];
 				_g = (uint8_t) cdata[1];
@@ -48,9 +48,8 @@ namespace slambench {
 		
 		template<> class PixelData<pixelformat::D_F_32> {
 		public:
-			PixelData(const void* data) {
-				const float *fdata = (const float*)data;
-				_d = *fdata;
+			explicit PixelData(const void* data) {
+				_d = *static_cast<const float*>(data);
 			}
 			
 		private:

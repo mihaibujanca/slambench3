@@ -27,7 +27,8 @@ namespace slambench {
 		private:
 			uint8_t _coordsize;
 		public:
-			EventDataFormatter(Sensor *sensor, void *data) : DataFormatter(sensor, data) { _coordsize = ((EventCameraSensor*)sensor)->GetCoordinateSize(); }
+			EventDataFormatter(Sensor *sensor, void *data) : DataFormatter(sensor, data),
+			                                                 _coordsize((EventCameraSensor*)sensor->GetCoordinateSize()) {}
 			
 			EventData Get() const {
 				EventData data;
@@ -75,4 +76,3 @@ namespace slambench {
 }
 
 #endif /* IO_EVENTDATAFORMATTER_H */
-
