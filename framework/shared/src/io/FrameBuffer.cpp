@@ -14,10 +14,6 @@
 
 using namespace slambench::io;
 
-FrameBuffer::FrameBuffer() : _lock(false), _size(0), _data(nullptr) {
-	
-}
-
 FrameBuffer::~FrameBuffer() {
 	// This is dangerous if the frame buffer hasn't been released
 	if(_data) {
@@ -32,8 +28,7 @@ void FrameBuffer::Acquire() {
 }
 
 bool FrameBuffer::TryAcquire() {
-	if(_lock.exchange(true)) return false;
-	return true;
+    return !_lock.exchange(true);
 }
 
 void FrameBuffer::Release() {

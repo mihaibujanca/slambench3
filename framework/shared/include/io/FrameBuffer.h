@@ -18,7 +18,7 @@ namespace slambench {
 	namespace io {
 		class FrameBuffer {
 		public:
-			FrameBuffer();
+			FrameBuffer() : _lock(false), _size(0), _data(nullptr) {}
 			~FrameBuffer();
 		
 			void Acquire();
