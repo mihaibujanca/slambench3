@@ -134,7 +134,7 @@ float parse_float(const std::string &str) {
 }
 
 template<> bool ParseElem<float>(const std::string &str, float &result) {
-	if(str.size() == 0) return false;
+	if(str.empty()) return false;
 	for(auto c : str) {
 		if(!(isdigit(c) || c == '.' || c == 'e' || c == '+')) {
 			return false;
@@ -147,7 +147,7 @@ template<> bool ParseElem<float>(const std::string &str, float &result) {
 }
 
 template<> bool ParseElem<double>(const std::string &str, double &result) {
-	if(str.size() == 0) return false;
+	if(str.empty()) return false;
 	for(auto c : str) {
 		if(!(isdigit(c) || c == '.' || c == 'e' || c == '+')) {
 			return false;
@@ -160,7 +160,7 @@ template<> bool ParseElem<double>(const std::string &str, double &result) {
 }
 
 template<> bool ParseElem<unsigned char>(const std::string &str, unsigned char &result) {
-	if(str.size() == 0) return false;
+	if(str.empty()) return false;
 	for(auto c : str) {
 		if(!isdigit(c)) return false;
 	}
@@ -195,7 +195,7 @@ template <typename DType> void *LoadData(const std::string &filename, int count_
 		throw std::logic_error("Failed to load data file");
 	}
 	
-	DType *data = new DType[pixels * count_per_pxl];
+	auto *data = new DType[pixels * count_per_pxl];
 	std::vector<DType> values = ParseFile<DType>(str);
 	
 	size_t elem_count = count_per_pxl * pixels;
@@ -216,7 +216,7 @@ template <typename DType> void *LoadData(const std::string &filename, int count_
 template<pixelformat::EPixelFormat input_format, pixelformat::EPixelFormat output_format> void* ConvertPixels(void *input, size_t pxl_count);
 
 template<> void *ConvertPixels<pixelformat::D_F_32, pixelformat::D_I_16>(void *input, size_t pxl_count) {
-	float *pxls = (float*)input;
+	float *pxls = static_cast<float*>(input);
 	uint16_t *outpxls = (uint16_t*)malloc(pxl_count * sizeof(uint16_t));
 	
 	for(size_t i = 0; i < pxl_count; ++i) {
@@ -227,7 +227,7 @@ template<> void *ConvertPixels<pixelformat::D_F_32, pixelformat::D_I_16>(void *i
 }
 
 template<> void *ConvertPixels<pixelformat::D_F_64, pixelformat::D_I_16>(void *input, size_t pxl_count) {
-	double *pxls = (double*)input;
+	double *pxls = static_cast<double*>(input);
 	uint16_t *outpxls = (uint16_t*)malloc(pxl_count * sizeof(uint16_t));
 	
 	for(size_t i = 0; i < pxl_count; ++i) {
@@ -261,8 +261,8 @@ void *Convert(void *input, size_t count, pixelformat::EPixelFormat input_format,
 }
 
 void *TxtFileFrame::LoadCameraFile() {
-	CameraSensor *camera = (CameraSensor*)FrameSensor;
-	
+	auto *camera = dynamic_cast<CameraSensor*>(FrameSensor);
+
 	void *data = nullptr;
 	switch(InputPixelFormat) {
 		case pixelformat::G_I_8:
