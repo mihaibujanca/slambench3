@@ -30,10 +30,7 @@ namespace slambench {
 			float GyroscopeSaturation  ;
 			float AcceleratorDriftNoiseDensity ;
 
-
-
-
-			IMUSensor(const Sensor::sensor_name_t &sensor_name);
+			explicit IMUSensor(const Sensor::sensor_name_t &sensor_name) : Sensor(sensor_name, kIMUType) {};
 			size_t GetFrameSize(const SLAMFrame *frame) const override;
 
 		};

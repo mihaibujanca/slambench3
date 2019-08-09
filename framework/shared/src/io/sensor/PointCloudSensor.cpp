@@ -15,11 +15,6 @@ using namespace slambench::io;
 
 const Sensor::sensor_type_t PointCloudSensor::kPointCloudType = "PointCloud";
 
-PointCloudSensor::PointCloudSensor(const sensor_name_t &sensor_name) : Sensor(sensor_name, kPointCloudType)
-{
-
-}
-
 size_t PointCloudSensor::GetFrameSize(const SLAMFrame *frame) const {
 	return frame->GetVariableSize();
 }
@@ -52,4 +47,4 @@ class PCDeserialiser : public SensorDeserialiser {
 	}
 };
 
-static slambench::io::SensorDatabaseRegistration rgb_reg(PointCloudSensor::kPointCloudType, slambench::io::SensorDatabaseEntry(new PCSerialiser(), new PCDeserialiser(), true, true));
+static slambench::io::SensorDatabaseRegistration pcl_reg(PointCloudSensor::kPointCloudType, slambench::io::SensorDatabaseEntry(new PCSerialiser(), new PCDeserialiser(), true, true));

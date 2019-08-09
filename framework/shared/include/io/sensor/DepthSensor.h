@@ -16,7 +16,7 @@ namespace slambench {
 	namespace io {
 		class DepthSensor : public CameraSensor {
 		public:
-			DepthSensor(const Sensor::sensor_name_t &sensor_name);
+			explicit DepthSensor(const Sensor::sensor_name_t &sensor_name);
 			static const sensor_type_t kDepthType;
 			
 			typedef float disparity_params_t[2];

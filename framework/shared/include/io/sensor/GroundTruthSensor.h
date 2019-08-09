@@ -18,7 +18,8 @@ namespace slambench {
 		public:
 			const static sensor_type_t kGroundTruthTrajectoryType;
 			
-			GroundTruthSensor(const Sensor::sensor_name_t &sensor_name);
+			explicit GroundTruthSensor(const Sensor::sensor_name_t &sensor_name) :
+			                                                        Sensor(sensor_name, kGroundTruthTrajectoryType) {};
 			typedef Eigen::Matrix4f pose_t;
 			size_t GetFrameSize(const SLAMFrame *frame) const override;
 

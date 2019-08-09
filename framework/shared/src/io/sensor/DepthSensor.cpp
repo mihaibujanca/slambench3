@@ -21,7 +21,7 @@ using namespace slambench::io;
 const Sensor::sensor_type_t DepthSensor::kDepthType = "Depth";
 
 DepthSensor::DepthSensor(const Sensor::sensor_name_t &sensor_name) : CameraSensor(sensor_name, kDepthType) {
-    this->addParameter(TypedParameter<disparity_params_t>("dip", "disparity-params","Don't know what to say", &(this->DisparityParams),NULL));
+    this->addParameter(TypedParameter<disparity_params_t>("dip", "disparity-params","Disparity parameters", &(this->DisparityParams),nullptr));
 }
 
 void DepthSensor::CopyDisparityParams(const disparity_params_t &other) {
@@ -37,7 +37,7 @@ void DepthSensor::CopyDisparityParams(const DepthSensor* other) {
 
 class DepthSensorSerialiser : public SensorSerialiser {
 	bool SerialiseSensorSpecific(Serialiser* serialiser, const Sensor* s) override {
-		DepthSensor *sensor = (DepthSensor*)s;
+		auto* sensor = dynamic_cast<const DepthSensor*>(s);
 		
 		assert(sensor->GetType() == DepthSensor::kDepthType);
 		
@@ -67,7 +67,7 @@ class DepthSensorDeserialiser : public SensorDeserialiser {
 	}
 
 	bool DeserialiseSensorSpecific(Deserialiser* deserialiser, Sensor* s) override {
-		DepthSensor *sensor = (DepthSensor*)s;
+		auto* sensor = dynamic_cast<DepthSensor*>(s);
 		
 		assert(sensor->GetType() == DepthSensor::kDepthType);
 		

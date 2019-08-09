@@ -28,10 +28,6 @@ const Sensor::sensor_name_t &Sensor::GetName() const {
 	return sensor_name_;
 }
 
-
-Sensor::~Sensor() {
-}
-
 void Sensor::CopyPose(const pose_t &other) {
 	Pose = other;
 }

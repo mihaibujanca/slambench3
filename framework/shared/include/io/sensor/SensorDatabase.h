@@ -19,7 +19,13 @@ namespace slambench {
 		
 		class SensorDatabaseEntry {
 		public:
-			SensorDatabaseEntry(SensorSerialiser *s, SensorDeserialiser *ds, bool ground_truth = false, bool variable_size = false);
+			SensorDatabaseEntry(SensorSerialiser *s,
+			                    SensorDeserialiser *ds,
+			                    bool ground_truth = false,
+			                    bool variable_size = false) : serialiser_(s),
+			                                                  deserialiser_(ds),
+			                                                  is_ground_truth_(ground_truth),
+			                                                  is_variable_size_(variable_size) {};
 			
 			SensorSerialiser *GetSerialiser() const { return serialiser_; }
 			SensorDeserialiser *GetDeserialiser() const {return deserialiser_; }

@@ -21,14 +21,14 @@ using namespace slambench::io;
 const Sensor::sensor_type_t CameraSensor::kCameraType = "Camera";
 
 CameraSensor::CameraSensor(const Sensor::sensor_name_t  &name,  const Sensor::sensor_type_t &sensor_type) :
-		Sensor(name, sensor_type) ,
-		Width (0),
-		Height (0),
-		FrameFormat (slambench::io::frameformat::UNKNOWN),
+		Sensor(name, sensor_type),
+		Width(0),
+		Height(0),
+		FrameFormat(slambench::io::frameformat::UNKNOWN),
 		PixelFormat(slambench::io::pixelformat::UNKNOWN),
 		DistortionType(NoDistortion)
 {
-	this->addParameter(TypedParameter<intrinsics_t>("ip", "intrinsics-parameters","Focal length and Principal Point Offset : fx,fy,cx,cy", &(this->Intrinsics),NULL));
+	this->addParameter(TypedParameter<intrinsics_t>("ip", "intrinsics-parameters","Focal length and Principal Point Offset : fx,fy,cx,cy", &(this->Intrinsics),nullptr));
 }
 
 size_t CameraSensor::GetFrameSize(const SLAMFrame *frame) const {
@@ -54,7 +54,7 @@ void CameraSensor::CopyIntrinsics(const CameraSensor* other) {
 
 class CameraSensorSerialiser : public SensorSerialiser {
 	bool SerialiseSensorSpecific(Serialiser* serialiser, const Sensor* s) override {
-		CameraSensor *sensor = (CameraSensor*)s;
+		auto* sensor = dynamic_cast<const CameraSensor*>(s);
 		
 		serialiser->Write(&sensor->FrameFormat, sizeof(sensor->FrameFormat));
 		serialiser->Write(&sensor->PixelFormat, sizeof(sensor->PixelFormat));
@@ -80,7 +80,7 @@ class CameraSensorDeserialiser : public SensorDeserialiser {
 	}
 
 	bool DeserialiseSensorSpecific(Deserialiser* deserialiser, Sensor* s) override {
-		CameraSensor *sensor = (CameraSensor*)s;
+		auto* sensor = dynamic_cast<CameraSensor*>(s);
 		
 		assert(sensor->GetType() == CameraSensor::kCameraType);
 		

@@ -17,8 +17,8 @@ namespace slambench {
 		class AccelerometerSensor : public Sensor {
 		public:
 			const static sensor_type_t kAccType;
-			
-			AccelerometerSensor(const sensor_name_t &sensor_name);
+
+			explicit AccelerometerSensor(const sensor_name_t &sensor_name) : Sensor(sensor_name, kAccType) {}
 			size_t GetFrameSize(const SLAMFrame *frame) const override;
 
 		};

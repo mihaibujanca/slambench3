@@ -45,7 +45,6 @@ namespace slambench {
 			container_t _container;
 		
 		};
-		
 	}
 }
 

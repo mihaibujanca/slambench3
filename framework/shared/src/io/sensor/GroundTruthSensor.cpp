@@ -15,9 +15,6 @@ using namespace slambench::io;
 
 const Sensor::sensor_type_t GroundTruthSensor::kGroundTruthTrajectoryType = "GroundTruthTrajectory";
 
-GroundTruthSensor::GroundTruthSensor(const Sensor::sensor_name_t &sensor_name) : Sensor(sensor_name, kGroundTruthTrajectoryType) {
-}
-
 size_t GroundTruthSensor::GetFrameSize(const SLAMFrame *frame) const {
 	(void)frame;
 	return sizeof(pose_t);

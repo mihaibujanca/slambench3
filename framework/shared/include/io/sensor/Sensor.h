@@ -28,7 +28,7 @@ namespace slambench {
 			typedef uint8_t sensor_base_t;
 			
 			Sensor(const sensor_name_t &sensor_name, const sensor_type_t &sensor_type);
-			virtual ~Sensor();
+			~Sensor() override = default;
 		
 			std::string Description;
 			uint8_t Index;

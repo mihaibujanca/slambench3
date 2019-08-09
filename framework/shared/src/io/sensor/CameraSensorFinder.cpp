@@ -28,10 +28,10 @@ std::vector<CameraSensor*> CameraSensorFinder::Find(const SensorCollection& sens
 		// this is still a nightmare but at least it only happens here
 		if(sensor->GetType() == CameraSensor::kCameraType || sensor->GetType() == DepthSensor::kDepthType) {
 			
-			CameraSensor *cam = static_cast<CameraSensor*>(sensor);
+			auto* cam = static_cast<CameraSensor*>(sensor);
 			
 			bool success = true;
-			for(auto filter : filters) {
+			for(const auto &filter : filters) {
 				success &= TestFilter(cam, filter);
 			}
 			if(success) {

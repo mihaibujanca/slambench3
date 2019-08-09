@@ -16,7 +16,7 @@ namespace slambench {
 	namespace io {
 		class EventCameraSensor : public Sensor {
 		public:
-			EventCameraSensor(const sensor_name_t &sensor_name);
+			explicit EventCameraSensor(const sensor_name_t &sensor_name) : Sensor(sensor_name, kEventCameraType) {};
 			static const sensor_type_t kEventCameraType;
 			
 			int Width;

@@ -9,8 +9,6 @@
 
 #include "io/sensor/SensorDatabase.h"
 
-#include <cassert>
-
 using namespace slambench::io;
 
 SensorDatabase *SensorDatabase::singleton_;
@@ -21,11 +19,6 @@ SensorDatabase* SensorDatabase::Singleton()
 		singleton_ = new SensorDatabase();
 	}
 	return singleton_;
-}
-
-SensorDatabaseEntry::SensorDatabaseEntry(SensorSerialiser* s, SensorDeserialiser* ds, bool ground_truth, bool variable_size) : serialiser_(s), deserialiser_(ds), is_ground_truth_(ground_truth), is_variable_size_(variable_size)
-{
-	
 }
 
 SensorDatabaseEntry& SensorDatabase::Get(const Sensor::sensor_type_t& sensor_name)

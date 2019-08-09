@@ -18,7 +18,7 @@ namespace slambench {
 		public:
 			static const sensor_type_t kPointCloudType;
 			
-			PointCloudSensor(const sensor_name_t &sensor_name);
+			PointCloudSensor(const sensor_name_t &sensor_name) : Sensor(sensor_name, kPointCloudType) {};
 			size_t GetFrameSize(const SLAMFrame *frame) const override;
 		};
 	}

@@ -14,7 +14,6 @@
 #include "io/FrameFormat.h"
 #include "io/PixelFormat.h"
 
-
 namespace slambench {
 	namespace io {
 		class CameraSensor : public Sensor {
@@ -31,7 +30,7 @@ namespace slambench {
 			typedef float distortion_coefficients_t[5];
 
 			const static sensor_type_t kCameraType;
-			CameraSensor(const sensor_name_t &name, const sensor_type_t &type = kCameraType);
+			explicit CameraSensor(const sensor_name_t &name, const sensor_type_t &type = kCameraType);
 			
 			// Resolution
 			uint32_t Width;

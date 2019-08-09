@@ -16,10 +16,6 @@ using namespace slambench::io;
 
 const Sensor::sensor_type_t EventCameraSensor::kEventCameraType = "EventCamera";
 
-EventCameraSensor::EventCameraSensor(const sensor_name_t &sensor_name) : Sensor(sensor_name, kEventCameraType) {
-
-}
-
 size_t EventCameraSensor::GetCoordinateSize() const {
 	if(Width <= UINT8_MAX && Height <= UINT8_MAX) return 1;
 	if(Width <= UINT16_MAX && Height <= UINT16_MAX) return 2;
@@ -38,9 +34,7 @@ class EventCameraSensorSerialiser : public SensorSerialiser {
 		(void)sensor;
 		return false;
 	}
-
 };
-
 
 class EventCameraSensorDeserialiser : public SensorDeserialiser {
 	bool InstantiateSensor(const Sensor::sensor_name_t &sensor_name, const Sensor::sensor_type_t &type, Sensor** s) override {
@@ -54,8 +48,6 @@ class EventCameraSensorDeserialiser : public SensorDeserialiser {
 		(void)s;
 		return false;
 	}
-
-
 };
 
 static slambench::io::SensorDatabaseRegistration evcam_reg(EventCameraSensor::kEventCameraType, slambench::io::SensorDatabaseEntry(new EventCameraSensorSerialiser(), new EventCameraSensorDeserialiser(), false, false));

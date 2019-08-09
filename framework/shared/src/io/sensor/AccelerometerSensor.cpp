@@ -15,9 +15,6 @@ using namespace slambench::io;
 
 const Sensor::sensor_type_t AccelerometerSensor::kAccType = "Accelerometer";
 
-AccelerometerSensor::AccelerometerSensor(const sensor_name_t &sensor_name) : Sensor(sensor_name, kAccType) {
-
-}
 size_t AccelerometerSensor::GetFrameSize(const SLAMFrame *frame) const  {
 	(void)frame;
 	return 3 * sizeof(float);

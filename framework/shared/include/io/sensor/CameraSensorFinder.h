@@ -41,4 +41,3 @@ namespace slambench {
 }
 
 #endif /* IO_CAMERASENSORFINDER_H */
-
