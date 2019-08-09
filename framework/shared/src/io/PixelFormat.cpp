@@ -27,7 +27,7 @@ static std::map<std::string, pixelformat::EPixelFormat> formats = {
 static std::map<pixelformat::EPixelFormat, std::string> reverse_formats_;
 std::map<pixelformat::EPixelFormat, std::string> &GetReverseFormats() {
 	if(reverse_formats_.empty()) {
-		for(auto i : formats) {
+		for(const auto &i : formats) {
 			reverse_formats_[i.second] = i.first;
 		}
 	}
@@ -81,21 +81,10 @@ size_t pixelformat::GetPixelSize(pixelformat::EPixelFormat format) {
 
 bool pixelformat::IsRGB(pixelformat::EPixelFormat format) {
 	using namespace pixelformat;
-	switch(format) {
-		case RGB_III_888:
-		case RGBA_IIII_8888:
-			return true;
-		default:
-			return false;
-	}
+	return format == RGB_III_888 || format == RGBA_IIII_8888;
 }
 
 bool pixelformat::IsGrey(pixelformat::EPixelFormat format) {
 	using namespace pixelformat;
-	switch(format) {
-		case G_I_8:
-			return true;
-		default:
-			return false;
-	}
+	return format == G_I_8;
 }
