@@ -30,4 +30,3 @@ namespace slambench {
 }
 
 #endif /* SENSORCOLLECTIONDESERIALISER_H */
-

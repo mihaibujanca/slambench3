@@ -10,10 +10,6 @@
 #include "io/deserialisation/SLAMFileHeaderDeserialiser.h"
 #include "io/SLAMFile.h"
 #include "io/sensor/Sensor.h"
-#include "io/SensorType.h"
-#include "io/sensor/SensorDatabase.h"
-#include <cassert>
-#include "io/sensor/GroundTruthSensor.h"
 #include "io/deserialisation/SensorCollectionDeserialiser.h"
 
 using namespace slambench::io;

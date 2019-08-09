@@ -15,28 +15,21 @@
 #include "io/FrameBufferSource.h"
 #include "io/SLAMFile.h"
 #include "io/SLAMFrame.h"
-#include "io/sensor/Sensor.h"
 
 using namespace slambench::io;
 
 bool SLAMFileDeserialiser::Deserialise(SLAMFile &target) {
-	if(!DeserialiseHeader(target)) return false;
-	if(!DeserialiseFrames(target)) return false;
-	return true;
+    return DeserialiseHeader(target) && DeserialiseFrames(target);
 }
 
 bool SLAMFileDeserialiser::DeserialiseHeader(SLAMFile &target) {
-	SLAMFileHeaderDeserialiser d(File());
-	if(!d.Deserialise()) {
+	SLAMFileHeaderDeserialiser headerDeserialiser(File());
+	if(!headerDeserialiser.Deserialise()) {
 		return false;
 	}
 	
 	SensorCollectionDeserialiser sensor_deserialiser(File());
-	if(!sensor_deserialiser.Deserialise(target.Sensors)) {
-		return false;
-	}
-	
-	return true;
+    return sensor_deserialiser.Deserialise(target.Sensors);
 }
 
 bool SLAMFileDeserialiser::DeserialiseFrames(SLAMFile &target) {
@@ -50,7 +43,7 @@ bool SLAMFileDeserialiser::DeserialiseFrames(SLAMFile &target) {
 }
 
 bool SLAMFileDeserialiser::DeserialiseFrame(SLAMFile &file, SLAMFrame *&target) {
-	DeserialisedFrame *dsf = new DeserialisedFrame(*GetNextFramebuffer(), File());
+	auto* dsf = new DeserialisedFrame(*GetNextFramebuffer(), File());
 	
 	if(!Read(&dsf->Timestamp, sizeof(dsf->Timestamp))) {
 		delete dsf;

@@ -13,12 +13,11 @@
 #include "io/SLAMFrame.h"
 #include "io/sensor/SensorCollection.h"
 #include "io/sensor/Sensor.h"
-#include "io/deserialisation/SLAMFileHeaderDeserialiser.h"
 
 using namespace slambench::io;
 
 SLAMFrame* SLAMFrameDeserialiser::GetNextFrame() {
-	DeserialisedFrame *dsf = new DeserialisedFrame(*_fb_source->Next(), File());
+	auto* dsf = new DeserialisedFrame(*_fb_source->Next(), File());
 	
 	if(!Read(&dsf->Timestamp, sizeof(dsf->Timestamp))) {
 		delete dsf;
