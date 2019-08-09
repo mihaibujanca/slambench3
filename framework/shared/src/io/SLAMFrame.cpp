@@ -368,39 +368,48 @@ void* ImageFileFrame::LoadPbm() {
 
 
 void* ImageFileFrame::LoadPng() {
-	Sensor *sensor = nullptr;
-	
 	auto &type = FrameSensor->GetType();
-	if(type == CameraSensor::kCameraType || type == DepthSensor::kDepthType) {
-		sensor = (CameraSensor*)FrameSensor;
-	} else {
+    uint32_t camera_width, camera_height;
+    pixelformat::EPixelFormat pixel_format;
+	if(type == CameraSensor::kCameraType) {
+		auto *sensor = dynamic_cast<CameraSensor*>(FrameSensor);
+        if(sensor == nullptr) {
+            throw std::logic_error("FrameSensor cannot be cast to CameraSensor!");
+        }
+
+        camera_width = sensor->Width;
+        camera_height = sensor->Height;
+        pixel_format = sensor->PixelFormat;
+	}
+	if (type == DepthSensor::kDepthType) {
+        auto *sensor = dynamic_cast<DepthSensor*>(FrameSensor);
+        if(sensor == nullptr) {
+            throw std::logic_error("FrameSensor cannot be cast to CameraSensor!");
+        }
+
+        camera_width = sensor->Width;
+        camera_height = sensor->Height;
+        pixel_format = sensor->PixelFormat;
+    }
+	else {
 		std::cerr << "Sensor type is " << FrameSensor->GetType() << std::endl;
 		throw std::logic_error("Unrecognized sensor type");
 	}
-	
-	// BUG! A DepthSensor is not a CameraSensor!!!!!!!
-	//CameraSensor *camera = dynamic_cast<CameraSensor*>(sensor);
-	CameraSensor *camera = (CameraSensor*)(sensor);
-	if(camera == nullptr) {
-		throw std::logic_error("Cannot instantiate an image for something which isn't a camera");
-	}
-	
+
 	std::vector<unsigned char> pixels;
-	unsigned width, height;
+	unsigned int width, height;
 	
 	auto mappedfile = core::ReadFile(Filename);
-	
-	
 	char *outdata;
 
-	switch(camera->PixelFormat) {
+	switch(pixel_format) {
 
 		// Generic case when reading RGB from a PNG file
 		case pixelformat::RGB_III_888: {
 			if (lodepng::decode(pixels, width, height, (const unsigned char*)mappedfile.Get(), mappedfile.Size(), LCT_RGB, 8)) {
 				throw std::logic_error("Failed to decode png");
 			}
-			if(width != camera->Width || height != camera->Height) {
+			if(width != camera_width || height != camera_height) {
 				throw std::logic_error("PNG width does not match sensor width");
 			}
 			if(pixels.size() != FrameSensor->GetFrameSize(this)) {
@@ -418,13 +427,13 @@ void* ImageFileFrame::LoadPng() {
 			if (lodepng::decode(pixels, width, height, (const unsigned char*)mappedfile.Get(), mappedfile.Size(), LCT_RGB, 8)) {
 				throw std::logic_error("Failed to decode png");
 			}
-			if(width != camera->Width || height != camera->Height) {
+			if(width != camera_width || height != camera_height) {
 				throw std::logic_error("PNG width does not match sensor width");
 			}
 			outdata = (char*)malloc(FrameSensor->GetFrameSize(this));
 
 			// convert rgb to greyscale
-			for(size_t idx = 0; idx < camera->Width * camera->Height; ++idx) {
+			for(size_t idx = 0; idx < camera_width * camera_height; ++idx) {
 				uint32_t total = pixels[3*idx] + pixels[(3*idx) + 1] + pixels[(3*idx) + 2];
 				total /= 3;
 				outdata[idx] = total;
@@ -442,7 +451,7 @@ void* ImageFileFrame::LoadPng() {
 					throw std::logic_error("Failed to decode png");
 			}
 
-			if(width != camera->Width || height != camera->Height) {
+			if(width != camera_width || height != camera_height) {
 				throw std::logic_error("PNG width does not match sensor width");
 			}
 			
@@ -464,19 +473,16 @@ void* ImageFileFrame::LoadPng() {
 					((uint16_t*)outdata)[k++] = r / 5;
 				}
 			}
-
-
 			break;
 		}
 		default:  {
-			std::cerr << "Pixel format is " << camera->PixelFormat << std::endl;
+			std::cerr << "Pixel format is " << pixel_format << std::endl;
 			throw std::logic_error("Unsupported pixel format");
-			break;
 		}
 	}
 
 	 if (outdata == nullptr) {
-		 throw std::logic_error("Should never happend");
+		 throw std::logic_error("Should never happen");
 	 }
 
 	return outdata;
