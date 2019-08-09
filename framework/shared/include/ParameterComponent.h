@@ -45,13 +45,8 @@ public:
 		T * param_ptr = new T (p);
 		this->_arguments.push_back(param_ptr);
 		param_ptr->resetValue();
-
-
 	}
 
-
 };
-
-
 
 #endif

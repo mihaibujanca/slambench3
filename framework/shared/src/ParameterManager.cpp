@@ -88,7 +88,6 @@ bool ParameterManager::ReadArgumentsOrQuit(unsigned int argc, const char* const*
 	return true;
 }
 
-
 bool ParameterManager::ReadArguments(unsigned int argc, const char* const* const argv, ParameterComponent *callback_data)
 {
 	std::map<std::string, Parameter*> params_long, params_short;
