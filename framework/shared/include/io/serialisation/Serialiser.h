@@ -16,7 +16,7 @@ namespace slambench {
 	namespace io {
 		class Serialiser {
 		public:
-			Serialiser(FILE *target_file);
+			explicit Serialiser(FILE *target_file) : _file(target_file) {}
 			bool Write(const void *data, size_t size);
 		protected:
 			FILE *File();

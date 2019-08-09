@@ -20,7 +20,7 @@ namespace slambench {
 		
 		class SLAMFileSerialiser : public Serialiser {
 		public:
-			SLAMFileSerialiser(FILE *target);
+			SLAMFileSerialiser(FILE *target) : Serialiser(target), FrameCallback(nullptr) {}
 		
 			bool Serialise(SLAMFile &file);
 		

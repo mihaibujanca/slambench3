@@ -11,11 +11,7 @@
 
 using namespace slambench::io;
 
-Serialiser::Serialiser(FILE *target_file) : _file(target_file) {
-
-}
-
-FILE *Serialiser::File() { 
+FILE *Serialiser::File() {
 	return _file; 
 }
 

@@ -22,8 +22,7 @@ namespace slambench {
 		class SLAMFrameSerialiser : public Serialiser {
 			
 		public:
-			SLAMFrameSerialiser(FILE *target);
-			
+			explicit SLAMFrameSerialiser(FILE *target) : Serialiser(target) {}
 			bool Serialise(SLAMFrame &frame);
 			
 		};

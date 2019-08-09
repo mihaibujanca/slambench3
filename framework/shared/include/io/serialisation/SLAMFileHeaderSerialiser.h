@@ -19,7 +19,7 @@ namespace slambench {
 		
 		class SLAMFileHeaderSerialiser : public Serialiser {
 		public:
-			SLAMFileHeaderSerialiser(FILE *target);
+			explicit SLAMFileHeaderSerialiser(FILE *file) : Serialiser(file) {}
 		
 			bool Serialise(const SLAMFile &file);
 		

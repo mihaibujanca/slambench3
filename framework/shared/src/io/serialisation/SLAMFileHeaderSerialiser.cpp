@@ -14,10 +14,6 @@
 
 using namespace slambench::io;
 
-SLAMFileHeaderSerialiser::SLAMFileHeaderSerialiser(FILE *file) : Serialiser(file) {
-	
-}
-
 bool SLAMFileHeaderSerialiser::Serialise(const SLAMFile &file) {
 	if(!SerialiseHeader(file)) return false;
 	
@@ -44,9 +40,7 @@ bool SLAMFileHeaderSerialiser::SerialiseHeader(const SLAMFile &file) {
 }
 
 bool SLAMFileHeaderSerialiser::SerialiseSensor(const Sensor &sensor) {
-	if(!SensorDatabase::Singleton()->Get(sensor.GetType()).GetSerialiser()->Serialise(this, &sensor)) return false;
-	
-	return true;
+    return SensorDatabase::Singleton()->Get(sensor.GetType()).GetSerialiser()->Serialise(this, &sensor);
 }
 
 

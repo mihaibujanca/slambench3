@@ -14,10 +14,6 @@
 
 using namespace slambench::io;
 
-SLAMFrameSerialiser::SLAMFrameSerialiser(FILE *target) : Serialiser(target) {
-	
-}
-
 bool SLAMFrameSerialiser::Serialise(SLAMFrame &frame) {
 	void *frame_data = frame.GetData();
 	if(frame_data == nullptr) {

@@ -17,14 +17,8 @@
 
 using namespace slambench::io;
 
-SLAMFileSerialiser::SLAMFileSerialiser(FILE *target) : Serialiser(target), FrameCallback(nullptr) {
-	
-}
-
 bool SLAMFileSerialiser::Serialise(SLAMFile &file) {
-	if(!SerialiseHeader(file)) return false;
-	if(!SerialiseFrames(file)) return false;
-	return true;
+    return SerialiseHeader(file) && SerialiseFrames(file);
 }
 
 bool SLAMFileSerialiser::SerialiseHeader(const SLAMFile &file) {
