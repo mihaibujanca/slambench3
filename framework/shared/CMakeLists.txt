@@ -139,9 +139,8 @@ add_library(slambench-io
 	src/io/deserialisation/SLAMFileHeaderDeserialiser.cpp
         src/io/deserialisation/SLAMFrameDeserialiser.cpp
         src/io/deserialisation/SensorCollectionDeserialiser.cpp
-	
-	src/io/format/DataFormatter.cpp
-	src/io/format/PointCloud.cpp
+
+        src/io/format/PointCloud.cpp
 	src/io/serialisation/Serialiser.cpp
 	src/io/serialisation/SLAMFileHeaderSerialiser.cpp
 	src/io/serialisation/SLAMFileSerialiser.cpp
