@@ -7,8 +7,6 @@
 
  */
 
-
-
 #include "ColumnWriter.h"
 
 #include "metrics/Metric.h"
@@ -16,19 +14,13 @@
 #include "values/ValueInterface.h"
 #include "values/ValuePrinter.h"
 
-
 using namespace slambench;
-
-ColumnInterface::~ColumnInterface()
-{
-
-}
 
 std::string LibColumnInterface::GetHeaderPrefix() const
 {
 	std::string libname = GetLib()->getName();
-	if(libname != "") {
-		if (libname.find("-") != libname.npos) {
+	if(!libname.empty()) {
+		if (libname.find('-') != libname.npos) {
 			throw std::logic_error("This library name contains an illegal character '-' !" );
 		}
 		libname = libname + "-";
@@ -46,11 +38,6 @@ ValueLibColumnInterface::ValueLibColumnInterface(SLAMBenchLibraryHelper *lib, me
 	
 }
 
-ValueLibColumnInterface::~ValueLibColumnInterface()
-{
-
-}
-
 void ValueLibColumnInterface::Write(std::ostream& str)
 {
 	values::ValuePrinter printer(str);
@@ -65,16 +52,6 @@ void ValueLibColumnInterface::Write(std::ostream& str)
 void ValueLibColumnInterface::WriteHeader(std::ostream& str) const
 {
 	str << GetHeaderPrefix() << name_;
-}
-
-CollectionValueLibColumnInterface::CollectionValueLibColumnInterface(SLAMBenchLibraryHelper* lib, metrics::Metric* metric, metrics::Phase* phase) : ValueLibColumnInterface(lib,metric, phase)
-{
-
-}
-
-CollectionValueLibColumnInterface::CollectionValueLibColumnInterface(SLAMBenchLibraryHelper* lib, outputs::BaseOutput* output) : ValueLibColumnInterface(lib, output)
-{
-
 }
 
 void CollectionValueLibColumnInterface::WriteHeader(std::ostream& str) const
@@ -131,22 +108,6 @@ void CollectionValueLibColumnInterface::WriteInvalid(std::ostream& str)
 	}
 }
 
-
-LibColumnInterface::~LibColumnInterface()
-{
-
-}
-
-OutputTimestampColumnInterface::OutputTimestampColumnInterface(outputs::BaseOutput* output) : output_(output)
-{
-
-}
-
-OutputTimestampColumnInterface::~OutputTimestampColumnInterface()
-{
-
-}
-
 void OutputTimestampColumnInterface::Write(std::ostream& str)
 {
 	TimeStamp ts = output_->GetMostRecentValue().first;
@@ -160,11 +121,6 @@ void OutputTimestampColumnInterface::WriteHeader(std::ostream& str) const
 	str << "Timestamp";
 }
 
-RowNumberColumn::RowNumberColumn() : counter_(1)
-{
-	
-}
-
 void RowNumberColumn::Write(std::ostream& str)
 {
 	str << counter_;
@@ -174,12 +130,6 @@ void RowNumberColumn::Write(std::ostream& str)
 void RowNumberColumn::WriteHeader(std::ostream& str) const
 {
 	str << "Frame Number";
-}
-
-
-ColumnWriter::ColumnWriter(std::ostream& str, const std::string &separator) : str_(str), separator_(separator)
-{
-
 }
 
 void ColumnWriter::AddColumn(ColumnInterface* interface)
