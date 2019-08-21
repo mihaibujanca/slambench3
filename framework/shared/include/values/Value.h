@@ -141,6 +141,8 @@ namespace slambench {
 		public:
 			PoseValue(const Eigen::Matrix4f &pose) : Value(VT_POSE), pose_(pose) {}
 			const Eigen::Matrix4f &GetValue() const { return pose_; }
+			Eigen::Vector3f GetTranslation() const { return pose_.block<3,1>(0,3);	}
+			Eigen::Matrix3f GetRotation() const	{ return pose_.block<3,3>(0,0);}
 		private:
 			Eigen::Matrix4f pose_;
 		};

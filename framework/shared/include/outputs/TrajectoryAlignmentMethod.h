@@ -34,6 +34,12 @@ namespace slambench {
 			virtual Eigen::Matrix4f operator()(const trajectory_t &ground_truth, const trajectory_t &trajectory) override;
 		};
 		
+
+		class UmeyamaTrajectoryAlignmentMethod : public TrajectoryAlignmentMethod {
+		public:
+		    Eigen::Matrix4f operator()(const trajectory_t &ground_truth, const trajectory_t &trajectory) override;
+		};
+
 		class NewTrajectoryAlignmentMethod : public TrajectoryAlignmentMethod {
 		public:
 			virtual Eigen::Matrix4f operator()(const trajectory_t &ground_truth, const trajectory_t &trajectory) override;

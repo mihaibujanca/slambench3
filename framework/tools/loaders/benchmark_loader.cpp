@@ -30,15 +30,12 @@ TypedParameter<std::string> alignment_type_parameter("a",     "alignment-techniq
 
 int main(int argc, char * argv[])
 {
-
 	try {
-
 		auto config = new SLAMBenchConfiguration();
 
 		//***************************************************************************************
 		// Start the argument processing
 		//***************************************************************************************
-
 		config->addParameter(file_output_parameter);
 		config->GetParameterManager().ReadArgumentsOrQuit(argc, argv, config);
 
@@ -47,15 +44,10 @@ int main(int argc, char * argv[])
 		//***************************************************************************************
 
 
-
-
 		//***************************************************************************************
-		// We initialise the configuration, means to retrieve groundtruth and set the alignement
+		// Initialise the configuration, i.e retrieve ground truth and set the alignment
 		//***************************************************************************************
-
 		config->InitGroundtruth(false);
-
-		// get GT trajectory
 		auto gt_traj = config->GetGroundTruth().GetMainOutput(slambench::values::VT_POSE);
 
 		slambench::outputs::TrajectoryAlignmentMethod *alignment_method;
@@ -69,14 +61,12 @@ int main(int argc, char * argv[])
 		}
 
 		//***************************************************************************************
-		// We prepare the logging and create the global metrics
+		// Prepare logging and create the global metrics
 		//***************************************************************************************
 
 		config->start_statistics();
 		slambench::ColumnWriter cw (config->get_log_stream(), "\t");
 		cw.AddColumn(new slambench::RowNumberColumn());
-
-
 
 		auto memory_metric   = new slambench::metrics::MemoryMetric();
 		auto duration_metric = new slambench::metrics::DurationMetric();
@@ -87,11 +77,9 @@ int main(int argc, char * argv[])
 		// TODO: if pose and map were by default we could init the algo much later,
 		//       thus move memory metric later
 		//***************************************************************************************
-
 		config->InitAlgorithms();
 
 		bool have_timestamp = false;
-
 		for(SLAMBenchLibraryHelper *lib : config->GetLoadedLibs()) {
 			lib->gt_traj = config->GetGroundTruth().GetMainOutput(slambench::values::VT_POSE);
 			// retrieve the trajectory of the lib
@@ -164,7 +152,6 @@ int main(int argc, char * argv[])
 
 		}
 
-
 		config->AddFrameCallback([&cw]{cw.PrintRow();});
 		cw.PrintHeader();
 
@@ -175,11 +162,8 @@ int main(int argc, char * argv[])
 		SLAMBenchConfiguration::compute_loop_algorithm (config,nullptr,nullptr);
 
 		//***************************************************************************************
-		// End of experiment, we output the map
+		// End of experiment, save to file
 		//***************************************************************************************
-
-
-
 		if(!output_filename.empty()) {
 		    if(config->GetLoadedLibs().size() > 1) {
                 std::cerr << "Can only write outputs to file when there is only one lib loaded" << std::endl;
