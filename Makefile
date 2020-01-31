@@ -442,6 +442,8 @@ bundlefusion:
 	git clone   https://github.com/Paul92/BundleFusion.git  benchmarks/bundlefusion/src/original
 	@echo "cmake_minimum_required(VERSION 2.8)"   > benchmarks/bundlefusion/CMakeLists.txt
 	@echo "explore_implementations ( $@ src/* )"     >> benchmarks/$@/CMakeLists.txt
+	cd benchmarks/bundlefusion/src/original; git submodule init && git submodule update
+	cd benchmarks/bundlefusion/src/original/external/mLib; git apply ../../mlibPatch.patch
 
 .PHONY: efusion infinitam kfusion lsdslam monoslam okvis orbslam2 ptam svo flame bundlefusion
 algorithms : efusion infinitam kfusion lsdslam monoslam okvis orbslam2 ptam svo flame bundlefusion
