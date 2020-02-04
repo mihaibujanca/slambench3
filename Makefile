@@ -424,9 +424,23 @@ flame:
 	@echo "cmake_minimum_required(VERSION 2.8)"      > benchmarks/flame/src/CMakeLists.txt
 	@echo "explore_implementations ( $@ src/* )"     >> benchmarks/$@/CMakeLists.txt
 
+open_vins:
+	@echo "================================================================================================================="
+	@echo    "  - OpenVINS [Geneva et al. IROS'19]: "
+	@echo    "    repository: https://github.com/rpng/open_vins"
+	@echo    "    Used repository: https://github.com/mihaibujanca/open_vins"
+	@echo "================================================================================================================="
+	@echo ""
+	@echo "Are you sure you want to download this use-case (y/n) ?" && ${GET_REPLY} && echo REPLY=$$REPLY && if [ ! "$$REPLY" == "y" ] ; then echo -e "\nExit."; false; else echo -e "\nDownload starts."; fi
+	mkdir benchmarks/open_vins/src/original -p
+	rm benchmarks/open_vins/src/original -rf
+	git clone   https://github.com/mihaibujanca/open_vins   benchmarks/open_vins/src/original
+	@echo "cmake_minimum_required(VERSION 2.8)"      > benchmarks/open_vins/src/CMakeLists.txt
+	@echo "explore_implementations ( $@ src/* )"     >> benchmarks/$@/CMakeLists.txt
 
-.PHONY: efusion infinitam kfusion lsdslam monoslam okvis orbslam2 ptam svo flame
-algorithms : efusion infinitam kfusion lsdslam monoslam okvis orbslam2 ptam svo flame
+
+.PHONY: efusion infinitam kfusion lsdslam monoslam okvis orbslam2 ptam svo flame open_vins
+algorithms : efusion infinitam kfusion lsdslam monoslam okvis orbslam2 ptam svo flame open_vins
 
 
 datasets :
