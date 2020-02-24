@@ -21,6 +21,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "TOMLConverter.h"
 
 
 std::string alignment_technique = "original";
@@ -41,9 +42,22 @@ int main(int argc, char * argv[])
 		// Start the argument processing
 		//***************************************************************************************
 
+        config->getParameters().push_back(&alignment_type_parameter);
 
-		config->getParameters().push_back(&alignment_type_parameter);
-		config->GetParameterManager().ReadArgumentsOrQuit(argc, argv, config);
+        std::vector<std::string> arguments;
+
+        TOMLConverter tc;
+        tc.convertTOMLFile(argc, argv, arguments);
+
+        std::vector<const char *> output_values;
+        output_values.reserve(arguments.size());
+
+        for(size_t i = 0; i < arguments.size(); ++i) {
+            output_values.push_back(arguments[i].c_str());
+        }
+
+        config->GetParameterManager().ReadArgumentsOrQuit(output_values.size(), &output_values[0], config);
+
 		//***************************************************************************************
 		// At this point the datasets/libraries/sensors are loaded with their arguments set.
 		//***************************************************************************************
