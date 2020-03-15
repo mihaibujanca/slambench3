@@ -25,6 +25,7 @@
 #include "include/SVO.h"
 #include "include/TUM.h"
 #include "include/UZHFPV.h"
+#include "include/NYURGBD.h"
 
 using namespace slambench::io;
 
@@ -83,6 +84,8 @@ class MainComponent : public ParameterComponent {
       config->reader = new BONNReader("");
     } else if (dataset_name == "uzhfpv") {
       config->reader = new UZHFPVReader("");
+    } else if (dataset_name == "nyurgbd") {
+      config->reader = new NYURGBDReader("");
     }
 
   if (config->reader) {

@@ -56,9 +56,17 @@ void SLAMFile::AddGroundTruthFrame(SLAMFrame* frame)
   	assert(frame->FrameSensor->IsGroundTruth());
 	
 	for (auto it = _frames.begin() ; it != _frames.end() ; it++) {
-	  if(!(*it)->FrameSensor->IsGroundTruth()) { _frames.insert(it,frame);return; }
-	  if ((*it)->Timestamp <= frame->Timestamp) { continue; }
-	  else {_frames.insert(it,frame);return;}
+	  if (!(*it)->FrameSensor->IsGroundTruth()) {
+	      _frames.insert(it,frame);
+	      return;
+	  }
+
+	  if ((*it)->Timestamp <= frame->Timestamp) {
+	      continue;
+	  } else {
+	      _frames.insert(it,frame);
+	      return;
+	  }
 	}
 
 	_frames.push_back(frame);

@@ -46,8 +46,12 @@ if (Boost_FOUND)
 	target_link_libraries(ICLNUIM slambench-io)
 	target_include_directories(ICLNUIM PRIVATE ${Boost_INCLUDE_DIRS})
     
+        add_library(NYURGBD NYURGBD.cpp)
+        target_link_libraries(NYURGBD slambench-io)
+        target_include_directories(NYURGBD PRIVATE ${Boost_INCLUDE_DIRS})
+
 	add_executable(dataset-generator dataset-generator.cpp)
-	target_link_libraries(dataset-generator TUM ICLNUIM ICL EUROCMAV SVO BONN UZHFPV)
+        target_link_libraries(dataset-generator TUM ICLNUIM ICL EUROCMAV SVO BONN UZHFPV NYURGBD)
 
 else (Boost_FOUND)
     message(STATUS "Dataset generators require Boost.")

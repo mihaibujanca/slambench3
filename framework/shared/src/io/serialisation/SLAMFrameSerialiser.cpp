@@ -20,7 +20,7 @@ SLAMFrameSerialiser::SLAMFrameSerialiser(FILE *target) : Serialiser(target) {
 
 bool SLAMFrameSerialiser::Serialise(SLAMFrame &frame) {
 	void *frame_data = frame.GetData();
-	if(frame_data == nullptr) {
+	if(frame_data == nullptr && frame.GetSize() != 0) {
 		printf("Could not get frame data\n");
 		return false;
 	}
