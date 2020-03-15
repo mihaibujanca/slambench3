@@ -269,6 +269,11 @@ usecases:
 	@echo    "    available targets are : flame"
 	@echo ""
 
+	@echo -n "  - SemanticFusion [McCormac et al, ICRA '17]: "; if [ -f benchmarks/semanticfusion ] ; then echo -e "\033[1;32mFound\033[0m" ; else echo -e "\033[1;31mNot found (make semanticfusion)\033[0m" ; fi
+	@echo    "    repository: https://github.com/Paul92/semanticfusion"
+	@echo    "    available targets are : semanticfusion"
+	@echo ""
+
 	@echo "If you want to test SLAMBench with existing SLAM algorithms, once you have download it please run \"make slambench APPS=slam1,slam2,...\""
 	@echo "   e.g. make slambench APPS=kfusion,orbslam2"
 	@echo "   You can also use \"make slambench APPS=all\" to compile them all."
@@ -424,9 +429,23 @@ flame:
 	@echo "cmake_minimum_required(VERSION 2.8)"      > benchmarks/flame/src/CMakeLists.txt
 	@echo "explore_implementations ( $@ src/* )"     >> benchmarks/$@/CMakeLists.txt
 
+semanticfusion:
+	@echo "================================================================================================================="
+	@echo    "  - SemanticFusion [McCormac et al. ICRA'17]: "
+	@echo    "    repository: https://github.com/seaun163/semanticfusion"
+	@echo    "    Used repository: https://github.com/Paul92/semanticfusion"
+	@echo "================================================================================================================="
+	@echo ""
+	@echo "Are you sure you want to download this use-case (y/n) ?" && ${GET_REPLY} && echo REPLY=$$REPLY && if [ ! "$$REPLY" == "y" ] ; then echo -e "\nExit."; false; else echo -e "\nDownload starts."; fi
+	mkdir benchmarks/semanticfusion/src/original -p
+	git clone   https://github.com/Paul92/semanticfusion   benchmarks/semanticfusion/src/original
+	@echo "cmake_minimum_required(VERSION 2.8)"      > benchmarks/semanticfusion/src/CMakeLists.txt
+	@echo "explore_implementations ( $@ src/* )"     >> benchmarks/$@/CMakeLists.txt
+	pushd benchmarks/semanticfusion/src/original && git submodule init && git submodule update
 
-.PHONY: efusion infinitam kfusion lsdslam monoslam okvis orbslam2 ptam svo flame
-algorithms : efusion infinitam kfusion lsdslam monoslam okvis orbslam2 ptam svo flame
+
+.PHONY: efusion infinitam kfusion lsdslam monoslam okvis orbslam2 ptam svo flame semanticfusion
+algorithms : efusion infinitam kfusion lsdslam monoslam okvis orbslam2 ptam svo flame semanticfusion
 
 
 datasets :
