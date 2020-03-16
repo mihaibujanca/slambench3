@@ -107,14 +107,14 @@ list(APPEND MetricFiles src/metrics/power_utils/XU3Monitor.cpp)
 # You need to install papi-devel and lm_sensors-devel
 ###########################################################
 
-find_package(PAPI)
-
-if (PAPI_FOUND) 
-   	include_directories(${PAPI_INCLUDE_DIRS})
-	set(common_properties "${common_properties}  -DPAPI_MONITORING")
-	set(common_libraries   "${common_libraries}" ${PAPI_LIBRARIES})
-	list(APPEND MetricFiles src/metrics/power_utils/PAPIMonitor.cpp)
-endif(PAPI_FOUND)
+#find_package(PAPI)
+#
+#if (PAPI_FOUND) 
+#   	include_directories(${PAPI_INCLUDE_DIRS})
+#	set(common_properties "${common_properties}  -DPAPI_MONITORING")
+#	set(common_libraries   "${common_libraries}" ${PAPI_LIBRARIES})
+#	list(APPEND MetricFiles src/metrics/power_utils/PAPIMonitor.cpp)
+#endif(PAPI_FOUND)
 
 	
 
@@ -176,7 +176,7 @@ if (CUDA_FOUND)
   SET(EXTRA_LIBS_FOR_MEMORY "${EXTRA_LIBS_FOR_MEMORY};${CUDA_LIBRARIES}")
 ENDIF(CUDA_FOUND)
 
-  target_link_libraries(slambench-utils  "-Wl,--no-as-needed;${EXTRA_LIBS_FOR_MEMORY};-Wl,--as-needed")
+  target_link_libraries(slambench-utils slambench-metrics "-Wl,--no-as-needed;${EXTRA_LIBS_FOR_MEMORY};-Wl,--as-needed")
 
 
 
