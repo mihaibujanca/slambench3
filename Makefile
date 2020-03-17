@@ -441,7 +441,13 @@ semanticfusion:
 	git clone   https://github.com/Paul92/semanticfusion   benchmarks/semanticfusion/src/original
 	@echo "cmake_minimum_required(VERSION 2.8)"      > benchmarks/semanticfusion/src/CMakeLists.txt
 	@echo "explore_implementations ( $@ src/* )"     >> benchmarks/$@/CMakeLists.txt
-	pushd benchmarks/semanticfusion/src/original && git submodule init && git submodule update
+	pushd benchmarks/semanticfusion/src/original; git submodule init; git submodule update
+	pushd benchmarks/semanticfusion/src/original/elasticfusionpublic; git apply ../elasticfusion.patch
+	pushd benchmarks/semanticfusion/src/original/caffe_semanticfusion; git apply ../caffe.patch
+	pushd benchmarks/semanticfusion/src/original/caffe_semanticfusion/models; \
+	    curl "https://www.doc.ic.ac.uk/~bjm113/semantic_fusion_data/nyu_rgbd_model.tar.gz" -o nyu_rgbd_model.tar.gz; \
+	    tar xf nyu_rgbd_model.tar.gz; rm nyu_rgbd_model.tar.gz;
+
 
 
 .PHONY: efusion infinitam kfusion lsdslam monoslam okvis orbslam2 ptam svo flame semanticfusion
