@@ -224,8 +224,8 @@ usecases:
 	@echo    "    available targets are : efusion"
 	@echo    ""
 
-	@echo -n "  - InfiniTAMv2 [Kahler et al, ISMAR'15]: " ; if [ -f benchmarks/infinitam ] ; then echo -e "\033[1;32mFound\033[0m" ; else echo -e "\033[1;31mNot found (make infinitam)\033[0m" ; fi
-	@echo    "    repository: https://github.com/ethz-asl/infinitam"
+	@echo -n "  - InfiniTAMv3 [Prisacariu et al, ARXIB'16]: " ; if [ -f benchmarks/infinitam ] ; then echo -e "\033[1;32mFound\033[0m" ; else echo -e "\033[1;31mNot found (make infinitam)\033[0m" ; fi
+	@echo    "    repository: https://github.com/victorprad/InfiniTAM"
 	@echo    "    available targets are : infinitam"
 	@echo ""
 
@@ -296,15 +296,15 @@ efusion:
 
 infinitam:
 	@echo "================================================================================================================="
-	@echo    "  - InfiniTAMv2 [Kahler et al, ISMAR'15]: " 
-	@echo    "    Original repository: https://github.com/ethz-asl/infinitam"
-	@echo    "    Used repository: https://github.com/bbodin/InfiniTAM"
+	@echo    "  - InfiniTAMv3.5 [Prisacariu et al, ARXIV'16]: "
+	@echo    "    Original repository: https://github.com/victorprad/InfiniTAM"
+	@echo    "    Used repository: https://github.com/mihaibujanca/InfiniTAM"
 	@echo "================================================================================================================="
 	@echo ""
 	@echo "Are you sure you want to download this use-case (y/n) ?" && ${GET_REPLY} && echo REPLY=$$REPLY && if [ ! "$$REPLY" == "y" ] ; then echo -e "\nExit."; false; else echo -e "\nDownload starts."; fi
 	mkdir benchmarks/infinitam/src/ -p
 	rm benchmarks/infinitam/src/original -rf
-	git clone https://github.com/bbodin/InfiniTAM.git benchmarks/infinitam/src/original
+	git clone https://github.com/mihaibujanca/InfiniTAM.git --single-branch --branch infinitam_v3.5 benchmarks/infinitam/src/original
 	@echo "cmake_minimum_required(VERSION 2.8)"   > benchmarks/infinitam/CMakeLists.txt
 	@echo "explore_implementations ( $@ src/* )"     >> benchmarks/$@/CMakeLists.txt
 

@@ -23,7 +23,7 @@
 #include <boost/regex.hpp>
 
 #include <iostream>
-
+#include <fstream>
 using namespace slambench::io;
 
 constexpr DepthSensor::disparity_params_t TUMReader::disparity_params;
