@@ -30,7 +30,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -Wno-error")
 
 if ("${APPS}" STREQUAL "all")
     message(STATUS "Select all applications...")
-    set(APPS_MOD "efusion;kfusion;lsdslam;monoslam;infinitam;ptam;okvis;orbslam2;svo")
+    set(APPS_MOD "efusion;kfusion;lsdslam;monoslam;infinitam;ptam;okvis;orbslam2;svo;flame,refusion,kinectfusion,dso")
 else()
     message(STATUS "Select only ${APPS} applications...")
     string(REPLACE "," ";" APPS_MOD "${APPS}")     

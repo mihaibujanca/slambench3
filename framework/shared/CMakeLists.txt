@@ -62,6 +62,15 @@ IF(GLUT_FOUND)
 
 ENDIF(GLUT_FOUND)
 
+########## PCL Library ####################
+find_package(PCL)
+if (PCL_FOUND)
+    include_directories(${PCL_INCLUDE_DIRS})
+    link_directories(${PCL_LIBRARY_DIRS})
+    add_definitions(${PCL_DEFINITIONS})
+    set(common_libraries "${common_libraries}" "${PCL_LIBRARIES}")
+endif(PCL_FOUND)
+
 ########## Main Library ####################
 
 FILE(GLOB sensors_files src/io/sensor/*)
@@ -86,6 +95,7 @@ SET(MetricFiles
     src/metrics/memory_utils/CUDAMonitor.cpp
     src/metrics/Metric.cpp
     src/metrics/MetricManager.cpp
+    src/metrics/DepthEstimationMetric.cpp
 
     src/outputs/Output.cpp
     src/outputs/OutputManager.cpp
@@ -136,13 +146,13 @@ add_library(slambench-io
 	src/io/SLAMFrame.cpp 
 	src/io/PixelFormat.cpp
 	src/io/InputInterface.cpp
-        src/io/FrameSource.cpp
+	src/io/FrameSource.cpp
 
 	src/io/deserialisation/Deserialiser.cpp
 	src/io/deserialisation/SLAMFileDeserialiser.cpp
 	src/io/deserialisation/SLAMFileHeaderDeserialiser.cpp
-        src/io/deserialisation/SLAMFrameDeserialiser.cpp
-        src/io/deserialisation/SensorCollectionDeserialiser.cpp
+	src/io/deserialisation/SLAMFrameDeserialiser.cpp
+	src/io/deserialisation/SensorCollectionDeserialiser.cpp
 	
 	src/io/format/DataFormatter.cpp
 	src/io/format/PointCloud.cpp
@@ -154,11 +164,13 @@ add_library(slambench-io
 )
 
 
-add_library(slambench-utils  
-	src/SLAMBenchConfiguration  
-	src/sb_malloc 
+add_library(slambench-utils
+	src/SLAMBenchConfigurationLifelong.cpp
+	src/SLAMBenchConfiguration
+	src/sb_malloc
 	src/ParameterComponent
     src/ParameterManager
+    src/ResultWriter
 )
 
 
@@ -192,12 +204,12 @@ if(OpenNI_FOUND)
     )
     target_link_libraries(slambench-io-oni15 ${OPENNI_LIBRARIES})
     target_link_libraries(slambench-utils slambench-io-oni15)
-	SET_TARGET_PROPERTIES(slambench-io-oni15  PROPERTIES COMPILE_FLAGS "-fPIC -Wno-error=return-type  -Wno-error=strict-aliasing")
+	SET_TARGET_PROPERTIES(slambench-io-oni15  PROPERTIES COMPILE_FLAGS "-fPIC -Wno-error=unused-but-set-variable -Wno-error=return-type  -Wno-error=strict-aliasing")
 ELSE (OpenNI_FOUND)
     add_library(slambench-io-oni15 
         src/io/openni15/ONI15InputInterface_dummy.cpp
     )
-	SET_TARGET_PROPERTIES(slambench-io-oni15  PROPERTIES COMPILE_FLAGS "-fPIC -Wno-error=return-type")
+	SET_TARGET_PROPERTIES(slambench-io-oni15  PROPERTIES COMPILE_FLAGS "-fPIC -Wno-error=unused-but-set-variable -Wno-error=return-type")
     target_link_libraries(slambench-utils slambench-io-oni15)
 ENDIF(OpenNI_FOUND)
 
@@ -210,13 +222,13 @@ if(OpenNI2_FOUND)
         src/io/openni/ONI2InputInterface.cpp
     )
     target_link_libraries(slambench-io-oni2 ${OPENNI2_LIBRARIES})
-	SET_TARGET_PROPERTIES(slambench-io-oni2  PROPERTIES COMPILE_FLAGS "-fPIC -Wno-error=return-type  -Wno-error=strict-aliasing")
+	SET_TARGET_PROPERTIES(slambench-io-oni2  PROPERTIES COMPILE_FLAGS "-fPIC -Wno-error=return-type -Wno-unused-variable -Wno-error=strict-aliasing")
     target_link_libraries(slambench-utils slambench-io-oni2)
 ELSE (OpenNI2_FOUND)
     add_library(slambench-io-oni2 
         src/io/openni/ONI2InputInterface_dummy.cpp
     )
-	SET_TARGET_PROPERTIES(slambench-io-oni2  PROPERTIES COMPILE_FLAGS "-fPIC -Wno-error=return-type  -Wno-error=strict-aliasing")
+	SET_TARGET_PROPERTIES(slambench-io-oni2  PROPERTIES COMPILE_FLAGS "-fPIC -Wno-unused-variable -Wno-error=return-type  -Wno-error=strict-aliasing")
     target_link_libraries(slambench-utils slambench-io-oni2)
 ENDIF(OpenNI2_FOUND)
 

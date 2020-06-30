@@ -26,17 +26,7 @@ docker/workspace/
 
 # Ignore benchmarks folders
 
-benchmarks/efusion/
-benchmarks/infinitam/
-benchmarks/lsdslam/
-benchmarks/okvis/
-benchmarks/orbslam2/
-benchmarks/ptam/
-benchmarks/svo/
-benchmarks/monoslam/
-benchmarks/kfusion/
-
-
+benchmarks/*/*
 
 # Exotic builds
 
@@ -60,6 +50,8 @@ paper/*.tex
 # Datasets
 
 /datasets
+/iros2020_results_backup
+/iros2020_results
 !/datasets/README.md
 
 # macOS

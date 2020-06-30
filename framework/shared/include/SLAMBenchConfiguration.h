@@ -53,7 +53,10 @@ typedef  std::chrono::time_point<std::chrono::high_resolution_clock> stl_time;
 class SLAMBenchConfiguration : public ParameterComponent {
 public:
     SLAMBenchConfiguration ();
+    SLAMBenchConfiguration  (void (*input_callback)(Parameter*, ParameterComponent*),void (*libs_callback)(Parameter*, ParameterComponent*));
 	virtual ~SLAMBenchConfiguration();
+
+	typedef std::vector<SLAMBenchLibraryHelper*> lib_container_t;
 
 private :
 
@@ -87,7 +90,7 @@ public :
 
 	void AddFrameCallback(std::function<void()> callback) { frame_callbacks_.push_back(callback); }
 	
-	const slam_lib_container_t &GetLoadedLibs() { return slam_libs; }
+	const slam_lib_container_t &GetLoadedLibs() const { return slam_libs; }
     const slambench::ParameterManager &GetParameterManager() const { return param_manager_; }
 	slambench::ParameterManager &GetParameterManager() { return param_manager_; }
 	
@@ -110,11 +113,11 @@ public :
 	
     static void compute_loop_algorithm(SLAMBenchConfiguration * config, bool *stay_on, SLAMBenchUI *ui);
 
-    void add_slam_library    (std::string library_filename, std::string id = "");
-    bool add_input (std::string library_filename);
+    void add_slam_library(std::string library_filename, std::string id = "");
+    bool add_input(std::string library_filename);
 
 
-    void                 set_log_file      (std::string f);
+    void set_log_file (std::string f);
 
 public :
 	slambench::io::InputInterface *GetInputInterface() {
@@ -132,6 +135,10 @@ public :
 	void SetInputInterface(slambench::io::InputInterface *input_ref) {
 		input_interface = input_ref;
 	}
+    void ResetSensors()
+    {
+        GetParameterManager().ClearComponents();
+    }
 
     inline std::ostream& get_log_stream() {if (!log_stream)  update_log_stream(); return *log_stream;};
     inline void update_log_stream() {
@@ -147,16 +154,9 @@ public :
 
 	void FireEndOfFrame() { for(auto i : frame_callbacks_) { i(); } }
     void start_statistics   ();
-
-
     void print_arguments() ;
     void print_dse();
 
 
 };
-
-
-
-
-
 #endif /* SLAMBENCH_CONFIGURATION_H_ */

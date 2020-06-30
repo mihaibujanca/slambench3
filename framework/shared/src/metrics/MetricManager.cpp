@@ -11,6 +11,7 @@
 #include "metrics/Metric.h"
 #include "metrics/MetricManager.h"
 #include "metrics/Phase.h"
+#include "metrics/DurationMetric.h"
 
 #include <cassert>
 #include <sstream>
@@ -19,25 +20,23 @@ using namespace slambench::metrics;
 
 MetricManager::MetricManager() : init_phase_(this,"Initialisation"), frame_phase_(this, "Frame"), frame_counter_(0)
 {
-	
+	strcpy(duration_metric_typeid, typeid(DurationMetric).name());
+    frame_phase_duration.clear();
 }
 
 MetricManager::~MetricManager() {
-	for(auto i : all_metrics_) {
-		delete i;
-	}
 	for(auto i : frame_data_) {
 		delete i;
 	}
 }
 
-void MetricManager::AddPhaseMetric(Metric* m)
+void MetricManager::AddPhaseMetric(MetricPtr m)
 {
 	phase_metrics_.push_back(m);
 	all_metrics_.insert(m);
 }
 
-void MetricManager::AddFrameMetric(Metric* m)
+void MetricManager::AddFrameMetric(MetricPtr m)
 {
 	frame_metrics_.push_back(m);
 	all_metrics_.insert(m);
@@ -66,7 +65,7 @@ void MetricManager::EndInit()
 	}
 
 	for(auto i : frame_metrics_) {
-		init_data_.insert({i, i->GetValue(&init_phase_)});
+		init_data_.insert({&*i, i->GetValue(&init_phase_)});
 	}
 
 }
@@ -94,14 +93,17 @@ void MetricManager::EndFrame()
 	auto &frame = *GetFrame(frame_counter_);
 	auto &frame_data = frame.GetFrameData();
 	for(auto i : frame_metrics_) {
-		frame_data.insert({i, i->GetValue(&frame_phase_)});
+		frame_data.insert({&*i, i->GetValue(&frame_phase_)});
+        if (!strcmp(duration_metric_typeid,typeid(*i).name())) {
+            frame_phase_duration.push_back(dynamic_cast<slambench::values::TypedValue<double>*>(frame_data[&*i])->GetValue());
+        }
 	}
 	// yeaaaahhhhh
 	frame.GetPhaseData(&frame_phase_) = frame_data;
 	
 	for(auto i : phase_metrics_) {
 		for(auto j : phases_) {
-			frame.GetPhaseData(j).insert({i, i->GetValue(j)});
+			frame.GetPhaseData(j).insert({&*i, i->GetValue(j)});
 		}
 	}
 	
@@ -149,10 +151,10 @@ void MetricManager::EndPhase(Phase* phase)
 
 Phase* MetricManager::GetPhase(const std::string& phasename)
 {
-	for(auto i : phases_) {
-		if(i->GetName() == phasename) { 
-			return i;
-		}
-	}
-	assert(false);
+    for (auto i : phases_) {
+        if (i->GetName() == phasename) {
+            return i;
+        }
+    }
+    assert(false);
 }

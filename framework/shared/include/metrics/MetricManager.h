@@ -19,6 +19,8 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <memory>
+
 
 namespace slambench {
 	namespace metrics {
@@ -30,13 +32,13 @@ namespace slambench {
 		public:
 			MetricManager();
 			~MetricManager();
-			
-			typedef std::vector<Metric*> metric_list_t;
+			typedef std::shared_ptr<Metric> MetricPtr;
+			typedef std::vector<MetricPtr> metric_list_t;
 			typedef std::vector<Phase*> phase_list_t;
-			
-			void AddPhaseMetric(Metric *m);
-			void AddFrameMetric(Metric *m);
-			
+
+			void AddPhaseMetric(MetricPtr m);
+			void AddFrameMetric(MetricPtr m);
+
 			void AddPhase(Phase *p);
 			void AddPhase(const std::string &phase_name);
 			
@@ -61,10 +63,23 @@ namespace slambench {
 
 			void BeginInit();
 			void EndInit();
+
+			void reset() {
+				all_metrics_.clear();
+				frame_data_.clear();
+				frame_metrics_.clear();
+				phase_metrics_.clear();
+				// phases_.clear();
+			}
+
+			std::vector<double>& getDuration() {
+				return frame_phase_duration;
+			}
+
 		private:
 			metric_list_t frame_metrics_;
 			metric_list_t phase_metrics_;
-			std::set<Metric*> all_metrics_;
+			std::set<std::shared_ptr<Metric>> all_metrics_;
 			
 			phase_list_t phases_;
 			
@@ -74,6 +89,9 @@ namespace slambench {
 			Phase frame_phase_;
 			
 			uint64_t frame_counter_;
+
+			char duration_metric_typeid[100];
+			std::vector<double> frame_phase_duration;
 		};
 	}
 }

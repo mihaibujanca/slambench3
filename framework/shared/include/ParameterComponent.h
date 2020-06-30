@@ -14,7 +14,7 @@
 #include <vector>
 
 
-class Parameter;
+struct Parameter;
 class ParameterComponent;
 
 typedef  std::vector<Parameter*>          arguments_vector ;
@@ -33,7 +33,7 @@ public:
 
 	virtual ~ParameterComponent();
 
-	const arguments_vector &getParameters() const {
+	arguments_vector &getParameters() {
 		return _arguments;
 	}
 
