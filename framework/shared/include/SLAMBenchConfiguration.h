@@ -33,6 +33,7 @@
 #include <io/sensor/SensorCollection.h>
 #include <io/InputInterface.h>
 
+#define LOAD_FUNC2HELPER(handle,lib,f)     *(void**)(& lib->f) = dlsym(handle,#f); const char *dlsym_error_##lib##f = dlerror(); if (dlsym_error_##lib##f) {std::cerr << "Cannot load symbol " << #f << dlsym_error_##lib##f << std::endl; dlclose(handle); exit(1);}
 
 /* Default values */
 
@@ -52,17 +53,15 @@ typedef  std::chrono::time_point<std::chrono::high_resolution_clock> stl_time;
 
 class SLAMBenchConfiguration : public ParameterComponent {
 public:
-    SLAMBenchConfiguration ();
-    SLAMBenchConfiguration  (void (*input_callback)(Parameter*, ParameterComponent*),void (*libs_callback)(Parameter*, ParameterComponent*));
+    SLAMBenchConfiguration(void (*input_callback)(Parameter*, ParameterComponent*) = nullptr,
+    					   void (*libs_callback)(Parameter*, ParameterComponent*)  = nullptr);
 	virtual ~SLAMBenchConfiguration();
 
 	typedef std::vector<SLAMBenchLibraryHelper*> lib_container_t;
 
-private :
+protected:
 
     slam_lib_container_t slam_libs;
-
-
     std::ofstream log_filestream;
     std::ostream* log_stream;
     std::string   log_file;
@@ -83,13 +82,9 @@ private :
 	bool initialised_;
 	bool realtime_mode_;
 	double realtime_mult_;
-	
-	
-	
-public :
 
+public:
 	void AddFrameCallback(std::function<void()> callback) { frame_callbacks_.push_back(callback); }
-	
 	const slam_lib_container_t &GetLoadedLibs() const { return slam_libs; }
     const slambench::ParameterManager &GetParameterManager() const { return param_manager_; }
 	slambench::ParameterManager &GetParameterManager() { return param_manager_; }
@@ -113,13 +108,12 @@ public :
 	
     static void compute_loop_algorithm(SLAMBenchConfiguration * config, bool *stay_on, SLAMBenchUI *ui);
 
-    void add_slam_library(std::string library_filename, std::string id = "");
-    bool add_input(std::string library_filename);
+    void add_slam_library(const std::string& so_file, const std::string &id);
+    bool add_input(const std::string& library_filename);
 
 
     void set_log_file (std::string f);
 
-public :
 	slambench::io::InputInterface *GetInputInterface() {
 		if(input_interface == nullptr) {
 			throw std::logic_error("Input interface has not been added to SLAM configuration");
@@ -153,10 +147,30 @@ public :
     };
 
 	void FireEndOfFrame() { for(auto i : frame_callbacks_) { i(); } }
-    void start_statistics   ();
-    void print_arguments() ;
+    void start_statistics();
+    void print_arguments();
     void print_dse();
-
-
 };
+
+inline void slam_library_callback(Parameter* param, ParameterComponent* caller) {
+
+    auto config = dynamic_cast<SLAMBenchConfiguration*> (caller);
+    auto parameter =  dynamic_cast<TypedParameter<std::vector<std::string>>*>(param) ;
+
+    for (auto &library_name : parameter->getTypedValue()) {
+
+        std::string library_filename;
+        std::string library_identifier;
+
+        auto pos = library_name.find("=");
+        if (pos != std::string::npos)  {
+            library_filename   = library_name.substr(0, pos);
+            library_identifier = library_name.substr(pos+1);
+        } else {
+            library_filename = library_name;
+        }
+        config->add_slam_library(library_filename,library_identifier);
+    }
+}
+
 #endif /* SLAMBENCH_CONFIGURATION_H_ */

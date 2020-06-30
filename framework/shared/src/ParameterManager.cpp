@@ -16,7 +16,7 @@ using namespace slambench;
 void ParameterManager::PrintValues(std::ostream &str, const ParameterComponent* c) const
 {
 	c = c ? c : this;
-	for (const Parameter* param : c->getParameters()) {
+	for (const auto param : c->getParameters()) {
 		if (param == nullptr) {
 			std::exit(1);
 		}

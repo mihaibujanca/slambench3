@@ -35,7 +35,6 @@
 class SLAMBenchConfigurationLifelong : public SLAMBenchConfiguration {
 public:
     SLAMBenchConfigurationLifelong();
-    void AddLibrary(std::string so_file, std::string identifier);
     bool AddInput(const std::string& input_file);
     void InitSensors();
     void InitWriter();

@@ -22,7 +22,7 @@ find_package(Boost 1.54 REQUIRED COMPONENTS system filesystem program_options re
 # EUROCMAV datasets support requirements - skip if not found
 find_package(LIBYAML QUIET)
 IF (NOT LIBYAML_FOUND)
-	message(STATUS "${BoldRed}LibYAML dependency for EUROCMAV datasets not found - dataset skipped${ColourReset}")
+	message(STATUS "${BoldRed}LibYAML dependency for EUROCMAV and OpenLORIS datasets not found - datasets skipped${ColourReset}")
 ENDIF ()
 
 #------------------------------------------------
@@ -90,16 +90,18 @@ target_link_libraries(io-inspect-file PRIVATE -Wl,--whole-archive slambench-io s
 IF (LIBYAML_FOUND)
 	add_library(EUROCMAV EUROCMAV.cpp)
 	target_link_libraries(EUROCMAV slambench-io ${Boost_LIBRARIES} ${LIBYAML_LIBRARY})
-	target_include_directories(EUROCMAV PRIVATE ${Boost_INCLUDE_DIRS}  ${LIBYAML_INCLUDE_DIR})
+	target_include_directories(EUROCMAV PRIVATE ${Boost_INCLUDE_DIRS} ${LIBYAML_INCLUDE_DIR})
+	set(EUROCMAV_LIB "EUROCMAV")
+
+	add_library(OpenLORIS OpenLORIS.cpp)
+	target_link_libraries(OpenLORIS slambench-io ${Boost_LIBRARIES} ${LIBYAML_LIBRARY})
+	target_include_directories(OpenLORIS PRIVATE ${Boost_INCLUDE_DIRS} ${LIBYAML_INCLUDE_DIR})
+	set(OpenLORIS_LIB "OpenLORIS")
 ENDIF (LIBYAML_FOUND)
 
 add_library(SVO SVO.cpp)
 target_link_libraries(SVO slambench-io ${Boost_LIBRARIES})
 target_include_directories(SVO PRIVATE ${Boost_INCLUDE_DIRS})
-
-add_library(OpenLORIS OpenLORIS.cpp)
-target_link_libraries(OpenLORIS slambench-io ${Boost_LIBRARIES})
-target_include_directories(OpenLORIS PRIVATE ${Boost_INCLUDE_DIRS})
 
 add_library(ICL ICL.cpp)
 target_link_libraries(ICL slambench-io ${Boost_LIBRARIES})
@@ -145,4 +147,4 @@ IF (OpenCV_FOUND AND ROSPKGS_FOUND)
 endif ()
 
 add_executable(dataset-generator dataset-generator.cpp)
-target_link_libraries(dataset-generator TUM UZHFPV ICLNUIM ICL ETHI BONN OpenLORIS ${EUROCMAV_LIB} SVO ${TUM-ROSBAG_LIB})
+target_link_libraries(dataset-generator TUM UZHFPV ICLNUIM ICL ETHI BONN ${OpenLORIS_LIB} ${EUROCMAV_LIB} SVO ${TUM-ROSBAG_LIB})

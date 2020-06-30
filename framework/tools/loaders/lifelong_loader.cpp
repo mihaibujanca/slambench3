@@ -27,7 +27,7 @@ std::string default_alignment_technique = "new";
 TypedParameter<std::string> file_output_parameter ("s", "save-results", "Folder or filename prefix to save the estimated poses. Ground-truth will also be saved into the same folder.", &output_filename, &default_output_filename);
 TypedParameter<std::string> alignment_type_parameter("a",     "alignment-technique",      "Select an alignment technique by name, if not found, \"new alignment\" used (original,new,umeyama).", &alignment_technique, &default_alignment_technique);
 
-int main(int argc, char * argv[])
+int main(int argc, char *argv[])
 {
 
 	try {
@@ -40,7 +40,7 @@ int main(int argc, char * argv[])
 
 		config->addParameter(file_output_parameter);
 		config->addParameter(alignment_type_parameter);
-		config->GetParameterManager().ReadArgumentsOrQuit(argc, argv, config);
+		config->GetParameterManager().ReadArgumentsOrQuit(argc, argv);
 
 		//***************************************************************************************
 		// At this point the datasets/libraries/sensors are loaded with their arguments set.
@@ -60,7 +60,7 @@ int main(int argc, char * argv[])
 		// We prepare the logging and create the global metrics
 		//***************************************************************************************
 
-		config->StartStatistics();
+		config->start_statistics();
 
 		//***************************************************************************************
 		// We init the algos now because we need their output already

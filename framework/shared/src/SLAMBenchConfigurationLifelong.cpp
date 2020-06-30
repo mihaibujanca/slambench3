@@ -48,85 +48,6 @@
 #include <string.h>
 
 #include <dlfcn.h>
-#define LOAD_FUNC2HELPER(handle,lib,f)     *(void**)(& lib->f) = dlsym(handle,#f); const char *dlsym_error_##lib##f = dlerror(); if (dlsym_error_##lib##f) {std::cerr << "Cannot load symbol " << #f << dlsym_error_##lib##f << std::endl; dlclose(handle); exit(1);}
-
-
-//TODO: (Mihai) too much duplicated code here. One option is to move LOAD_FUNC2HELPER into the SLAMBenchConfiguration header
-// Need to figure out how to avoid rewriting the whole thing without breaking SLAMBenchConfiguration
-void SLAMBenchConfigurationLifelong::AddLibrary(std::string so_file, std::string identifier) {
-
-    std::cerr << "new library name: " << so_file  << std::endl;
-
-    void* handle = dlopen(so_file.c_str(),RTLD_LAZY);
-
-    if (!handle) {
-        std::cerr << "Cannot open library: " << dlerror() << std::endl;
-        exit(1);
-    }
-
-    char *start=(char *)so_file.c_str();
-    char *iter = start;
-    while(*iter!=0){
-        if(*iter=='/')
-            start = iter+1;
-        iter++;
-    }
-    std::string libName=std::string(start);
-    libName=libName.substr(3, libName.length()-14);
-    auto lib_ptr = new SLAMBenchLibraryHelper (identifier, libName, this->GetLogStream(),  this->GetCurrentInputInterface());
-    LOAD_FUNC2HELPER(handle,lib_ptr,c_sb_init_slam_system);
-    LOAD_FUNC2HELPER(handle,lib_ptr,c_sb_new_slam_configuration);
-    LOAD_FUNC2HELPER(handle,lib_ptr,c_sb_update_frame);
-    LOAD_FUNC2HELPER(handle,lib_ptr,c_sb_process_once);
-    LOAD_FUNC2HELPER(handle,lib_ptr,c_sb_clean_slam_system);
-    LOAD_FUNC2HELPER(handle,lib_ptr,c_sb_update_outputs);
-    // workaround to be compatible with benchmarks that does not implement the relocalize API
-    if (dlsym(handle, "_Z13sb_relocalizeP22SLAMBenchLibraryHelper")) {
-        LOAD_FUNC2HELPER(handle,lib_ptr,c_sb_relocalize);
-    } else {
-        std::cout << "Benchmark does not implement sb_relocalize(). Will use the default." << std::endl;
-        lib_ptr->c_sb_relocalize = lib_ptr->c_sb_process_once;
-    }
-    this->libs.push_back(lib_ptr);
-
-
-    size_t pre = slambench::memory::MemoryProfile::singleton.GetOverallData().BytesAllocatedAtEndOfFrame;
-    if (!lib_ptr->c_sb_new_slam_configuration(lib_ptr)) {
-        std::cerr << "Configuration construction failed." << std::endl;
-        exit(1);
-    }
-    size_t post = slambench::memory::MemoryProfile::singleton.GetOverallData().BytesAllocatedAtEndOfFrame;
-    std::cerr << "Configuration consumed " << post-pre  << " bytes" << std::endl;
-
-    GetParameterManager().AddComponent(lib_ptr);
-
-    std::cerr << "SLAM library loaded: " << so_file << std::endl;
-
-}
-
-void libs_callback(Parameter* param, ParameterComponent* caller) {
-
-    SLAMBenchConfigurationLifelong* config = dynamic_cast<SLAMBenchConfigurationLifelong*> (caller);
-
-    TypedParameter<std::vector<std::string>>* parameter =  dynamic_cast<TypedParameter<std::vector<std::string>>*>(param) ;
-
-    for (std::string library_name : parameter->getTypedValue()) {
-
-
-        std::string library_filename   = "";
-        std::string library_identifier = "";
-
-
-        auto pos = library_name.find("=");
-        if (pos != std::string::npos)  {
-            library_filename   = library_name.substr(0, pos);
-            library_identifier = library_name.substr(pos+1);
-        } else {
-            library_filename = library_name;
-        }
-        config->AddLibrary(library_filename,library_identifier);
-    }
-}
 
 void dataset_callback(Parameter* param, ParameterComponent* caller) {
 
@@ -158,7 +79,7 @@ bool SLAMBenchConfigurationLifelong::AddInput(const std::string& input_file) {
 }
 
 
-SLAMBenchConfigurationLifelong::SLAMBenchConfigurationLifelong() : SLAMBenchConfiguration(dataset_callback, libs_callback) {}
+SLAMBenchConfigurationLifelong::SLAMBenchConfigurationLifelong() : SLAMBenchConfiguration(dataset_callback, slam_library_callback) {}
 
 void SLAMBenchConfigurationLifelong::InitGroundtruth(bool with_point_cloud) {
 
@@ -218,7 +139,7 @@ void SLAMBenchConfigurationLifelong::compute_loop_algorithm(SLAMBenchConfigurati
     auto config_lifelong = dynamic_cast<SLAMBenchConfigurationLifelong*>(config);
     assert(config_lifelong->initialised_);
 
-    for (auto lib : config_lifelong->libs) {
+    for (auto lib : config_lifelong->slam_libs) {
 
         auto trajectory = lib->GetOutputManager().GetMainOutput(slambench::values::VT_POSE);
         if(trajectory == nullptr) {
@@ -253,7 +174,7 @@ void SLAMBenchConfigurationLifelong::compute_loop_algorithm(SLAMBenchConfigurati
             if (current_frame->FrameSensor->GetType()!= slambench::io::GroundTruthSensor::kGroundTruthTrajectoryType) {
             // ********* [[ NEW FRAME PROCESSED BY ALGO ]] *********
 
-            for (auto lib : config_lifelong->libs) {
+            for (auto lib : config_lifelong->slam_libs) {
                 frame_count++;
 
                 // ********* [[ SEND THE FRAME ]] *********
@@ -378,7 +299,7 @@ bool SLAMBenchConfigurationLifelong::LoadNextInputInterface() {
     InitSensors();
     InitGroundtruth();
     InitWriter();
-    for (auto lib : this->libs) {
+    for (auto lib : this->slam_libs) {
         lib->update_input_interface(this->GetCurrentInputInterface());
     }
     input_interface_updated_ = true;
@@ -402,7 +323,7 @@ void SLAMBenchConfigurationLifelong::InitWriter() {
     auto gt_traj = this->GetGroundTruth().GetMainOutput(slambench::values::VT_POSE);
     if (!alignment_) InitAlignment();
 
-    writer_.reset(new slambench::ColumnWriter(this->GetLogStream(), "\t"));
+    writer_.reset(new slambench::ColumnWriter(this->get_log_stream(), "\t"));
 
 	writer_->AddColumn(&(this->row_number_));
     bool have_timestamp = false;

@@ -75,8 +75,8 @@ int main(int argc, char * argv[])
 		// We prepare the logging and create the global metrics
 		//***************************************************************************************
 
-		config->StartStatistics();
-		slambench::ColumnWriter cw (config->GetLogStream(), "\t");
+		config->start_statistics();
+		slambench::ColumnWriter cw (config->get_log_stream(), "\t");
 		cw.AddColumn(new slambench::RowNumberColumn());
 
 

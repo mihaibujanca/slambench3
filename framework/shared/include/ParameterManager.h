@@ -23,18 +23,14 @@ namespace slambench {
 	public :
 		ParameterManager() :
     	ParameterComponent("") {}
-		void AddComponent(ParameterComponent *component);
 		void ClearComponents() { components_.clear(); };
-
-		void PrintValues(std::ostream &str, const ParameterComponent* c = NULL) const;
-		void PrintArguments(std::ostream &str, const ParameterComponent* c = NULL) const;
-
-
+		void PrintValues(std::ostream &str, const ParameterComponent* c = nullptr) const;
+		void PrintArguments(std::ostream &str, const ParameterComponent* c = nullptr) const;
 		bool BuildArgumentsList(ParameterComponent *callback_data);
 		bool ReadArgumentsOrQuit(unsigned int argc, const char * const * const argv);
 		bool ReadArguments(unsigned int argc, const char * const * const argv);
 
-	private :
+	private:
 		std::map<std::string, param_info_t> params_long, params_short;
         std::vector<ParameterComponent*> components_;
 	};

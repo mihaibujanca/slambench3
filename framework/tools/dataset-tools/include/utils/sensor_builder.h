@@ -10,6 +10,10 @@
 #ifndef FRAMEWORK_TOOLS_DATASET_TOOLS_INCLUDE_DATASET_BUILDER_H_
 #define FRAMEWORK_TOOLS_DATASET_TOOLS_INCLUDE_DATASET_BUILDER_H_
 
+#include <io/sensor/DepthSensor.h>
+#include <io/sensor/CameraSensor.h>
+#include <io/sensor/GroundTruthSensor.h>
+#include <io/sensor/EventCameraSensor.h>
 #include <io/sensor/AccelerometerSensor.h>
 
 namespace slambench {
@@ -20,6 +24,7 @@ namespace slambench {
      protected:
       std::string name_;
       std::string description_;
+      uint8_t index_;
 
       float rate_;
       int width_;
@@ -40,6 +45,10 @@ namespace slambench {
     public:
       T& name(const std::string& name) {
         name_ = name;
+        return static_cast<T&>(*this);
+      }
+      T& index(const uint8_t& index) {
+          index_ = index;
         return static_cast<T&>(*this);
       }
 
@@ -108,6 +117,7 @@ namespace slambench {
         sensor->Rate = rate_;
         sensor->Width = width_;
         sensor->Height = height_;
+        sensor->Index = index_;
         sensor->FrameFormat = frameFormat_;
         sensor->PixelFormat = pixelFormat_;
         sensor->Description = description_.empty() ? "Camera" : description_;

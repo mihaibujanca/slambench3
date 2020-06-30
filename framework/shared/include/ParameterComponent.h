@@ -33,7 +33,7 @@ public:
 
 	virtual ~ParameterComponent();
 
-	arguments_vector &getParameters() {
+	const arguments_vector &getParameters() const {
 		return _arguments;
 	}
 
