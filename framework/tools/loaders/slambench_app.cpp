@@ -18,45 +18,87 @@
 #include <metrics/MemoryMetric.h>
 #include <ColumnWriter.h>
 #include <SLAMBenchException.h>
+#include <SLAMBenchUI_Pangolin.h>
+#include <pangolin/pangolin.h>
+#include <SLAMBenchAPI.h>
 
 
 std::string default_output_filename;
 std::string output_filename;
+bool use_gui, default_use_gui = false;
+bool lifelong_slam, default_lifelong_slam = false;
 
 std::string alignment_technique = "new";
 std::string default_alignment_technique = "new";
 TypedParameter<std::string> file_output_parameter ("fo", "file-output", "File to write slamfile containing outputs", &output_filename, &default_output_filename);
 TypedParameter<std::string> alignment_type_parameter("a",     "alignment-technique",      "Select an alignment technique by name, if not found, \"new alignment\" used (original,new,umeyama).", &alignment_technique, &default_alignment_technique);
+TypedParameter<bool> gui_parameter("gui", "gui", "Whether or not to display the graphical user interface", &use_gui, &default_use_gui);
+TypedParameter<bool> lifelong_parameter("ll",     "lifelong",      "If given multiple sequences, relocalise in between sequences rather than starting a new ", &lifelong_slam, &default_lifelong_slam);
+
+#ifdef WITH_GUI
+static SLAMBenchUI* volatile ui = nullptr;
+void run_pangolin(bool *stay_on, SLAMBenchConfiguration *config) {
+    std::cerr << "Creation of GUI interface." << std::endl;
+    auto ui_pangolin = new SLAMBenchUI_Pangolin();
+    ui_pangolin->AddOutputManager("Ground Truth", &config->GetGroundTruth());
+    for (auto lib : config->GetLoadedLibs()) {
+        ui_pangolin->AddOutputManager(lib->getName(), &lib->GetOutputManager());
+    }
+    ui_pangolin->InitialiseOutputs();
+    ui = dynamic_cast<SLAMBenchUI *> (ui_pangolin);
+
+    // Provide the current camera position to the GUI
+    ui->update_camera(480, 640, 520, 521, 324, 249);
+
+    std::cerr << "Start rendering loop." << std::endl;
+    while (!pangolin::ShouldQuit()) {
+
+        usleep(40000);
+        if (!ui->process()) {
+            std::cerr << "Rendering problem." << std::endl;
+            exit(1);
+        }
+    }
+
+    //***************************************************************************************
+    // FINISH RENDERING
+    //***************************************************************************************
+    std::cout << "Stop Pangolin..." << std::endl;
+    pangolin::Quit();
+    std::cout << "GUI closed ... " << std::endl;
+
+
+    //***************************************************************************************
+    // CLOSE COMPUTE THREADS
+    //***************************************************************************************
+    *stay_on = false;
+    std::cout << "Wait for compute thread..." << std::endl;
+    //	compute_thread.join();
+}
+#endif
 
 int main(int argc, char * argv[])
 {
-
 	try {
-
 		auto config = new SLAMBenchConfiguration();
 
 		//***************************************************************************************
 		// Start the argument processing
 		//***************************************************************************************
-
 		config->addParameter(file_output_parameter);
 		config->addParameter(alignment_type_parameter);
-		config->GetParameterManager().ReadArgumentsOrQuit(argc, argv);
+		config->addParameter(gui_parameter);
+		config->addParameter(lifelong_parameter);
 
 		//***************************************************************************************
 		// At this point the datasets/libraries/sensors are loaded with their arguments set.
 		//***************************************************************************************
-
-
-
+        config->GetParameterManager().ReadArgumentsOrQuit(argc, argv);
 
 		//***************************************************************************************
-		// We initialise the configuration, means to retrieve groundtruth and set the alignement
+		// Initialise the configuration, retrieve the ground truth and set the alignement
 		//***************************************************************************************
-
 		config->InitGroundtruth(false);
-
-		// get GT trajectory
 		auto gt_traj = config->GetGroundTruth().GetMainOutput(slambench::values::VT_POSE);
 
 		slambench::outputs::TrajectoryAlignmentMethod *alignment_method;
@@ -72,14 +114,11 @@ int main(int argc, char * argv[])
 		}
 
 		//***************************************************************************************
-		// We prepare the logging and create the global metrics
+		// Prepare the logging and create the global metrics
 		//***************************************************************************************
-
-		config->start_statistics();
-		slambench::ColumnWriter cw (config->get_log_stream(), "\t");
+        config->StartStatistics();
+		slambench::ColumnWriter cw (config->GetLogStream(), "\t");
 		cw.AddColumn(new slambench::RowNumberColumn());
-
-
 
 		auto memory_metric   = std::make_shared<slambench::metrics::MemoryMetric>();
 		auto duration_metric = std::make_shared<slambench::metrics::DurationMetric>();
@@ -115,7 +154,16 @@ int main(int argc, char * argv[])
 				auto alignment = new slambench::outputs::AlignmentOutput("Alignment", new slambench::outputs::PoseOutputTrajectoryInterface(gt_traj), lib_traj, alignment_method);
 				alignment->SetActive(true);
 				alignment->SetKeepOnlyMostRecent(true);
+
 				auto aligned = new slambench::outputs::AlignedPoseOutput(lib_traj->GetName() + " (Aligned)", alignment, lib_traj);
+                lib->GetOutputManager().RegisterOutput(aligned);
+
+                // Align point cloud
+                slambench::outputs::BaseOutput *pointcloud = lib->GetOutputManager().GetMainOutput(slambench::values::VT_POINTCLOUD);
+                if(pointcloud != nullptr) {
+                    auto pc_aligned = new slambench::outputs::AlignedPointCloudOutput(pointcloud->GetName() + "(Aligned)", alignment, pointcloud);
+                    lib->GetOutputManager().RegisterOutput(pc_aligned);
+                }
 
 				// Add ATE metric
 				auto ate_metric = std::make_shared<slambench::metrics::ATEMetric>(new slambench::outputs::PoseOutputTrajectoryInterface(aligned), new slambench::outputs::PoseOutputTrajectoryInterface(gt_traj));
@@ -167,23 +215,34 @@ int main(int argc, char * argv[])
 
 		}
 
-
 		config->AddFrameCallback([&cw]{cw.PrintRow();}); // @suppress("Invalid arguments")
 		cw.PrintHeader();
 
-		//***************************************************************************************
-		// We run the experiment
-		//***************************************************************************************
-
-		SLAMBenchConfiguration::compute_loop_algorithm (config,nullptr,nullptr);
-
+        //***************************************************************************************
+        // Start the GUI
+        //***************************************************************************************
+        if(use_gui)
+        {
+#ifdef WITH_GUI
+            std::thread pangolin_thread(run_pangolin, &use_gui, config);
+            while(ui == nullptr) ; // spin until UI is initialised
+            //***************************************************************************************
+            // We run the experiment
+            //***************************************************************************************
+            SLAMBenchConfiguration::ComputeLoopAlgorithm(config, &use_gui, ui);
+            pangolin_thread.join();
+#else
+            std::cerr<< "Not compiled with Pangolin support! Continuing without GUI." <<std::endl;
+            SLAMBenchConfiguration::ComputeLoopAlgorithm(config, nullptr, nullptr);
+#endif
+        } else {
+                SLAMBenchConfiguration::ComputeLoopAlgorithm(config, nullptr, nullptr);
+        }
 		//***************************************************************************************
 		// End of experiment, we output the map
 		//***************************************************************************************
 
 		// TODO: Only one output file does not do the job for more than one SLAM systems, output directory maybe ?
-
-
 		if(!output_filename.empty()) {
 		    if(config->GetLoadedLibs().size() > 1) {
                 std::cerr << "Can only write outputs to file when there is only one lib loaded" << std::endl;

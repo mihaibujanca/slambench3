@@ -7,11 +7,8 @@
 
  */
 
-
-
 #ifndef FRAMEWORK_SHARED_INCLUDE_SLAMBENCHLIBRARYHELPER_H_
 #define FRAMEWORK_SHARED_INCLUDE_SLAMBENCHLIBRARYHELPER_H_
-
 
 #include <Parameters.h>
 #include <ParameterComponent.h>
@@ -19,9 +16,9 @@
 #include <metrics/MetricManager.h>
 #include <outputs/OutputManager.h>
 #include <SLAMBenchUI.h>
+#include <utility>
 #include <vector>
 #include <Eigen/Core>
-
 
 class SLAMBenchLibraryHelper : public ParameterComponent {
 
@@ -31,7 +28,7 @@ private :
     slambench::metrics::MetricManager  _metric_manager;
     std::ostream&				       _log_stream;
     slambench::io::InputInterface*     _input_interface;
-	slambench::outputs::OutputManager  output_manager_;
+	slambench::outputs::OutputManager  _output_manager;
 
 public:
 	bool            (* c_sb_new_slam_configuration)(SLAMBenchLibraryHelper *) ;
@@ -43,17 +40,13 @@ public:
     bool            (* c_sb_relocalize)(SLAMBenchLibraryHelper * );
 	slambench::outputs::BaseOutput* gt_traj;
 
-private:
-    SLAMBenchLibraryHelper ();
-
-
-public:
-
-    SLAMBenchLibraryHelper (std::string id, std::string lib, std::ostream& l, slambench::io::InputInterface* i) :
-    	ParameterComponent(id),
-		
-    	_identifier(id),
-		_library_name(lib),
+    SLAMBenchLibraryHelper (const std::string& id,
+                            std::string lib,
+                            std::ostream& l,
+                            slambench::io::InputInterface* i) :
+        ParameterComponent(id),
+		_identifier(id),
+		_library_name(std::move(lib)),
 		_log_stream (l),
 		_input_interface (i),
 		c_sb_new_slam_configuration(nullptr) ,
@@ -64,26 +57,20 @@ public:
 		c_sb_update_outputs(nullptr)
 	{}
 
-public :
-
-    inline const std::string& get_identifier() const {return _identifier;};
-
-    inline const std::string& get_library_name() const {return _library_name;};
-
-    inline std::ostream& get_log_stream() {return _log_stream;};
-
+    inline const std::string& GetIdentifier() const {return _identifier;};
+    inline const std::string& GetLibraryName() const {return _library_name;};
+    inline std::ostream& GetLogStream() {return _log_stream;};
     inline slambench::metrics::MetricManager &GetMetricManager() { return _metric_manager; }
-    inline slambench::outputs::OutputManager &GetOutputManager() { return output_manager_; }
-
-    inline slambench::io::InputInterface *get_input_interface() {
+    inline slambench::outputs::OutputManager &GetOutputManager() { return _output_manager; }
+    inline slambench::io::InputInterface *GetInputInterface() {
 		if(_input_interface == nullptr) {
 			throw std::logic_error("Input interface have not been added to SLAM configuration");
 		}
 		return _input_interface;
 	}
 
-    inline const slambench::io::SensorCollection &get_sensors() {
-		return this->get_input_interface()->GetSensors();
+    inline const slambench::io::SensorCollection &GetSensors() {
+		return this->GetInputInterface()->GetSensors();
 	}
 
     inline void update_input_interface(slambench::io::InputInterface* interface)
@@ -92,9 +79,5 @@ public :
     }
 
 };
-
-typedef std::vector<SLAMBenchLibraryHelper*>       slam_lib_container_t;
-
-
-
+typedef std::vector<SLAMBenchLibraryHelper*> slam_lib_container_t;
 #endif /* FRAMEWORK_SHARED_INCLUDE_SLAMBENCHLIBRARYHELPER_H_ */

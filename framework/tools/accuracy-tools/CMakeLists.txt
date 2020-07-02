@@ -1,18 +1,13 @@
 cmake_minimum_required(VERSION 2.8)
 
-
-
-find_package(PCL  1.5)
+find_package(PCL REQUIRED)
 ## FIXME: PCL by using UseVTK.cmake corrupts COMPILE_DEFINITIONS
 get_directory_property(DirDefs  COMPILE_DEFINITIONS )
 message(STATUS "VTK FIX:Previous properties=${DirDefs}")
 set_directory_properties(PROPERTIES COMPILE_DEFINITIONS "")
-
-
 ######################################################################################
 #################        COMMONS
 ######################################################################################
-
 
 include_directories(. ${PROJECT_SOURCE_DIR}/shared/include)
 
