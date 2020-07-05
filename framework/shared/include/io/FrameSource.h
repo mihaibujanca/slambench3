@@ -45,8 +45,8 @@ namespace slambench {
 			SLAMFrame* GetNextFrame() override;
 			bool HasNextFrame() override;
 		private:
-			FrameCollection &_collection;
-			unsigned int _index;
+			FrameCollection &collection_;
+			unsigned int index_;
 		};
 		
 		/**

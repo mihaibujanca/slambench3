@@ -60,10 +60,10 @@ namespace slambench {
 		class SensorDeserialiser {
 		public:
 			virtual ~SensorDeserialiser();
-			bool Deserialise(const Sensor::sensor_name_t &sensor_name, const Sensor::sensor_type_t &type, Deserialiser *d, Sensor **s);
+			bool Deserialise(const Sensor::sensor_name_t &sensor_name, const Sensor::sensor_type_t &type, const Deserialiser *d, Sensor **s);
 			
 			virtual bool InstantiateSensor(const Sensor::sensor_name_t &sensor_name, const Sensor::sensor_type_t & type, Sensor **s) = 0;
-			virtual bool DeserialiseSensorSpecific(Deserialiser *d, Sensor *s) = 0;
+			virtual bool DeserialiseSensorSpecific(const Deserialiser *d, Sensor *s) = 0;
 		};
 		
 	}

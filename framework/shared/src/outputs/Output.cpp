@@ -179,10 +179,10 @@ void AlignmentOutput::Recalculate()
 	
 	slambench::outputs::PoseOutputTrajectoryInterface traj_int(trajectory_);
 
-	transformation = (*method_)(gt_trajectory_->GetAll(), traj_int.GetAll());
+    transformation_ = (*method_)(gt_trajectory_->GetAll(), traj_int.GetAll());
 	auto &last_point = trajectory_->GetMostRecentValue();
 
-	target.insert({last_point.first, new values::TypedValue<Eigen::Matrix4f>(transformation)});
+	target.insert({last_point.first, new values::TypedValue<Eigen::Matrix4f>(transformation_)});
 }
 
 AlignedPoseOutput::AlignedPoseOutput(const std::string& name, AlignmentOutput* alignment, BaseOutput* pose_output) : DerivedOutput(name, values::VT_POSE, {alignment, pose_output}), alignment_(alignment), pose_output_(pose_output)
@@ -305,8 +305,8 @@ void AlignedTrajectoryOutput::Recalculate()
 PointCloudHeatMap::PointCloudHeatMap(const std::string &name,
 				     BaseOutput *gt_pointcloud, BaseOutput *pointcloud,
 				     const std::function<values::ColoredPoint3DF(const values::HeatMapPoint3DF&, double, double)> &convert) :
-    DerivedOutput(name, values::VT_HEATMAPPOINTCLOUD, {gt_pointcloud, pointcloud}, false),
-    gt_pointcloud(gt_pointcloud), pointcloud(pointcloud), convert(convert)
+        DerivedOutput(name, values::VT_HEATMAPPOINTCLOUD, {gt_pointcloud, pointcloud}, false),
+        gt_pointcloud_(gt_pointcloud), pointcloud_(pointcloud), convert(convert)
 { }
 
 slambench::values::HeatMapPointCloudValue *getValue(const pcl::PointCloud<point_t>::Ptr &gt,
@@ -340,12 +340,12 @@ void PointCloudHeatMap::Recalculate()
 	}
 	target.clear();
 	
-	if (pointcloud->Empty()) {
+	if (pointcloud_->Empty()) {
 		return;
 	}
 
-	const BaseOutput::value_map_t::value_type &tested_frame = pointcloud->GetMostRecentValue();
-	const BaseOutput::value_map_t::value_type &gt_frame = gt_pointcloud->GetMostRecentValue();
+	const BaseOutput::value_map_t::value_type &tested_frame = pointcloud_->GetMostRecentValue();
+	const BaseOutput::value_map_t::value_type &gt_frame = gt_pointcloud_->GetMostRecentValue();
 
 	const PointCloudValue *tested_pointcloud = reinterpret_cast<const PointCloudValue*>(tested_frame.second);
 	const PointCloudValue *gt_pointcloud = reinterpret_cast<const PointCloudValue*>(gt_frame.second);

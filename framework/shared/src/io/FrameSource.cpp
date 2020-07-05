@@ -24,7 +24,7 @@ FrameStream::~FrameStream() {
 
 }
 
-FrameCollectionStream::FrameCollectionStream(FrameCollection& base_collection) : _collection(base_collection), _index(0) {
+FrameCollectionStream::FrameCollectionStream(FrameCollection& base_collection) : collection_(base_collection), index_(0) {
 
 }
 
@@ -32,11 +32,11 @@ SLAMFrame* FrameCollectionStream::GetNextFrame() {
 	if(!HasNextFrame()) {
 		return nullptr;
 	}
-	return _collection.GetFrame(_index++);
+	return collection_.GetFrame(index_++);
 }
 
 bool FrameCollectionStream::HasNextFrame() {
-	return _index < _collection.GetFrameCount();
+	return index_ < collection_.GetFrameCount();
 }
 
 GTBufferingFrameStream::GTFrameCollection::GTFrameCollection(GTBufferingFrameStream& gt_stream) : gt_stream_(gt_stream)

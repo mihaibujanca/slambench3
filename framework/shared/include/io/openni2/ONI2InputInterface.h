@@ -42,11 +42,11 @@ namespace slambench {
 				DepthSensor *BuildDepthSensor(const openni::SensorInfo *sensor_info) ;
 
 
-				openni::Device *_device;
-				ONI2FrameStream *_stream;
+				openni::Device *device_;
+				ONI2FrameStream *stream_;
 				
-				SensorCollection _sensors;
-				bool _sensors_ready;
+				SensorCollection sensors_;
+				bool sensors_ready_;
 			};
 		}
 	}

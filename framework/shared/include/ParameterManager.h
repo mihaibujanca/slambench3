@@ -31,7 +31,7 @@ namespace slambench {
 		bool ReadArguments(unsigned int argc, const char * const * const argv);
 
 	private:
-		std::map<std::string, param_info_t> params_long, params_short;
+		std::map<std::string, param_info_t> params_long_, params_short_;
         std::vector<ParameterComponent*> components_;
 	};
 }

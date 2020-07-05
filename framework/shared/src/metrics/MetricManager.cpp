@@ -20,8 +20,8 @@ using namespace slambench::metrics;
 
 MetricManager::MetricManager() : init_phase_(this,"Initialisation"), frame_phase_(this, "Frame"), frame_counter_(0)
 {
-	strcpy(duration_metric_typeid, typeid(DurationMetric).name());
-    frame_phase_duration.clear();
+	strcpy(duration_metric_typeid_, typeid(DurationMetric).name());
+    frame_phase_duration_.clear();
 }
 
 MetricManager::~MetricManager() {
@@ -94,8 +94,8 @@ void MetricManager::EndFrame()
 	auto &frame_data = frame.GetFrameData();
 	for(auto i : frame_metrics_) {
 		frame_data.insert({&*i, i->GetValue(&frame_phase_)});
-        if (!strcmp(duration_metric_typeid,typeid(*i).name())) {
-            frame_phase_duration.push_back(dynamic_cast<slambench::values::TypedValue<double>*>(frame_data[&*i])->GetValue());
+        if (!strcmp(duration_metric_typeid_, typeid(*i).name())) {
+            frame_phase_duration_.push_back(dynamic_cast<slambench::values::TypedValue<double>*>(frame_data[&*i])->GetValue());
         }
 	}
 	// yeaaaahhhhh

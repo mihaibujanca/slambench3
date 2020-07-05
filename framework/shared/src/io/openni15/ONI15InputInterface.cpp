@@ -40,7 +40,7 @@ ONI15InputInterface::ONI15InputInterface() : _stream(nullptr), _sensors_ready(fa
 
 
     if (_context->StartGeneratingAll() != XN_STATUS_OK) {
-    	std::cerr << ( "OpenNI15: _context.StartGeneratingAll() ERROR !!!") << std::endl;
+    	std::cerr << ( "OpenNI15: context_.StartGeneratingAll() ERROR !!!") << std::endl;
     	exit(1);
     	return;
     }

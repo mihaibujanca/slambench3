@@ -57,7 +57,7 @@ SensorDeserialiser::~SensorDeserialiser() {
 
 }
 
-bool SensorDeserialiser::Deserialise(const Sensor::sensor_name_t &sensor_name, const Sensor::sensor_type_t &type, Deserialiser* d, Sensor** s) {
+bool SensorDeserialiser::Deserialise(const Sensor::sensor_name_t &sensor_name, const Sensor::sensor_type_t &type, const Deserialiser* d, Sensor** s) {
 	Sensor *sensor;
 	if(!InstantiateSensor(sensor_name, type, &sensor)) {
 		fprintf(stderr, "Could not instantiate sensor of type %s\n", type.c_str());

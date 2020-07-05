@@ -15,7 +15,6 @@
 
 #include <string>
 
-
 namespace xn {
 	class Context;
 }
@@ -29,7 +28,7 @@ namespace slambench {
 			class ONI15InputInterface : public InputInterface {
 			public:
 				ONI15InputInterface();
-				
+
 				FrameStream& GetFrames() override;
 				SensorCollection& GetSensors() override;
 

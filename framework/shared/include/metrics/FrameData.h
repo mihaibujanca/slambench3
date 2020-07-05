@@ -7,11 +7,8 @@
 
  */
 
-
-
 #ifndef FRAMEDATA_H
 #define FRAMEDATA_H
-
 
 #include <map>
 
@@ -29,14 +26,12 @@ namespace slambench {
 		public:
 			PhaseData &GetPhaseData(Phase *p) { return phase_data_[p]; }
 			PhaseData &GetFrameData() { return frame_data_; }
-			
 			void Clear() { phase_data_.clear(); frame_data_.clear(); }
 			
 		private:
 			std::map<Phase*, PhaseData> phase_data_;
 			PhaseData frame_data_;
 		};
-		
 	}
 }
 

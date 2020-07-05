@@ -86,7 +86,7 @@ class CameraSensorDeserialiser : public SensorDeserialiser {
 		}
 	}
 
-	bool DeserialiseSensorSpecific(Deserialiser* deserialiser, Sensor* s) override {
+	bool DeserialiseSensorSpecific(const Deserialiser* deserialiser, Sensor* s) override {
 		CameraSensor *sensor = (CameraSensor*)s;
 		
 		assert(sensor->GetType() == CameraSensor::kCameraType);

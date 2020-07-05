@@ -23,12 +23,12 @@
 class SLAMBenchLibraryHelper : public ParameterComponent {
 
 private :
-	std::string                        _identifier;
-	std::string                        _library_name;
-    slambench::metrics::MetricManager  _metric_manager;
-    std::ostream&				       _log_stream;
-    slambench::io::InputInterface*     _input_interface;
-	slambench::outputs::OutputManager  _output_manager;
+	std::string                        identifier_;
+	std::string                        library_name_;
+    slambench::metrics::MetricManager  metric_manager_;
+    std::ostream&				       log_stream_;
+    slambench::io::InputInterface*     input_interface_;
+	slambench::outputs::OutputManager  output_manager_;
 
 public:
 	bool    (* c_sb_new_slam_configuration)(SLAMBenchLibraryHelper*);
@@ -44,30 +44,30 @@ public:
                            std::string lib,
                            std::ostream& l,
                            slambench::io::InputInterface* i) :
-        ParameterComponent(id),
-		_identifier(id),
-		_library_name(std::move(lib)),
-		_log_stream(l),
-		_input_interface(i),
-		c_sb_new_slam_configuration(nullptr),
-		c_sb_init_slam_system(nullptr),
-		c_sb_update_frame(nullptr),
-		c_sb_process_once(nullptr),
-		c_sb_clean_slam_system(nullptr),
-		c_sb_update_outputs(nullptr),
-        c_sb_relocalize(nullptr)
+            ParameterComponent(id),
+            identifier_(id),
+            library_name_(std::move(lib)),
+            log_stream_(l),
+            input_interface_(i),
+            c_sb_new_slam_configuration(nullptr),
+            c_sb_init_slam_system(nullptr),
+            c_sb_update_frame(nullptr),
+            c_sb_process_once(nullptr),
+            c_sb_clean_slam_system(nullptr),
+            c_sb_update_outputs(nullptr),
+            c_sb_relocalize(nullptr)
 	{}
 
-    inline const std::string& GetIdentifier() const {return _identifier;}
-    inline const std::string& GetLibraryName() const {return _library_name;}
-    inline std::ostream& GetLogStream() {return _log_stream;}
-    inline slambench::metrics::MetricManager &GetMetricManager() { return _metric_manager; }
-    inline slambench::outputs::OutputManager &GetOutputManager() { return _output_manager; }
+    inline const std::string& GetIdentifier() const {return identifier_;}
+    inline const std::string& GetLibraryName() const {return library_name_;}
+    inline std::ostream& GetLogStream() {return log_stream_;}
+    inline slambench::metrics::MetricManager &GetMetricManager() { return metric_manager_; }
+    inline slambench::outputs::OutputManager &GetOutputManager() { return output_manager_; }
     inline slambench::io::InputInterface *GetInputInterface() {
-		if(_input_interface == nullptr) {
+		if(input_interface_ == nullptr) {
 			throw std::logic_error("Input interface have not been added to SLAM configuration");
 		}
-		return _input_interface;
+		return input_interface_;
 	}
 
     inline const slambench::io::SensorCollection &get_sensors() {
@@ -76,7 +76,7 @@ public:
 
     inline void update_input_interface(slambench::io::InputInterface* interface)
     {
-        _input_interface = interface;
+        input_interface_ = interface;
     }
 
 };

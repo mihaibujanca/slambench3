@@ -136,9 +136,7 @@ slambench::io::SLAMFrame* OutputManagerWriter::CreatePointCloudFrame(BaseOutput 
 	
 	frame->FrameSensor = output_map_.at(output);
 	frame->Timestamp = ts;
-	frame->Data = malloc(pointclouddata.size());
-	memcpy(frame->Data, pointclouddata.data(), pointclouddata.size());
-	
+	frame->SetData(pointclouddata.data(), pointclouddata.size());
 	frame->SetVariableSize(pointclouddata.size());
 	
 	return frame;
@@ -149,7 +147,7 @@ slambench::io::SLAMFrame* OutputManagerWriter::CreatePoseFrame(BaseOutput *outpu
 	slambench::io::SLAMInMemoryFrame *frame = new slambench::io::SLAMInMemoryFrame();
 	frame->FrameSensor = output_map_.at(output);
 	frame->Timestamp = ts;
-	frame->Data = (void*)&value->GetValue();
+	frame->SetData((void*)&value->GetValue());
 
 	return frame;
 }

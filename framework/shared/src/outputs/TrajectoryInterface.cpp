@@ -7,7 +7,6 @@
 
  */
 
-
 #include "outputs/TrajectoryInterface.h"
 
 #include <iostream>
@@ -21,10 +20,7 @@ PoseOutputTrajectoryInterface::PoseOutputTrajectoryInterface(BaseOutput* pose_ou
 	assert(pose_output_->GetType() == VT_POSE);
 }
 
-PoseOutputTrajectoryInterface::~PoseOutputTrajectoryInterface()
-{
-
-}
+PoseOutputTrajectoryInterface::~PoseOutputTrajectoryInterface(){}
 
 PoseValue PoseOutputTrajectoryInterface::Get(const TimeStamp& when) const
 {
@@ -34,15 +30,14 @@ PoseValue PoseOutputTrajectoryInterface::Get(const TimeStamp& when) const
 TrajectoryValue::pose_container_t PoseOutputTrajectoryInterface::GetAll() const
 {
 
-	if((       ((!pose_output_->IsActive())  ||  !pose_output_->Empty())
-			&&  ((!pose_output_->IsActive())  ||  pose_output_->GetMostRecentValue().first > newest_point_))
+	if((!(pose_output_->IsActive() && pose_output_->Empty()) && ((!pose_output_->IsActive())  ||  pose_output_->GetMostRecentValue().first > newest_point_))
 			|| cached_traj_.empty()) {
-		recalculate();
+        Recalculate();
 	}
 	
 	return cached_traj_;
 }
-void PoseOutputTrajectoryInterface::recalculate() const {
+void PoseOutputTrajectoryInterface::Recalculate() const {
 	cached_traj_.clear();
 	
 	for(auto i : pose_output_->GetValues()) {
@@ -55,24 +50,22 @@ void PoseOutputTrajectoryInterface::recalculate() const {
 	}
 }
 
-
-TrajectoryValueWrapper::TrajectoryValueWrapper(const TrajectoryValue *t) : trajectoryValue(t) {
-}
+TrajectoryValueWrapper::TrajectoryValueWrapper(const TrajectoryValue *t) : trajectoryValue_(t) {}
 
 values::PoseValue TrajectoryValueWrapper::Get(const TimeStamp &when) const {
-	return trajectoryValue->GetPoints().at(when);
+	return trajectoryValue_->GetPoints().at(when);
 }
 
 values::TrajectoryValue::pose_container_t TrajectoryValueWrapper::GetAll() const {
-	return trajectoryValue->GetPoints();
+	return trajectoryValue_->GetPoints();
 }
 
 TrajectoryOutputInterface::TrajectoryOutputInterface(const BaseOutput *t):
-	trajectory_output(t)
+        trajectory_output_(t)
 { }
 
 values::PoseValue TrajectoryOutputInterface::Get(const TimeStamp &when) const {
-    const values::Value *raw_value = trajectory_output->GetMostRecentValue().second;
+    const values::Value *raw_value = trajectory_output_->GetMostRecentValue().second;
     const values::TrajectoryValue *tv = reinterpret_cast<const values::TrajectoryValue*>(raw_value);
 
     return tv->GetPoints().at(when);
@@ -80,11 +73,8 @@ values::PoseValue TrajectoryOutputInterface::Get(const TimeStamp &when) const {
 
 values::TrajectoryValue::pose_container_t TrajectoryOutputInterface::GetAll() const {
 
-    const values::Value *raw_value = trajectory_output->GetMostRecentValue().second;
+    const values::Value *raw_value = trajectory_output_->GetMostRecentValue().second;
     const values::TrajectoryValue *tv = reinterpret_cast<const values::TrajectoryValue*>(raw_value);
 
     return tv->GetPoints();
 }
-
-
-

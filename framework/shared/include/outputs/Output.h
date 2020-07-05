@@ -66,7 +66,7 @@ namespace slambench {
 			bool only_keep_most_recent_;
 			bool active_;
 			bool main_;
-			
+
 			std::vector<callback_t> update_callbacks_;
 		};
 		
@@ -117,16 +117,16 @@ namespace slambench {
 			
 			void Recalculate() override;
 			Eigen::Matrix4f& getTransformation() {
-				return transformation;
+				return transformation_;
 			}
-			/* When freezed, the alignment will stop updating in recalculate() */
+			/* When freezed, the alignment will stop updating in Recalculate() */
 			void SetFreeze(bool freeze) { freeze_ = freeze; }
 		private:
 			bool freeze_;
 			TrajectoryInterface *gt_trajectory_;
 			BaseOutput *trajectory_;
 			TrajectoryAlignmentMethod *method_;
-			Eigen::Matrix4f transformation;
+			Eigen::Matrix4f transformation_;
 		};
 		
 		class AlignedPoseOutput : public DerivedOutput {
@@ -182,8 +182,8 @@ namespace slambench {
 			void Recalculate() override;
 			std::function<values::ColoredPoint3DF(const values::HeatMapPoint3DF&, double, double)> convert;
 		private:
-			BaseOutput *gt_pointcloud;
-			BaseOutput *pointcloud;
+			BaseOutput *gt_pointcloud_;
+			BaseOutput *pointcloud_;
 		};
 
 		class PoseToXYZOutput : public BaseOutput {
