@@ -31,35 +31,36 @@ private :
 	slambench::outputs::OutputManager  _output_manager;
 
 public:
-	bool            (* c_sb_new_slam_configuration)(SLAMBenchLibraryHelper *) ;
-    bool            (* c_sb_init_slam_system)(SLAMBenchLibraryHelper * ) ;
-    bool            (* c_sb_update_frame) (SLAMBenchLibraryHelper *, slambench::io::SLAMFrame * ) ;
-    bool            (* c_sb_process_once) (SLAMBenchLibraryHelper *) ;
-    bool            (* c_sb_clean_slam_system)();
-    bool            (* c_sb_update_outputs)(SLAMBenchLibraryHelper *, const slambench::TimeStamp *ts);
-    bool            (* c_sb_relocalize)(SLAMBenchLibraryHelper * );
+	bool    (* c_sb_new_slam_configuration)(SLAMBenchLibraryHelper*);
+    bool    (* c_sb_init_slam_system)(SLAMBenchLibraryHelper*);
+    bool    (* c_sb_update_frame)(SLAMBenchLibraryHelper*, slambench::io::SLAMFrame*);
+    bool    (* c_sb_process_once)(SLAMBenchLibraryHelper*);
+    bool    (* c_sb_clean_slam_system)();
+    bool    (* c_sb_update_outputs)(SLAMBenchLibraryHelper*, const slambench::TimeStamp *ts);
+    bool    (* c_sb_relocalize)(SLAMBenchLibraryHelper* );
 	slambench::outputs::BaseOutput* gt_traj;
 
-    SLAMBenchLibraryHelper (const std::string& id,
-                            std::string lib,
-                            std::ostream& l,
-                            slambench::io::InputInterface* i) :
+    SLAMBenchLibraryHelper(const std::string& id,
+                           std::string lib,
+                           std::ostream& l,
+                           slambench::io::InputInterface* i) :
         ParameterComponent(id),
 		_identifier(id),
 		_library_name(std::move(lib)),
-		_log_stream (l),
-		_input_interface (i),
-		c_sb_new_slam_configuration(nullptr) ,
-		c_sb_init_slam_system(nullptr) ,
-		c_sb_update_frame(nullptr) ,
-		c_sb_process_once(nullptr) ,
-		c_sb_clean_slam_system(nullptr) ,
-		c_sb_update_outputs(nullptr)
+		_log_stream(l),
+		_input_interface(i),
+		c_sb_new_slam_configuration(nullptr),
+		c_sb_init_slam_system(nullptr),
+		c_sb_update_frame(nullptr),
+		c_sb_process_once(nullptr),
+		c_sb_clean_slam_system(nullptr),
+		c_sb_update_outputs(nullptr),
+        c_sb_relocalize(nullptr)
 	{}
 
-    inline const std::string& GetIdentifier() const {return _identifier;};
-    inline const std::string& GetLibraryName() const {return _library_name;};
-    inline std::ostream& GetLogStream() {return _log_stream;};
+    inline const std::string& GetIdentifier() const {return _identifier;}
+    inline const std::string& GetLibraryName() const {return _library_name;}
+    inline std::ostream& GetLogStream() {return _log_stream;}
     inline slambench::metrics::MetricManager &GetMetricManager() { return _metric_manager; }
     inline slambench::outputs::OutputManager &GetOutputManager() { return _output_manager; }
     inline slambench::io::InputInterface *GetInputInterface() {
@@ -69,7 +70,7 @@ public:
 		return _input_interface;
 	}
 
-    inline const slambench::io::SensorCollection &GetSensors() {
+    inline const slambench::io::SensorCollection &get_sensors() {
 		return this->GetInputInterface()->GetSensors();
 	}
 

@@ -1,7 +1,6 @@
 OPENCV_DIR=${DEPS_DIR}/opencv/share/OpenCV/
 ANDROID_OPENCV_DIR=${ANDROID_DEPS_DIR}/opencv/share/OpenCV/
 
-
 ${REPOS_DIR}/opencv :
 	mkdir ${REPOS_DIR} -p
 	rm ${REPOS_DIR}/opencv -rf
@@ -32,10 +31,8 @@ $(ANDROID_DEPS_DIR)/opencv : ${REPOS_DIR}/opencv  ${REPOS_DIR}/android-cmake
 	+cd ${REPOS_DIR}/opencv/build_dir && make
 	cd ${REPOS_DIR}/opencv/build_dir && make install
 
-
 opencv : 	
 	+if [ ! -d ${DEPS_DIR}/$@ ] ; then make ${DEPS_DIR}/$@ ; else echo "$@ skipped."; fi
-
 
 android-opencv : ${ANDROID_DEPS_DIR}/opencv
 

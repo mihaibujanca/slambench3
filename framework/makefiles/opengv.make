@@ -1,7 +1,5 @@
-
 OPENGV_INCLUDE_DIR=${DEPS_DIR}/opengv/include
 OPENGV_LIBRARY=${DEPS_DIR}/opengv/lib/libopengv.a
-
 
 ${REPOS_DIR}/opengv :
 	mkdir -p ${REPOS_DIR}
@@ -19,19 +17,13 @@ ${DEPS_DIR}/opengv : ${REPOS_DIR}/opengv eigen3
 
 
 ifdef EIGEN3_INCLUDE_DIR
-
-opengv : 
-	+if [ ! -d ${DEPS_DIR}/$@ ] ; then make ${DEPS_DIR}/$@ ; else echo "$@ skipped."; fi
-
-
-else 
-
-
-opengv : 
-	@echo "*** Error eigen not defined or not found"
-	@echo "*** EIGEN_INCLUDE_DIR=${EIGEN3_INCLUDE_DIR}"
-	@exit 1
-
+	opengv :
+		+if [ ! -d ${DEPS_DIR}/$@ ] ; then make ${DEPS_DIR}/$@ ; else echo "$@ skipped."; fi
+else
+	opengv :
+		@echo "*** Error eigen not defined or not found"
+		@echo "*** EIGEN_INCLUDE_DIR=${EIGEN3_INCLUDE_DIR}"
+		@exit 1
 endif
 
 .PHONY: opengv

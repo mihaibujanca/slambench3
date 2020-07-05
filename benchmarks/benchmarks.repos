@@ -8,3 +8,9 @@ ptam;PTAM [Klein et al, ISMAR'07 and ECCV'08];https://github.com/Oxford-PTAM/PTA
 okvis;OKVIS [Leutenegger et al, IJRR'15];https://github.com/ethz-asl/okvis;master;https://github.com/bbodin/okvis;benchmarks/okvis/src/original
 svo;SVO [Forster et al, ICRA'14];https://github.com/uzh-rpg/rpg_svo;master;https://github.com/pamela-project/rpg_svo.git;benchmarks/svo/src/original
 kfusion;KFusion [Newcombe et al. ISMAR'11];https://github.com/GerhardR/kfusion;update-master;https://github.com/pamela-project/kfusion;benchmarks/kfusion/src/original
+bundlefusion;BundleFusion [Dai et al. ACM TOG'17];https://github.com/niessner/BundleFusion;master;https://github.com/Paul92/BundleFusion;benchmarks/bundlefusion/src/original
+flame;FLAME [Greene et al. ICCV'17];https://github.com/robustrobotics/flame;master;https://github.com/mihaibujanca/flame;benchmarks/flame/src/original
+refusion;ReFusion [Palazollo et al. IROS'19];https://github.com/PRBonn/refusion;master;https://github.com/mihaibujanca/refusion;benchmarks/refusion/src/original
+open_vins;OpenVINS [Geneva et al. IROS'19];https://github.com/rpng/open_vins;master;https://github.com/mihaibujanca/open_vins;benchmarks/open_vins/src/original
+kinectfusion;KinectFusion [Newcombe et al. ISMAR'11] (Christian Diller's implementation);https://github.com/chrdiller/KinectFusionApp;master;https://github.com/mihaibujanca/KinectFusion;benchmarks/kinectfusion/src/original
+dso;DSO [Engel et al. ARXIV'16];https://github.com/JakobEngel/dso;master;https://github.com/mihaibujanca/dso;benchmarks/dso/src/original

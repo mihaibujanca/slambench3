@@ -1,4 +1,3 @@
-
 ifndef DEPS_DIR
 $(error DEPS_DIR is not set)
 endif
@@ -10,8 +9,6 @@ endif
 ifndef DEPS_BUILD_DIR
 $(error DEPS_BUILD_DIR is not set)
 endif
-
-
 
 PCL_DIR=${DEPS_DIR}/pcl/share/pcl-1.8
 ANDROID_PCL_DIR=${ANDROID_DEPS_DIR}/pcl/share/pcl-1.8

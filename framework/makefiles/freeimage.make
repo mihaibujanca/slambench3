@@ -1,4 +1,3 @@
-
 FREEIMAGE_INCLUDE_PATH=${DEPS_DIR}/freeimage/include
 FREEIMAGE_DYNAMIC_LIBRARY=${DEPS_DIR}/freeimage/lib/libfreeimage.so
 FREEIMAGE_URL=http://downloads.sourceforge.net/freeimage/FreeImage3180.zip
@@ -18,9 +17,6 @@ ${DEPS_DIR}/freeimage : ${REPOS_DIR}/FreeImage
 	+cd ${REPOS_DIR}/FreeImage && make DESTDIR=$@ 
 	mkdir -p $@
 	cd ${REPOS_DIR}/FreeImage && make install DESTDIR=$@ INCDIR=$@/include INSTALLDIR=$@/lib
-
-
-
 
 freeimage :
 	+if [ ! -d ${DEPS_DIR}/$@ ] ; then make ${DEPS_DIR}/$@ ; else echo "$@ skipped."; fi

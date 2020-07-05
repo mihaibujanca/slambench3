@@ -10,44 +10,24 @@
 #ifndef SLAMBENCH_CONFIGURATION_H_
 #define SLAMBENCH_CONFIGURATION_H_
 
-#include <metrics/ATEMetric.h>
-#include <metrics/RPEMetric.h>
-#include <outputs/TrajectoryAlignmentMethod.h>
-#include <outputs/OutputManagerWriter.h>
-#include <metrics/DurationMetric.h>
-#include <metrics/PowerMetric.h>
-#include "ColumnWriter.h"
-#include <sys/time.h>
-#include <cstdlib>
-#include <cstdio>
-#include <ctime>
-#include <cmath>
-#include <unistd.h>
-#include <memory>
-#include <vector>
-#include <string>
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include "ColumnWriter.h"
+#include <vector>
+#include <string>
 #include <chrono>
 #include <list>
-#include <assert.h>
-
-#include <stdexcept>
 
 #include <ParameterComponent.h>
 #include <ParameterManager.h>
-#include <Parameters.h>
-
 #include <SLAMBenchLibraryHelper.h>
 
-#include <io/SLAMFile.h>
 #include <io/sensor/SensorCollection.h>
 #include <io/InputInterface.h>
+#include <dlfcn.h>
 
 #define LOAD_FUNC2HELPER(handle,lib,f)     *(void**)(& lib->f) = dlsym(handle,#f); const char *dlsym_error_##lib##f = dlerror(); if (dlsym_error_##lib##f) {std::cerr << "Cannot load symbol " << #f << dlsym_error_##lib##f << std::endl; dlclose(handle); exit(1);}
-
-/* Default values */
 
 static const unsigned int default_frame_limit                  = 0;
 static const double default_realtime_mult                      = 1;
@@ -58,10 +38,7 @@ static const std::vector<std::string> default_slam_libraries   = {};
 static const std::vector<std::string> default_input_files      = {};
 static const bool                     default_is_false         = false;
 
-/* Classes */
-
-
-typedef  std::chrono::time_point<std::chrono::high_resolution_clock> stl_time;
+typedef std::chrono::time_point<std::chrono::high_resolution_clock> stl_time;
 
 class SLAMBenchConfiguration : public ParameterComponent {
 private:
@@ -124,7 +101,7 @@ public:
     void InitAlignment();
     void InitSensors();
     void InitWriter();
-    static void ComputeLoopAlgorithm(SLAMBenchConfiguration * config, bool *stay_on, SLAMBenchUI *ui);
+    static void ComputeLoopAlgorithm(SLAMBenchConfiguration *config, bool *stay_on, SLAMBenchUI *ui);
 
     void AddSLAMLibrary(const std::string& so_file, const std::string &id);
     bool AddInput(const std::string& library_filename);
@@ -156,7 +133,6 @@ public:
 
     void FireEndOfFrame() { for(auto i : frame_callbacks_) { i(); } }
     void StartStatistics();
-    void PrintArguments();
     void PrintDse();
     slambench::io::InputInterface *GetCurrentInputInterface();
     void AddInputInterface(slambench::io::InputInterface *input_ref);
@@ -166,7 +142,7 @@ public:
     std::string output_filename_;
 };
 
-void input_callback(Parameter* param, ParameterComponent* caller) {
+inline void input_callback(Parameter* param, ParameterComponent* caller) {
 
     auto config = dynamic_cast<SLAMBenchConfiguration*> (caller);
 
@@ -183,7 +159,7 @@ void input_callback(Parameter* param, ParameterComponent* caller) {
     }
     config->InitSensors();
 }
-void help_callback(Parameter* , ParameterComponent* caller) {
+inline void help_callback(Parameter*, ParameterComponent* caller) {
     auto config = dynamic_cast<SLAMBenchConfiguration*> (caller);
 
     std::cerr << " == SLAMBench Configuration ==" << std::endl;
@@ -193,20 +169,20 @@ void help_callback(Parameter* , ParameterComponent* caller) {
     exit(0);
 }
 
-void dse_callback(Parameter* , ParameterComponent* caller) {
-    auto config = dynamic_cast<SLAMBenchConfiguration*> (caller);
+inline void dse_callback(Parameter*, ParameterComponent* caller) {
+    auto config = dynamic_cast<SLAMBenchConfiguration*>(caller);
     config->PrintDse();
     exit(0);
 }
 
-void log_callback(Parameter* , ParameterComponent* caller) {
-    auto config = dynamic_cast<SLAMBenchConfiguration*> (caller);
+inline void log_callback(Parameter*, ParameterComponent* caller) {
+    auto config = dynamic_cast<SLAMBenchConfiguration*>(caller);
     config->UpdateLogStream();
 }
 
 inline void slam_library_callback(Parameter* param, ParameterComponent* caller) {
 
-    auto config = dynamic_cast<SLAMBenchConfiguration*> (caller);
+    auto config = dynamic_cast<SLAMBenchConfiguration*>(caller);
     auto parameter =  dynamic_cast<TypedParameter<std::vector<std::string>>*>(param) ;
 
     for (auto &library_name : parameter->getTypedValue()) {
@@ -224,5 +200,4 @@ inline void slam_library_callback(Parameter* param, ParameterComponent* caller) 
         config->AddSLAMLibrary(library_filename, library_identifier);
     }
 }
-
 #endif /* SLAMBENCH_CONFIGURATION_H_ */

@@ -68,7 +68,7 @@ To ease the usage of SLAMBench we provide auto-installation of dependencies and 
 * Boost (Optional)
 * GLUT (Optional)
 
-#### Required by benchmarks dependencies
+#### Required by benchmarks and datasets
 * Git
 * Mercurial
 * wget
@@ -79,16 +79,17 @@ To ease the usage of SLAMBench we provide auto-installation of dependencies and 
 * cvs
 * glog
 * gflags
+* p7zip
 
 #### To install them
 
-With Fedora 29: `dnf install -y yaml-cpp-devel gtk2-devel mesa-libEGL-devel vtk-devel cmake make git mercurial wget unzip gcc gcc-c++ lapack blas lapack-devel blas-devel findutils  cvs  glut-devel glew-devel boost-devel glog-devel gflags-devel libXmu-devel`
+With Fedora 29: `dnf install -y yaml-cpp-devel gtk2-devel mesa-libEGL-devel vtk-devel cmake make git mercurial wget unzip gcc gcc-c++ lapack blas lapack-devel blas-devel findutils  cvs  glut-devel glew-devel boost-devel glog-devel gflags-devel libXmu-devel p7zip`
 
-With Fedora 24: `dnf install -y yaml-cpp-devel gtk2-devel vtk-devel cmake make git mercurial wget unzip gcc gcc-c++ lapack blas lapack-devel blas-devel findutils  cvs  glut-devel glew-devel boost-devel glog-devel gflags-devel libXmu-devel`
+With Fedora 24: `dnf install -y yaml-cpp-devel gtk2-devel vtk-devel cmake make git mercurial wget unzip gcc gcc-c++ lapack blas lapack-devel blas-devel findutils  cvs  glut-devel glew-devel boost-devel glog-devel gflags-devel libXmu-devel p7zip`
 
-With Ubuntu 16.10: `apt-get -y install libvtk6.3 libvtk6-dev unzip libflann-dev wget mercurial git gcc cmake python-numpy freeglut3 freeglut3-dev libglew1.5 libglew1.5-dev libglu1-mesa libglu1-mesa-dev libgl1-mesa-glx libgl1-mesa-dev libxmu-dev libxi-dev  libboost-all-dev cvs libgoogle-glog-dev libatlas-base-dev gfortran  gtk2.0 libgtk2.0-dev  libyaml-dev build-essential bison flex libyaml-cpp-dev`
+With Ubuntu 16.10: `apt-get -y install libvtk6.3 libvtk6-dev unzip libflann-dev wget mercurial git gcc cmake python-numpy freeglut3 freeglut3-dev libglew1.5 libglew1.5-dev libglu1-mesa libglu1-mesa-dev libgl1-mesa-glx libgl1-mesa-dev libxmu-dev libxi-dev  libboost-all-dev cvs libgoogle-glog-dev libatlas-base-dev gfortran  gtk2.0 libgtk2.0-dev  libyaml-dev build-essential bison flex libyaml-cpp-dev p7zip`
 
-With Ubuntu 16.04: `apt-get -y install libvtk6.2 libvtk6-dev unzip libflann-dev wget mercurial git gcc cmake python-numpy freeglut3 freeglut3-dev libglew1.5 libglew1.5-dev libglu1-mesa libglu1-mesa-dev libgl1-mesa-glx libgl1-mesa-dev libxmu-dev libxi-dev  libboost-all-dev cvs libgoogle-glog-dev libatlas-base-dev gfortran  gtk2.0 libgtk2.0-dev libproj9 libproj-dev libyaml-0-2 libyaml-dev libyaml-cpp-dev libhdf5-dev libhdf5-dev`
+With Ubuntu 16.04: `apt-get -y install libvtk6.2 libvtk6-dev unzip libflann-dev wget mercurial git gcc cmake python-numpy freeglut3 freeglut3-dev libglew1.5 libglew1.5-dev libglu1-mesa libglu1-mesa-dev libgl1-mesa-glx libgl1-mesa-dev libxmu-dev libxi-dev  libboost-all-dev cvs libgoogle-glog-dev libatlas-base-dev gfortran  gtk2.0 libgtk2.0-dev libproj9 libproj-dev libyaml-0-2 libyaml-dev libyaml-cpp-dev libhdf5-dev libhdf5-dev p7zip`
 
 With Ubuntu 14.04: `apt-get -y install libvtk6-dev unzip libflann-dev wget mercurial git gcc cmake python-numpy freeglut3 freeglut3-dev libglew1.5 libglew1.5-dev libglu1-mesa libglu1-mesa-dev libgl1-mesa-glx libgl1-mesa-dev libxmu-dev libxi-dev  libboost-all-dev cvs libgoogle-glog-dev libatlas-base-dev gfortran  gtk2.0 libgtk2.0-dev`
 
@@ -336,7 +337,6 @@ bool sb_update_outputs(SLAMBenchUI *);
 
 In this section we will present those functions one by one.
 
-
 ### bool sb\_new\_slam\_configuration(SLAMBenchLibraryHelper * slam\_settings)
 
 This function is called first, and only once, SLAM systems is expected to provide its parameters.
@@ -374,19 +374,18 @@ slam_settings->GetOutputManager().RegisterOutput(pose_output);
 ```
 should always return `true` or an exception will be raised.
 
-### bool sb_update_frame (SLAMBenchLibraryHelper *  slam_settings, slambench::io::SLAMFrame* s)
+### bool sb_update_frame (SLAMBenchLibraryHelper *slam_settings, slambench::io::SLAMFrame *frame)
 
-The frame `s` is the next frame to process in the dataset (ordered by timestamps).
+Algorithms receive frames ordered by timestamp.
+When `sb_update_frame` returns `false`, `sb_update_frame` will be directly called again with the next frame, if it returns `true`, `sb_process_once` will be called once.
 
-When `sb_update_frame` returns `false`, then `sb_update_frame` will be directly call again with the next frame, if it return `true`, then `sb_process_once` will be called once.
+### bool sb_process_once (SLAMBenchLibraryHelper *slam_settings)
 
-### bool sb_process_once (SLAMBenchLibraryHelper * slam_settings)
+Should always return `true` or an exception will be raised.
 
-should always return `true` or an exception will be raised.
+### bool sb_relocalize (SLAMBenchLibraryHelper *slam_settings)
 
-### bool sb_relocalize (SLAMBenchLibraryHelper * slam_settings)
-
-This is newly introduced to supported lifelong SLAM evaluation. It will be called when the input sequence has been switched to the next one. The implementation is expected to explicitly trigger tracking lost and invoke the algorithm's re-localization procedure (if there be). It should return whether the relocalization is sucessful from the algorithm's perspective.
+This is newly introduced to support lifelong SLAM evaluation. It will be called when the input sequence has been switched to the next one. The implementation is expected to explicitly trigger tracking lost and invoke the algorithm's re-localization procedure (if there be). It should return whether the relocalization is sucessful from the algorithm's perspective.
 
 For backward compatibility, this function is allowed to be unimplemented in a benchmark. In such cases, the ```sb_process_once``` function will be called in a re-localization situation.
 
@@ -405,7 +404,7 @@ bool sb_clean_slam_system() {
 
 should always return `true` or an exception will be raised.
 
-### bool sb_update_outputs(SLAMBenchLibraryHelper * slam_settings, const slambench::TimeStamp *timestamp) 
+### bool sb_update_outputs(SLAMBenchLibraryHelper *slam_settings, const slambench::TimeStamp *timestamp) 
 
 The algorithm will return visible outputs (Pose, Point cloud, Frames) as defined by the `sb_init_slam_system` function.
 
@@ -445,7 +444,7 @@ Version 2.0 (Feb 2018)
 
 * This release is a complete new version
 
-Release candidat 1.1 (17 Mar 2015)
+Release candidate 1.1 (17 Mar 2015)
 
 * Bugfix : Move bilateralFilterKernel from preprocessing to tracking
 * Bugfix : Wrong interpretation of ICP Threshold parameter.
@@ -454,6 +453,6 @@ Release candidat 1.1 (17 Mar 2015)
 * Performance : Add a dedicated buffer for the OpenCL rendering
 * Feature : Add OSX support
 
-Release candidat 1.0 (12 Nov 2014)
+Release candidate 1.0 (12 Nov 2014)
 
 * First public release

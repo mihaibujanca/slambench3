@@ -25,19 +25,27 @@
 #include <io/sensor/GroundTruthSensor.h>
 #include <io/sensor/PointCloudSensor.h>
 
+#include <outputs/TrajectoryAlignmentMethod.h>
+#include <outputs/OutputManagerWriter.h>
+#include <metrics/DurationMetric.h>
+#include <metrics/PowerMetric.h>
 #include <metrics/Metric.h>
 #include <metrics/ATEMetric.h>
-#include <metrics/PowerMetric.h>
+#include <metrics/RPEMetric.h>
 
 #include <values/Value.h>
 #include <outputs/Output.h>
 
-
-#include <iostream>
 #include <stdexcept>
 #include <map>
+#include <sys/time.h>
+#include <cstdlib>
+#include <cstdio>
+#include <ctime>
+#include <unistd.h>
+#include <memory>
+#include <assert.h>
 
-#include <dlfcn.h>
 #include <boost/filesystem/path.hpp>
 #include <metrics/MemoryMetric.h>
 #include <boost/filesystem/operations.hpp>
@@ -204,7 +212,6 @@ void SLAMBenchConfiguration::InitGroundtruth(bool with_point_cloud) {
 
     initialised_ = true;
 }
-
 
 void SLAMBenchConfiguration::InitAlgorithms() {
 
@@ -452,7 +459,6 @@ void SLAMBenchConfiguration::InitAlignment() {
     alignment_->SetKeepOnlyMostRecent(true);
 }
 
-
 void SLAMBenchConfiguration::InitWriter() {
 
     if (writer_) {
@@ -542,6 +548,7 @@ void SLAMBenchConfiguration::InitWriter() {
     writer_->PrintHeader();
 
 }
+
 void SLAMBenchConfiguration::AddInputInterface(slambench::io::InputInterface *input_ref) {
     //workaround to be compatible with benchmarks that does not implement sensors resetting.
     //assume different input_interfaces_ has exactly the same types of sensors.
@@ -561,11 +568,13 @@ slambench::io::InputInterface* SLAMBenchConfiguration::GetCurrentInputInterface(
     }
     return input_interfaces_.front();
 }
+
 void SLAMBenchConfiguration::InitSensors() {
     for (slambench::io::Sensor *sensor : this->GetCurrentInputInterface()->GetSensors()) {
         GetParameterManager().AddComponent(dynamic_cast<ParameterComponent*>(&(*sensor)));
     }
 }
+
 bool SLAMBenchConfiguration::LoadNextInputInterface() {
     input_interfaces_.pop_front();
     ResetSensors();

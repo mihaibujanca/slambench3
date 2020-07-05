@@ -2,7 +2,8 @@
 /docker/tmp
 /docker/nvidia-driver.run
 docker/workspace/
-
+framework/makefiles/benchmarks.makefile
+framework/makefiles/datasets.makefile
 # Build files
 /build/
 /install/
