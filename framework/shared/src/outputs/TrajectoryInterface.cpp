@@ -29,15 +29,15 @@ PoseValue PoseOutputTrajectoryInterface::Get(const TimeStamp& when) const
 
 TrajectoryValue::pose_container_t PoseOutputTrajectoryInterface::GetAll() const
 {
-
-	if((!(pose_output_->IsActive() && pose_output_->Empty()) && ((!pose_output_->IsActive())  ||  pose_output_->GetMostRecentValue().first > newest_point_))
-			|| cached_traj_.empty()) {
-        Recalculate();
+    if(( ((!pose_output_->IsActive())  ||  !pose_output_->Empty()) &&
+    ((!pose_output_->IsActive())  ||  pose_output_->GetMostRecentValue().first > newest_point_))
+    || cached_traj_.empty()) {
+        recalculate();
 	}
 	
 	return cached_traj_;
 }
-void PoseOutputTrajectoryInterface::Recalculate() const {
+void PoseOutputTrajectoryInterface::recalculate() const {
 	cached_traj_.clear();
 	
 	for(auto i : pose_output_->GetValues()) {

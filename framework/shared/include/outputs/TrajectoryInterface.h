@@ -35,7 +35,7 @@ namespace slambench {
 			values::TrajectoryValue::pose_container_t GetAll() const override;
 			
 		private:
-			void Recalculate() const;
+			void recalculate() const;
 			BaseOutput *pose_output_;
 			mutable TimeStamp newest_point_;
 			mutable values::TrajectoryValue::pose_container_t cached_traj_;

@@ -119,7 +119,7 @@ namespace slambench {
 			Eigen::Matrix4f& getTransformation() {
 				return transformation_;
 			}
-			/* When freezed, the alignment will stop updating in Recalculate() */
+			/* When freezed, the alignment will stop updating in recalculate() */
 			void SetFreeze(bool freeze) { freeze_ = freeze; }
 		private:
 			bool freeze_;
