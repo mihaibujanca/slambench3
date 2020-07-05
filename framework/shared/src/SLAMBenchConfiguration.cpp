@@ -30,8 +30,10 @@
 #include <metrics/DurationMetric.h>
 #include <metrics/PowerMetric.h>
 #include <metrics/Metric.h>
+#include <metrics/MemoryMetric.h>
 #include <metrics/ATEMetric.h>
 #include <metrics/RPEMetric.h>
+#include <metrics/DepthEstimationMetric.h>
 
 #include <values/Value.h>
 #include <outputs/Output.h>
@@ -47,7 +49,6 @@
 #include <assert.h>
 
 #include <boost/filesystem/path.hpp>
-#include <metrics/MemoryMetric.h>
 #include <boost/filesystem/operations.hpp>
 #include "ResultWriter.h"
 
@@ -91,7 +92,7 @@ void SLAMBenchConfiguration::AddSLAMLibrary(const std::string& so_file, const st
         std::cout << "Benchmark does not implement sb_relocalize(). Will use the default." << std::endl;
         lib_ptr->c_sb_relocalize = lib_ptr->c_sb_process_once;
     }
-    this->slam_libs.push_back(lib_ptr);
+    this->slam_libs_.push_back(lib_ptr);
 
 
     size_t pre = slambench::memory::MemoryProfile::singleton.GetOverallData().BytesAllocatedAtEndOfFrame;
@@ -130,7 +131,7 @@ bool SLAMBenchConfiguration::AddInput(const std::string& library_filename) {
 }
 
 void SLAMBenchConfiguration::PrintDse() {
-    for (SLAMBenchLibraryHelper* lib : this->slam_libs) {
+    for (SLAMBenchLibraryHelper* lib : this->slam_libs_) {
         std::cout << "libs:" << lib->GetIdentifier() << "\n" ;
         for (auto parameter : lib->getParameters()) {
             std::cout << "argument:" << parameter->getLongOption(lib) << "\n" ;
@@ -148,14 +149,13 @@ SLAMBenchConfiguration::SLAMBenchConfiguration(void (*custom_input_callback)(Par
     if(!libs_callback)
         libs_callback = slam_library_callback;
     initialised_ = false;
-    this->log_stream = nullptr;
-    this->slam_library_names = {};
-
+    this->log_stream_ = nullptr;
+    this->slam_library_names_ = {};
     // Run Related
     this->addParameter(TypedParameter<unsigned int>("fl",     "frame-limit",      "last frame to compute",                   &this->frame_limit, &default_frame_limit));
-    this->addParameter(TypedParameter<std::string>("o",     "log-file",      "Output log file",                   &this->log_file, &default_log_file, log_callback));
-    this->addParameter(TypedParameter<std::vector<std::string>>("i",     "input" ,        "Specify the input file or mode." ,  &this->input_files, &default_input_files , custom_input_callback));
-    this->addParameter(TypedParameter<std::vector<std::string> >("load",  "load-slam-library" , "Load a specific SLAM library."     , &this->slam_library_names, &default_slam_libraries, libs_callback));
+    this->addParameter(TypedParameter<std::string>("o", "log-file", "Output log file", &this->log_file_, &default_log_file, log_callback));
+    this->addParameter(TypedParameter<std::vector<std::string>>("i", "input" , "Specify the input file or mode." , &this->input_files_, &default_input_files , custom_input_callback));
+    this->addParameter(TypedParameter<std::vector<std::string> >("load", "load-slam-library" , "Load a specific SLAM library."     , &this->slam_library_names_, &default_slam_libraries, libs_callback));
     this->addParameter(TriggeredParameter("dse",   "dse",    "Output solution space of parameters.",    dse_callback));
     this->addParameter(TriggeredParameter("h",     "help",   "Print the help.", help_callback));
     this->addParameter(TypedParameter<bool>("realtime",     "realtime-mode",      "realtime frame loading mode",                   &this->realtime_mode_, &default_is_false));
@@ -215,12 +215,11 @@ void SLAMBenchConfiguration::InitGroundtruth(bool with_point_cloud) {
 
 void SLAMBenchConfiguration::InitAlgorithms() {
 
-    assert(this->initialised_);
+    assert(initialised_);
 
-    for (auto lib : this->slam_libs) {
+    for (auto &lib : slam_libs_) {
 
-        //lib->GetMetricManager().BeginInit();
-        bool init_worked =  lib->c_sb_init_slam_system(lib) ;
+        bool init_worked = lib->c_sb_init_slam_system(lib) ;
         //lib->GetMetricManager().EndInit();
 
         if (!init_worked) {
@@ -234,16 +233,17 @@ void SLAMBenchConfiguration::InitAlgorithms() {
             exit(1);
         }
     }
+    InitWriter();
 }
 
 void SLAMBenchConfiguration::ComputeLoopAlgorithm(SLAMBenchConfiguration* config, bool *stay_on, SLAMBenchUI *ui) {
 
     assert(config->initialised_);
 
-    for (auto lib : config->slam_libs) {
+    for (auto lib : config->slam_libs_) {
         auto trajectory = lib->GetOutputManager().GetMainOutput(slambench::values::VT_POSE);
         if (trajectory == nullptr) {
-            std::cerr << "Algo does not provide a main pose output" << std::endl;
+            std::cerr << "Algorithm does not provide a main pose output" << std::endl;
             exit(1);
         }
     }
@@ -280,7 +280,7 @@ void SLAMBenchConfiguration::ComputeLoopAlgorithm(SLAMBenchConfiguration* config
             if (current_frame->FrameSensor->GetType() != slambench::io::GroundTruthSensor::kGroundTruthTrajectoryType) {
                 // ********* [[ NEW FRAME PROCESSED BY ALGO ]] *********
 
-                for (auto lib : config->slam_libs) {
+                for (auto lib : config->slam_libs_) {
                     // ********* [[ SEND THE FRAME ]] *********
                     ongoing = not lib->c_sb_update_frame(lib, current_frame);
 
@@ -364,10 +364,10 @@ void SLAMBenchConfiguration::ComputeLoopAlgorithm(SLAMBenchConfiguration* config
 
 void SLAMBenchConfiguration::CleanAlgorithms()
 {
-    for (auto lib : slam_libs) {
+    for (auto lib : slam_libs_) {
 
         std::cerr << "Clean SLAM system ..." << std::endl;
-        bool clean_worked = lib->c_sb_clean_slam_system ();
+        bool clean_worked = lib->c_sb_clean_slam_system();
 
 
         if (!clean_worked) {
@@ -457,10 +457,17 @@ void SLAMBenchConfiguration::InitAlignment() {
     alignment_.reset(new slambench::outputs::AlignmentOutput("Alignment", new slambench::outputs::PoseOutputTrajectoryInterface(gt_traj), lib_traj, alignment_method));
     alignment_->SetActive(true);
     alignment_->SetKeepOnlyMostRecent(true);
+
+    //Align point cloud
+    slambench::outputs::BaseOutput *pointcloud = lib->GetOutputManager().GetMainOutput(slambench::values::VT_POINTCLOUD);
+    if(pointcloud != nullptr) {
+        auto pc_aligned = new slambench::outputs::AlignedPointCloudOutput(pointcloud->GetName() + "(Aligned)", alignment_.get(), pointcloud);
+        lib->GetOutputManager().RegisterOutput(pc_aligned);
+    }
+
 }
 
 void SLAMBenchConfiguration::InitWriter() {
-
     if (writer_) {
         for(SLAMBenchLibraryHelper *lib : this->GetLoadedLibs()) {
             lib->GetMetricManager().reset();
@@ -472,14 +479,12 @@ void SLAMBenchConfiguration::InitWriter() {
         duration_metric_ = std::make_shared<slambench::metrics::DurationMetric>();
         power_metric_ = std::make_shared<slambench::metrics::PowerMetric>();
     }
-    auto gt_traj = this->GetGroundTruth().GetMainOutput(slambench::values::VT_POSE);
+    auto gt_traj = ground_truth_.GetMainOutput(slambench::values::VT_POSE);
+
     if (!alignment_) InitAlignment();
-
     writer_.reset(new slambench::ColumnWriter(this->GetLogStream(), "\t"));
-
     writer_->AddColumn(&(this->row_number_));
     bool have_timestamp = false;
-    auto memory_metric = std::make_shared<slambench::metrics::MemoryMetric>();
 
     for(SLAMBenchLibraryHelper *lib : this->GetLoadedLibs()) {
 
@@ -512,7 +517,8 @@ void SLAMBenchConfiguration::InitWriter() {
             auto rpe_metric = std::make_shared<slambench::metrics::RPEMetric>(new slambench::outputs::PoseOutputTrajectoryInterface(aligned), new slambench::outputs::PoseOutputTrajectoryInterface(gt_traj));
             lib->GetMetricManager().AddFrameMetric(rpe_metric);
             writer_->AddColumn(new slambench::CollectionValueLibColumnInterface(lib, &*rpe_metric, lib->GetMetricManager().GetFramePhase()));
-        } else {
+
+          } else {
             gt_available_ = false;
         }
 
@@ -520,11 +526,13 @@ void SLAMBenchConfiguration::InitWriter() {
         lib->GetMetricManager().AddFrameMetric(duration_metric_);
         lib->GetMetricManager().AddPhaseMetric(duration_metric_);
         writer_->AddColumn(new slambench::ValueLibColumnInterface(lib, &*duration_metric_, lib->GetMetricManager().GetFramePhase()));
+
         for(auto phase : lib->GetMetricManager().GetPhases()) {
             writer_->AddColumn(new slambench::ValueLibColumnInterface(lib, &*duration_metric_, phase));
         }
 
         // Add a memory metric
+        auto memory_metric = std::make_shared<slambench::metrics::MemoryMetric>();
         lib->GetMetricManager().AddFrameMetric(memory_metric);
         writer_->AddColumn(new slambench::CollectionValueLibColumnInterface(lib, &*memory_metric, lib->GetMetricManager().GetFramePhase()));
 
@@ -533,20 +541,28 @@ void SLAMBenchConfiguration::InitWriter() {
             lib->GetMetricManager().AddFrameMetric(power_metric_);
             writer_->AddColumn(new slambench::CollectionValueLibColumnInterface(lib, &*power_metric_, lib->GetMetricManager().GetFramePhase()));
         }
-
+        //			FIXME: workaround for ground truth
+//            auto depth_est_output = lib->GetOutputManager().GetOutput("depth_est");
+//            auto depth_est_gt = lib->GetOutputManager().GetOutput("depth_gt");
+//            if(!(depth_est_output&&depth_est_gt)) {
+//                std::cerr<<"This algorithm does not provide depth estimation"<<std::endl;
+//            }
+//            else {
+//                auto depth_metric = new slambench::metrics::DepthEstimationMetric(depth_est_output,depth_est_gt);
+//                lib->GetMetricManager().AddFrameMetric(depth_metric);
+//                cw.AddColumn(new slambench::CollectionValueLibColumnInterface(lib, depth_metric, lib->GetMetricManager().GetFramePhase()));
+//            }
         // Add XYZ row from the trajectory
         auto traj = lib->GetOutputManager().GetMainOutput(slambench::values::VT_POSE);
         traj->SetActive(true);
         writer_->AddColumn(new slambench::CollectionValueLibColumnInterface(lib, new slambench::outputs::PoseToXYZOutput(traj)));
-
     }
-
 
     frame_callbacks_.clear();
     this->AddFrameCallback([this]{writer_->PrintRow();}); // @suppress("Invalid arguments")
-
+    //this->AddFrameCallback([this]{cw_->PrintRow();}); // @suppress("Invalid arguments")
+    //cw_->PrintHeader();
     writer_->PrintHeader();
-
 }
 
 void SLAMBenchConfiguration::AddInputInterface(slambench::io::InputInterface *input_ref) {
@@ -584,7 +600,7 @@ bool SLAMBenchConfiguration::LoadNextInputInterface() {
     InitSensors();
     InitGroundtruth();
     InitWriter();
-    for (auto lib : this->slam_libs) {
+    for (auto lib : this->slam_libs_) {
         lib->update_input_interface(this->GetCurrentInputInterface());
     }
     input_interface_updated_ = true;

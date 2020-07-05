@@ -86,7 +86,7 @@ namespace slambench {
 				values_.clear();
 			}
 		private:
-			value_map_t  values_;
+			value_map_t values_;
 		};
 		
 		class DerivedOutput : public BaseOutput {
@@ -97,7 +97,6 @@ namespace slambench {
 			bool Empty() const override;
 			const value_map_t::value_type& GetMostRecentValue() const override;
 			const BaseOutput::value_map_t& GetValues() const override;
-
 			void Invalidate();
 			
 		protected:

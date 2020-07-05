@@ -38,7 +38,6 @@ public:
     bool    (* c_sb_clean_slam_system)();
     bool    (* c_sb_update_outputs)(SLAMBenchLibraryHelper*, const slambench::TimeStamp *ts);
     bool    (* c_sb_relocalize)(SLAMBenchLibraryHelper* );
-	slambench::outputs::BaseOutput* gt_traj;
 
     SLAMBenchLibraryHelper(const std::string& id,
                            std::string lib,

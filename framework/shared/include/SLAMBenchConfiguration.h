@@ -42,18 +42,21 @@ typedef std::chrono::time_point<std::chrono::high_resolution_clock> stl_time;
 
 class SLAMBenchConfiguration : public ParameterComponent {
 private:
-    slam_lib_container_t slam_libs;
-    std::ofstream log_filestream;
-    std::ostream* log_stream;
-    std::string   log_file;
-    std::vector<std::string> input_files;
-    std::vector<std::string> slam_library_names;
+    slam_lib_container_t slam_libs_;
+    std::ofstream log_filestream_;
+    std::ostream* log_stream_;
+    std::string   log_file_;
+    std::vector<std::string> input_files_;
+    std::vector<std::string> slam_library_names_;
     slambench::RowNumberColumn row_number_;
     std::unique_ptr<slambench::ColumnWriter> writer_;
+    std::unique_ptr<slambench::ColumnWriter> cw_;
     std::shared_ptr<slambench::metrics::Metric> duration_metric_;
     std::shared_ptr<slambench::metrics::Metric> power_metric_;
     slambench::io::SensorCollection* first_sensors_;
-    std::unique_ptr<slambench::outputs::AlignmentOutput> alignment_ = nullptr;
+    std::unique_ptr<slambench::outputs::AlignmentOutput> alignment_;
+    std::string alignment_technique_ = "new";
+    std::string output_filename_;
 
     slambench::io::FrameStream *input_stream_;
     std::list<slambench::io::InputInterface*> input_interfaces_;
@@ -78,10 +81,9 @@ public:
     virtual ~SLAMBenchConfiguration();
 
     void AddFrameCallback(std::function<void()> callback) { frame_callbacks_.push_back(callback); }
-    const slam_lib_container_t &GetLoadedLibs() const { return slam_libs; }
+    const slam_lib_container_t &GetLoadedLibs() const { return slam_libs_; }
     const slambench::ParameterManager &GetParameterManager() const { return param_manager_; }
     slambench::ParameterManager &GetParameterManager() { return param_manager_; }
-
     slambench::outputs::OutputManager &GetGroundTruth() { return ground_truth_; }
 
     /**
@@ -92,67 +94,61 @@ public:
      *
      */
     void InitGroundtruth(bool with_point_cloud = true);
-
     void InitAlgorithms();
+    void InitAlignment();
+    void InitSensors();
+    void InitWriter();
 
     // Clean up data structures used by algorithms
     void CleanAlgorithms();
     void SaveResults();
-    void InitAlignment();
-    void InitSensors();
-    void InitWriter();
     static void ComputeLoopAlgorithm(SLAMBenchConfiguration *config, bool *stay_on, SLAMBenchUI *ui);
 
     void AddSLAMLibrary(const std::string& so_file, const std::string &id);
     bool AddInput(const std::string& library_filename);
 
     const slambench::io::SensorCollection &GetSensors() {
-
         return GetCurrentInputInterface()->GetSensors();
-
     }
 
     void SetInputInterface(slambench::io::InputInterface *input_ref) {
         input_interfaces_.push_front(input_ref);
     }
+    void AddInputInterface(slambench::io::InputInterface *input_ref);
+    bool LoadNextInputInterface();
 
-    void ResetSensors()
-    {
+    void ResetSensors() {
         GetParameterManager().ClearComponents();
     }
 
-    inline std::ostream& GetLogStream() {if (!log_stream) UpdateLogStream(); return *log_stream;};
+    inline std::ostream& GetLogStream() {
+        if (!log_stream_)
+            UpdateLogStream();
+        return *log_stream_;
+    }
+
     inline void UpdateLogStream() {
-        if (this->log_file != "") {
-            this->log_filestream.open(this->log_file.c_str());
-            this->log_stream = &(this->log_filestream);
+        if (this->log_file_ != "") {
+            this->log_filestream_.open(this->log_file_.c_str());
+            this->log_stream_ = &(this->log_filestream_);
         } else {
-            this->log_stream = &std::cout;
+            this->log_stream_ = &std::cout;
         }
-    };
+    }
 
     void FireEndOfFrame() { for(auto i : frame_callbacks_) { i(); } }
     void StartStatistics();
     void PrintDse();
     slambench::io::InputInterface *GetCurrentInputInterface();
-    void AddInputInterface(slambench::io::InputInterface *input_ref);
-    bool LoadNextInputInterface();
-
-    std::string alignment_technique_;
-    std::string output_filename_;
 };
 
 inline void input_callback(Parameter* param, ParameterComponent* caller) {
 
     auto config = dynamic_cast<SLAMBenchConfiguration*> (caller);
+    assert(config != nullptr && "caller can not be turned into a SLAMBenchConfiguration*");
 
-    if (!config) {
-        std::cerr << "Extremely bad usage of the force..." << std::endl;
-        std::cerr << "It happened that a ParameterComponent* can not be turned into a SLAMBenchConfiguration*..." << std::endl;
-        exit(1);
-    }
-
-    auto parameter = dynamic_cast<TypedParameter<std::vector<std::string>>*>(param) ;
+    auto parameter = dynamic_cast<TypedParameter<std::vector<std::string>>*>(param);
+    assert(parameter && "parameter list corrupted");
 
     for (const std::string& input_name : parameter->getTypedValue()) {
         config->AddInput(input_name);

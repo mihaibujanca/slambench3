@@ -23,9 +23,9 @@ class XU3Monitor : public PowerMonitor {
 
 public :
 
-	static XU3Monitor * generate () {
+	static XU3Monitor *generate () {
 
-		static XU3Monitor * loader = nullptr;
+		static XU3Monitor *loader = nullptr;
 		assert (loader == nullptr);
 
 		loader = new XU3Monitor ();
