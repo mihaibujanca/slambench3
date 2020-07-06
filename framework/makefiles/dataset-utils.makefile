@@ -3,8 +3,7 @@
 ####################################
 check_generator:=if [ ! -e ./build/bin/dataset-generator ] ; then make slambench ; fi
 
-#### OpenLORIS-Scene
-####################
+#### OpenLORIS-Scene ####################
 
 datasets/OpenLORIS/%.7z :  # Example : $* = office1/office1-3
 	# extract 7z from the tar file of the scene, e.g. office1-1_7-package.tar

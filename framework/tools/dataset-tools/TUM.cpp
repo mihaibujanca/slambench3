@@ -91,9 +91,9 @@ bool loadTUMDepthData(const std::string &dirname,
 
             std::stringstream frame_name;
             frame_name << dirname << "/" << depth_filename;
-            depth_frame->Filename = frame_name.str();
+            depth_frame->filename = frame_name.str();
 
-            if (access(depth_frame->Filename.c_str(), F_OK) < 0) {
+            if (access(depth_frame->filename.c_str(), F_OK) < 0) {
                 printf("No depth image for frame (%s)\n", frame_name.str().c_str());
                 perror("");
                 return false;
@@ -168,9 +168,9 @@ bool loadTUMRGBData(const std::string &dirname,
 
             std::stringstream frame_name;
             frame_name << dirname << "/" << rgb_filename;
-            rgb_frame->Filename = frame_name.str();
+            rgb_frame->filename = frame_name.str();
 
-            if (access(rgb_frame->Filename.c_str(), F_OK) < 0) {
+            if (access(rgb_frame->filename.c_str(), F_OK) < 0) {
                 printf("No RGB image for frame (%s)\n", frame_name.str().c_str());
                 perror("");
                 return false;
@@ -242,9 +242,9 @@ bool loadTUMGreyData(const std::string &dirname,
 
             std::stringstream frame_name;
             frame_name << dirname << "/" << rgb_filename;
-            grey_frame->Filename = frame_name.str();
+            grey_frame->filename = frame_name.str();
 
-            if (access(grey_frame->Filename.c_str(), F_OK) < 0) {
+            if (access(grey_frame->filename.c_str(), F_OK) < 0) {
                 printf("No RGB image for frame (%s)\n", frame_name.str().c_str());
                 perror("");
                 return false;
@@ -267,12 +267,6 @@ bool loadTUMGroundTruthData(const std::string &dirname , SLAMFile &file) {
             .index(file.Sensors.size())
             .build();
 
-    if(!gt_sensor) {
-        std::cout << "gt sensor not found..." << std::endl;
-        return false;
-    } else {
-        std::cout << "gt sensor created..." << std::endl;
-    }
     file.Sensors.AddSensor(gt_sensor);
 
     std::ifstream infile(dirname + "/" + "groundtruth.txt");
@@ -301,9 +295,7 @@ bool loadTUMGroundTruthData(const std::string &dirname , SLAMFile &file) {
     boost::regex comment = boost::regex(RegexPattern::comment);
 
     while (std::getline(infile, line)) {
-        if (line.empty()) {
-            continue;
-        } else if (boost::regex_match(line, match, comment)) {
+        if (line.empty() || boost::regex_match(line, match, comment)) {
             continue;
         } else if (boost::regex_match(line, match, groundtruth_line)) {
 
@@ -346,11 +338,9 @@ bool loadTUMGroundTruthData(const std::string &dirname , SLAMFile &file) {
 bool loadTUMAccelerometerData(const std::string &dirname, SLAMFile &file) {
 
     auto accelerometer_sensor = AccSensorBuilder()
-            .name("Accelerometer")
-            .description("AccelerometerSensor")
+            .index(file.Sensors.size())
             .build();
 
-    accelerometer_sensor->Index = file.Sensors.size();
     file.Sensors.AddSensor(accelerometer_sensor);
 
     std::ifstream infile(dirname + "/" + "accelerometer.txt");

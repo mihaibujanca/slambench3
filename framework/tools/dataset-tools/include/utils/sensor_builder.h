@@ -15,6 +15,8 @@
 #include <io/sensor/GroundTruthSensor.h>
 #include <io/sensor/EventCameraSensor.h>
 #include <io/sensor/AccelerometerSensor.h>
+#include <io/sensor/GyroSensor.h>
+#include <io/sensor/OdomSensor.h>
 
 namespace slambench {
   namespace io {
@@ -107,13 +109,21 @@ namespace slambench {
         }
         return static_cast<T&>(*this);
       }
+      static bool check(Sensor* s, std::string& name)
+      {
+          if(!s) {
+              std::cout << name << " sensor not found..." << std::endl;
+          } else {
+              std::cout << s->GetName() << " sensor created..." << std::endl;
+          }
+      }
     };
 
     class CameraSensorBuilder : public SensorBuilder<CameraSensorBuilder> {
      public:
       CameraSensor* build() {
-        auto sensor = new CameraSensor(name_.empty() ? "Camera" : name_,
-                                       CameraSensor::kCameraType);
+        std::string name =  name_.empty() ? "Camera" : name_;
+        auto sensor = new CameraSensor(name, CameraSensor::kCameraType);
         sensor->Rate = rate_;
         sensor->Width = width_;
         sensor->Height = height_;
@@ -133,7 +143,7 @@ namespace slambench {
         if (distortion_type_ == CameraSensor::Equidistant) {
           sensor->CopyEquidistantDistortion(distortion_);
         }
-
+        check(sensor, name);
         return sensor;
       }
     };
@@ -162,7 +172,7 @@ namespace slambench {
         if (distortion_type_ == CameraSensor::Equidistant) {
           sensor->CopyEquidistantDistortion(distortion_);
         }
-
+        check(sensor, name);
         return sensor;
       }
     };
@@ -191,7 +201,7 @@ namespace slambench {
         if (distortion_type_ == CameraSensor::Equidistant) {
           sensor->CopyEquidistantDistortion(distortion_);
         }
-
+        check(sensor, name);
         return sensor;
       }
     };
@@ -223,7 +233,7 @@ namespace slambench {
 
         sensor->DisparityType = disparity_type_;
         sensor->CopyDisparityParams(disparity_);
-
+        check(sensor, name);
         return sensor;
       }
     };
@@ -234,6 +244,30 @@ namespace slambench {
         std::string name =  name_.empty() ? "Accelerometer" : name_;
         auto sensor = new AccelerometerSensor(name);
         sensor->Description = description_.empty() ? "Accelerometer" : description_;
+        check(sensor, name);
+        return sensor;
+      }
+    };
+
+    class GyroSensorBuilder : public SensorBuilder<GyroSensorBuilder> {
+     public:
+        GyroSensor* build() {
+        std::string name =  name_.empty() ? "Gyro" : name_;
+        auto sensor = new GyroSensor(name);
+        sensor->Description = description_.empty() ? "Gyroscope" : description_;
+        check(sensor, name);
+        return sensor;
+      }
+    };
+
+
+    class OdomSensorBuilder : public SensorBuilder<OdomSensorBuilder> {
+     public:
+        OdomSensor* build() {
+        std::string name =  name_.empty() ? "Odom" : name_;
+        auto sensor = new OdomSensor(name);
+        sensor->Description = description_.empty() ? "Odometry" : description_;
+        check(sensor, name);
         return sensor;
       }
     };
@@ -246,6 +280,7 @@ namespace slambench {
         sensor->Description = description_.empty() ? "GroundTruth" : description_;
         sensor->Rate = rate_;
         sensor->CopyPose(pose_);
+        check(sensor, name);
         return sensor;
       }
     };

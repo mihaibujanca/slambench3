@@ -32,14 +32,6 @@ namespace slambench {
     namespace io {
         class TUMReader : public DatasetReader {
         enum DatasetOrigin { Default = 0, Freiburg1, Freiburg2, Freiburg3, ETHI };
-        public:
-            typedef struct {
-                const uint32_t width;
-                const uint32_t height;
-                const float    rate;
-                const float    depthMapFactor;
-            } image_params_t;
-
         private:
             /****
              * Taken from:
@@ -55,7 +47,6 @@ namespace slambench {
                     = { 640, 480, 30.0, 5000.0 };
 
             /****
-             *
              * source of these parameters unknown
              */
             static constexpr DepthSensor::disparity_params_t fr_disparity_params
@@ -70,18 +61,18 @@ namespace slambench {
              * https://vision.in.tum.de/data/datasets/rgbd-dataset/file_formats#intrinsic_camera_calibration_of_the_kinect
              * data recorded on three Microsoft Xbox Kinect sensors
              * (freiburg1, freiburg2 and freiburg3)
-            Camera          fx 	    fy 	    cx 	    cy
-            (ROS default) 	525.0 	525.0 	319.5 	239.5
-            Freiburg 1 RGB 	517.3 	516.5 	318.6 	255.3
-            Freiburg 2 RGB 	520.9 	521.0 	325.1 	249.7
-            Freiburg 3 RGB 	535.4 	539.2 	320.1 	247.6
-            ETHI       RGB 	538.7  	540.7 	319.2 	233.6
+                Camera          fx 	    fy 	    cx 	    cy
+                (ROS default) 	525.0 	525.0 	319.5 	239.5
+                Freiburg 1 RGB 	517.3 	516.5 	318.6 	255.3
+                Freiburg 2 RGB 	520.9 	521.0 	325.1 	249.7
+                Freiburg 3 RGB 	535.4 	539.2 	320.1 	247.6
+                ETHI       RGB 	538.7  	540.7 	319.2 	233.6
 
-            Camera  	    fx  	fy 	    cx 	    cy
-            Freiburg 1 IR 	591.1 	590.1 	331.0 	234.0
-            Freiburg 2 IR 	580.8 	581.8 	308.8 	253.0
-            Freiburg 3 IR 	567.6 	570.2 	324.7 	250.1
-            ETHI       IR 	538.7 	540.7 	319.2 	233.6
+                Camera  	    fx  	fy 	    cx 	    cy
+                Freiburg 1 IR 	591.1 	590.1 	331.0 	234.0
+                Freiburg 2 IR 	580.8 	581.8 	308.8 	253.0
+                Freiburg 3 IR 	567.6 	570.2 	324.7 	250.1
+                ETHI       IR 	538.7 	540.7 	319.2 	233.6
              *
              */
             static constexpr CameraSensor::intrinsics_t fr1_intrinsics_rgb
@@ -132,18 +123,18 @@ namespace slambench {
              * Taken from:
              * https://vision.in.tum.de/data/datasets/rgbd-dataset/file_formats#intrinsic_camera_calibration_of_the_kinect
              * data recorded on three Microsoft Xbox Kinect sensors (freiburg1, freiburg2 and freiburg3)
-            Camera          d0 	    d1 	    d2  	d3      d4
-            (ROS default) 	0.0 	0.0 	0.0 	0.0 	0.0
-            Freiburg 1 RGB 	0.2624	-0.9531	-0.0054	0.0026 	1.1633
-            Freiburg 2 RGB 	0.2312	-0.7849	-0.0033	-0.0001 0.9172
-            Freiburg 3 RGB 	0 	    0 	    0 	    0 	    0
-            ETHI       RGB 	0 	    0 	    0 	    0 	    0
+                Camera          d0 	    d1 	    d2  	d3      d4
+                (ROS default) 	0.0 	0.0 	0.0 	0.0 	0.0
+                Freiburg 1 RGB 	0.2624	-0.9531	-0.0054	0.0026 	1.1633
+                Freiburg 2 RGB 	0.2312	-0.7849	-0.0033	-0.0001 0.9172
+                Freiburg 3 RGB 	0 	    0 	    0 	    0 	    0
+                ETHI       RGB 	0 	    0 	    0 	    0 	    0
 
-            Camera  	    d0 	    d1 	    d2 	    d3 	    d4
-            Freiburg 1 IR 	-0.0410	0.3286	0.0087	0.0051 	-0.5643
-            Freiburg 2 IR 	-0.2297	1.4766	0.0005	-0.0075 -3.4194
-            Freiburg 3 IR 	0 	    0 	    0 	    0 	    0
-            ETHI       IR 	0 	    0 	    0 	    0 	    0
+                Camera  	    d0 	    d1 	    d2 	    d3 	    d4
+                Freiburg 1 IR 	-0.0410	0.3286	0.0087	0.0051 	-0.5643
+                Freiburg 2 IR 	-0.2297	1.4766	0.0005	-0.0075 -3.4194
+                Freiburg 3 IR 	0 	    0 	    0 	    0 	    0
+                ETHI       IR 	0 	    0 	    0 	    0 	    0
              *
              */
             static const CameraSensor::distortion_type_t camera_distortion_type

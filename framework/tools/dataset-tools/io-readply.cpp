@@ -17,7 +17,7 @@ int main(int argc, char **argv) {
 	auto pc = reader.Read(str);
 	
 	if(pc == nullptr) {
-		printf("Could not read pointcloud!\n");
+		printf("Could not read pointcloud_!\n");
 		return 1;
 	} else {
 		for(auto p : pc->Get()) {

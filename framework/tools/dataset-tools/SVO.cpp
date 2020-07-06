@@ -42,9 +42,9 @@ bool loadSVOGreyData(const std::string &dirname,
 
     std::stringstream frame_name;
     frame_name << dirname << "/img/frame_" << std::setw(6) << std::setfill('0') << frame_no << "_0.png";
-    grey_frame->Filename = frame_name.str();
+    grey_frame->filename = frame_name.str();
 
-    if (access(grey_frame->Filename.c_str(), F_OK) < 0) {
+    if (access(grey_frame->filename.c_str(), F_OK) < 0) {
       printf("No grey image for frame %d (%s)\n", frame_no, frame_name.str().c_str());
       return false;
     }
@@ -124,9 +124,9 @@ SLAMFile *SVOReader::GenerateSLAMFile() {
       .description("Grey")
       .pose(pose)
       .intrinsics(svo_grey)
+      .index(slamfile.Sensors.size())
       .build();
 
-  grey_sensor->Index = slamfile.Sensors.size();
   slamfile.Sensors.AddSensor(grey_sensor);
 
   if (!loadSVOGreyData(dirname, slamfile, grey_sensor)) {
@@ -139,9 +139,9 @@ SLAMFile *SVOReader::GenerateSLAMFile() {
   auto gt_sensor = GTSensorBuilder()
       .name("GT")
       .description("GroundTruthSensor")
+      .index(slamfile.Sensors.size())
       .build();
 
-  gt_sensor->Index = slamfile.Sensors.size();
   slamfile.Sensors.AddSensor(gt_sensor);
 
   if (!loadSVOGroundTruthData(dirname, slamfile, gt_sensor)) {

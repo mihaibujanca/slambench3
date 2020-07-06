@@ -311,7 +311,7 @@ SLAMFile *EUROCMAVReader::GenerateSLAMFile() {
 
           auto frame = new ImageFileFrame();
           frame->FrameSensor = grey_sensor;
-          frame->Filename = cam_dirname + "/data/" + pdir->d_name;
+          frame->filename = cam_dirname + "/data/" + pdir->d_name;
 
           uint64_t timestamp = strtol(pdir->d_name, nullptr, 10);
           frame->Timestamp.S = timestamp / 1000000000;
@@ -323,7 +323,7 @@ SLAMFile *EUROCMAVReader::GenerateSLAMFile() {
             // Add the clone RGB
             auto rgb_frame = new ImageFileFrame();
             rgb_frame->FrameSensor = rgb_sensor;
-            rgb_frame->Filename = cam_dirname + "/data/" + pdir->d_name;
+            rgb_frame->filename = cam_dirname + "/data/" + pdir->d_name;
             rgb_frame->Timestamp.S = timestamp / 1000000000;
             rgb_frame->Timestamp.Ns = timestamp % 1000000000;
             slamfile->AddFrame(rgb_frame);
