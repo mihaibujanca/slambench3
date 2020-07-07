@@ -103,6 +103,12 @@ demo-prepare :
 	make datasets/EuRoCMAV/machine_hall/MH_01_easy/MH_01_easy.slam
 	make datasets/TUM/freiburg2/rgbd_dataset_freiburg2_desk.slam
 
+demo-droneflight :
+	make open_vins
+	make slambench APPS=open_vins
+	make datasets/UZHFPV/indoor_forward_3_snapdragon_with_gt.slam
+	@echo "You can now run ${BoldGreen}./build/bin/slambench -i datasets/UZHFPV/indoor_forward_3_snapdragon_with_gt.slam -load build/lib/libopen_vins-original-library.so${ColorOff}"
+
 demo-lib :
 	clear
 	@${ECHO} -e "                        "

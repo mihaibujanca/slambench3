@@ -5,8 +5,10 @@ fd = open(sys.argv[1])
 data =fd.read()
 fd.close()
 
+
 def echo(str="", echoargs = ""):
     print("\t@echo " + echoargs + " \"" + str + "\"")
+
 
 print("datasets:")
 echo("The following datasets are built on your system and available for use:")
@@ -23,22 +25,22 @@ echo("\t- UZH-FPV Drone Racing Dataset [Delmerico et al, ICRA'19]: http://rpg.if
 echo("\t- OpenLORIS-Scene datasets [Shi et al, ICRA'20]: https://lifelong-robotic-vision.github.io/dataset/scene")
 echo("=================================================================================================================")
 echo()
-print("\t@echo \"=================================================================================================================\"")
-print("\t@echo \"SLAMBench integrates tools to automatically generate files compatible with SLAMBench from existing datasets.\"")
-print("\t@echo \"SLAMBench cannot download the OpenLORIS data for you. Please download the data manually (*-package.tar) to ./datasets/OpenLORIS/\"")
-print("\t@echo \"For details, please visit: https://lifelong-robotic-vision.github.io/dataset/scene\"")
+echo("=================================================================================================================")
+echo("SLAMBench integrates tools to automatically generate files compatible with SLAMBench from existing datasets.")
+echo("SLAMBench cannot download the OpenLORIS data for you. Please download the data manually (*-package.tar) to ./datasets/OpenLORIS/")
+echo("For details, please visit: https://lifelong-robotic-vision.github.io/dataset/scene")
 echo()
 
 targets = []
 dataset_name = ""
-for l in data.split("\n"):
-    if '#' in l or len(l) < 2:
+for line in data.split("\n"):
+    if '#' in line or len(line) < 2:
         continue
-    items = l.split(":")
+    items = line.split(":")
     if "Dataset" in items:
         dataset_name = items.pop(1)
         continue
-    items = l.split(";")
+    items = line.split(";")
     dataset_tag = items.pop(0)
     dataset_description = items.pop(0)
     # here need another target
