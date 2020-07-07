@@ -54,6 +54,7 @@ paper/*.tex
 /iros2020_results_backup
 /iros2020_results
 !/datasets/README.md
+!/datasets/datasets.repos
 
 # macOS
 .DS_Store

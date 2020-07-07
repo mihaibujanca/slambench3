@@ -161,7 +161,7 @@ datasets/SVO/artificial.slam: ./datasets/SVO/artificial.dir
 ./datasets/UZHFPV/%.zip :  # Example : $* = indoor_foward_3_snapdragon_with_gt
 	echo download $*.zip
 	mkdir -p $(@D)
-	cd $(@D)  &&  ${WGET} "http://rpg.ifi.uzh.ch/datasets/uzh-fpv/$*.zip"
+	cd $(@D)  &&  ${WGET} "http://rpg.ifi.uzh.ch/datasets/uzh-fpv-newer-versions/v2/$*.zip"
 
 ./datasets/UZHFPV/%.dir : ./datasets/UZHFPV/%.zip
 	mkdir $@
