@@ -128,6 +128,18 @@ namespace slambench {
 			BaseOutput *pose_output_;
 		};
 		
+		class PoseToXYZOutput : public BaseOutput {
+		public:
+			PoseToXYZOutput(BaseOutput *pose_output);
+			virtual ~PoseToXYZOutput();
+			const BaseOutput::value_map_t& GetValues() const override;
+			const value_map_t::value_type& GetMostRecentValue() const override;
+			
+		private:
+			BaseOutput *pose_output_;
+			mutable value_map_t cached_values_;
+		};
+		
 		/**
 		 * An output which returns a transformed point cloud
 		 */
@@ -143,16 +155,19 @@ namespace slambench {
 			BaseOutput *pointcloud_;
 		};
 		
-		class PoseToXYZOutput : public BaseOutput {
+		/**
+		 * An output which returns a transformed point cloud
+		 */
+		class AlignedColouredPointCloudOutput : public DerivedOutput {
 		public:
-			PoseToXYZOutput(BaseOutput *pose_output);
-			virtual ~PoseToXYZOutput();
-			const BaseOutput::value_map_t& GetValues() const override;
-			const value_map_t::value_type& GetMostRecentValue() const override;
-			
+			AlignedColouredPointCloudOutput(const std::string &name, AlignmentOutput *, BaseOutput *pc_output);
+			virtual ~AlignedColouredPointCloudOutput();
+
+			void Recalculate() override;
+
 		private:
-			BaseOutput *pose_output_;
-			mutable value_map_t cached_values_;
+			AlignmentOutput *alignment_;
+			BaseOutput *pointcloud_;
 		};
 	}
 }

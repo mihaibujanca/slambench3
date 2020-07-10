@@ -213,6 +213,41 @@ void AlignedPoseOutput::Recalculate()
 	}
 }
 
+PoseToXYZOutput::PoseToXYZOutput(BaseOutput* pose_output) : BaseOutput(pose_output->GetName() + " (XYZ)", values::ValueDescription({{"X", values::VT_DOUBLE}, {"Y", values::VT_DOUBLE}, {"Z", values::VT_DOUBLE}})), pose_output_(pose_output)
+{
+
+}
+
+PoseToXYZOutput::~PoseToXYZOutput()
+{
+
+}
+
+const BaseOutput::value_map_t& PoseToXYZOutput::GetValues() const
+{
+	GetMostRecentValue();
+	return cached_values_;
+}
+
+const BaseOutput::value_map_t::value_type& PoseToXYZOutput::GetMostRecentValue() const
+{
+	cached_values_.clear();
+	
+	auto pose_value = pose_output_->GetMostRecentValue();
+	auto val = (values::TypeForVT<values::VT_POSE>::type*)pose_value.second;
+	
+	float x = val->GetValue()(0, 3);
+	float y = val->GetValue()(1, 3);
+	float z = val->GetValue()(2, 3);
+	
+	auto xv = new values::TypeForVT<values::VT_DOUBLE>::type(x);
+	auto yv = new values::TypeForVT<values::VT_DOUBLE>::type(y);
+	auto zv = new values::TypeForVT<values::VT_DOUBLE>::type(z);
+	
+	cached_values_.insert({pose_value.first, new values::TypeForVT<values::VT_COLLECTION>::type({{"X", xv}, {"Y", yv}, {"Z", zv}})});
+	return *cached_values_.begin();
+}
+
 AlignedPointCloudOutput::AlignedPointCloudOutput(const std::string& name, AlignmentOutput* alignment, BaseOutput* pc_output) : DerivedOutput(name, values::VT_POINTCLOUD, {alignment, pc_output}), alignment_(alignment), pointcloud_(pc_output)
 {
 	SetKeepOnlyMostRecent(true);
@@ -248,37 +283,39 @@ void AlignedPointCloudOutput::Recalculate()
 	target.insert({latest_ts, new_pc});
 }
 
-PoseToXYZOutput::PoseToXYZOutput(BaseOutput* pose_output) : BaseOutput(pose_output->GetName() + " (XYZ)", values::ValueDescription({{"X", values::VT_DOUBLE}, {"Y", values::VT_DOUBLE}, {"Z", values::VT_DOUBLE}})), pose_output_(pose_output)
+
+AlignedColouredPointCloudOutput::AlignedColouredPointCloudOutput(const std::string& name, AlignmentOutput* alignment, BaseOutput* pc_output) : DerivedOutput(name, values::VT_COLOUREDPOINTCLOUD, {alignment, pc_output}), alignment_(alignment), pointcloud_(pc_output)
+{
+	SetKeepOnlyMostRecent(true);
+}
+
+AlignedColouredPointCloudOutput::~AlignedColouredPointCloudOutput()
 {
 
 }
 
-PoseToXYZOutput::~PoseToXYZOutput()
+void AlignedColouredPointCloudOutput::Recalculate()
 {
-
+	assert(GetKeepOnlyMostRecent());
+	auto &target = GetCachedValueMap();
+	
+	for(auto i : target) {
+		delete i.second;
+	}
+	target.clear();
+	
+	if(!pointcloud_->IsActive() || pointcloud_->GetValues().empty() || !alignment_->IsActive() || alignment_->GetValues().empty()) {
+		return;
+	}
+	
+	auto latest_point = pointcloud_->GetMostRecentValue();
+	auto latest_pc = (slambench::values::ColoredPointCloudValue*)latest_point.second;
+	auto latest_ts = latest_point.first; 
+	
+	auto latest_alignment = ((values::TypedValue<Eigen::Matrix4f>*)alignment_->GetMostRecentValue().second)->GetValue();
+	
+	auto new_pc = new slambench::values::ColoredPointCloudValue(*latest_pc);
+	new_pc->SetTransform(latest_alignment);
+	target.insert({latest_ts, new_pc});
 }
 
-const BaseOutput::value_map_t& PoseToXYZOutput::GetValues() const
-{
-	GetMostRecentValue();
-	return cached_values_;
-}
-
-const BaseOutput::value_map_t::value_type& PoseToXYZOutput::GetMostRecentValue() const
-{
-	cached_values_.clear();
-	
-	auto pose_value = pose_output_->GetMostRecentValue();
-	auto val = (values::TypeForVT<values::VT_POSE>::type*)pose_value.second;
-	
-	float x = val->GetValue()(0, 3);
-	float y = val->GetValue()(1, 3);
-	float z = val->GetValue()(2, 3);
-	
-	auto xv = new values::TypeForVT<values::VT_DOUBLE>::type(x);
-	auto yv = new values::TypeForVT<values::VT_DOUBLE>::type(y);
-	auto zv = new values::TypeForVT<values::VT_DOUBLE>::type(z);
-	
-	cached_values_.insert({pose_value.first, new values::TypeForVT<values::VT_COLLECTION>::type({{"X", xv}, {"Y", yv}, {"Z", zv}})});
-	return *cached_values_.begin();
-}

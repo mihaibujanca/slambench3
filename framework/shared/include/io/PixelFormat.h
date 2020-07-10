@@ -27,7 +27,8 @@ namespace slambench {
 				D_I_16,
 				D_F_64,
 				
-				RGBA_IIII_8888
+				RGBA_IIII_8888,
+				L_I_8
 			};
 			
 			EPixelFormat Parse(const std::string &fmt);

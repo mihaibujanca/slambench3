@@ -69,6 +69,7 @@ size_t pixelformat::GetPixelSize(pixelformat::EPixelFormat format) {
 		case RGB_III_888 : return 3;
 		case RGBA_IIII_8888 : return 4;
 		case D_I_8 : return 1;
+		case L_I_8 : return 1;
 		case D_F_32 : return 4;
 		case D_I_16 : return 2;
 		case D_F_64 : return 8;

@@ -22,10 +22,44 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "ColumnWriter.h"
+
+#include <metrics/SemanticPixelMetric.h>
+#include <metrics/ConfusionMatrixMetric.h>
+#include <metrics/DurationMetric.h>
+#include <metrics/DoubleMetric.h>
 
 std::string alignment_technique = "original";
 std::string default_alignment_technique = "original";
 TypedParameter<std::string> alignment_type_parameter("a",     "alignment-technique",      "Select an alignment technique by name, if not found, default used (default,new).", &alignment_technique, &default_alignment_technique);
+
+std::string dictionary_filepath;
+std::string default_dictionary_filepath = "";
+TypedParameter<std::string> dictionary_filepath_parameter("d", "dictionary", "Filepath to a map between the dataset semantic classes and the algorithm semantic classes",
+                                                          &dictionary_filepath, &default_dictionary_filepath);
+
+
+std::map<int, int> read_dictionary(const std::string &dictionary_filename) {
+	std::map<int, int> dictionary;
+
+	std::ifstream dictionary_reader(dictionary_filename);
+	if (!dictionary_reader.good()) {
+		const std::string message = "Could not load dictonary file: " + dictionary_filename;
+		std::cerr << message << std::endl;
+		throw message;
+	}
+
+	std::string dump;
+	std::getline(dictionary_reader, dump);
+	std::getline(dictionary_reader, dump);
+
+	int gt_class, algo_class;
+	while (dictionary_reader >> gt_class >> algo_class)
+		dictionary[gt_class] = algo_class;
+
+	return dictionary;
+}
+
 
 void run_pangolin(bool *stay_on, SLAMBenchConfiguration *config);
 static SLAMBenchUI * volatile ui = nullptr;
@@ -35,7 +69,7 @@ int main(int argc, char * argv[])
 
 	try {
 
-		auto config = new SLAMBenchConfiguration();
+		SLAMBenchConfiguration * config = new SLAMBenchConfiguration();
 
 		//***************************************************************************************
 		// Start the argument processing
@@ -43,6 +77,7 @@ int main(int argc, char * argv[])
 
 
 		config->getParameters().push_back(&alignment_type_parameter);
+		config->getParameters().push_back(&dictionary_filepath_parameter);
 		config->GetParameterManager().ReadArgumentsOrQuit(argc, argv, config);
 		//***************************************************************************************
 		// At this point the datasets/libraries/sensors are loaded with their arguments set.
@@ -72,7 +107,11 @@ int main(int argc, char * argv[])
 		// We prepare the logging and create the global metrics
 		//***************************************************************************************
 
-		// N/A
+		config->start_statistics();
+		slambench::ColumnWriter cw (config->get_log_stream(), "\t");
+		cw.AddColumn(new slambench::RowNumberColumn());
+
+		bool have_timestamp = false;
 
 		//***************************************************************************************
 		// We init the algos now because we need their output already
@@ -98,16 +137,47 @@ int main(int argc, char * argv[])
 
 				// try and align a pointcloud
 				slambench::outputs::BaseOutput *pointcloud = lib->GetOutputManager().GetMainOutput(slambench::values::VT_POINTCLOUD);
+				slambench::outputs::BaseOutput *colouredpointcloud = lib->GetOutputManager().GetMainOutput(slambench::values::VT_COLOUREDPOINTCLOUD);
 				if(pointcloud != nullptr) {
 					auto pc_aligned = new slambench::outputs::AlignedPointCloudOutput(pointcloud->GetName() + "(Aligned)", alignment, pointcloud);
 					lib->GetOutputManager().RegisterOutput(pc_aligned);
 				}
+
+				if(colouredpointcloud != nullptr) {
+					auto pc_aligned = new slambench::outputs::AlignedColouredPointCloudOutput(colouredpointcloud->GetName() + "(Aligned)", alignment, colouredpointcloud);
+					lib->GetOutputManager().RegisterOutput(pc_aligned);
+				}
+
+				// Create timestamp column if we don't have one
+				if(!have_timestamp) {
+					have_timestamp = true;
+					cw.AddColumn(new slambench::OutputTimestampColumnInterface(trajectory));
+				}
 			}
 		}
 
+                for(auto lib : config->GetLoadedLibs()) {
+                        // Add a memory metric
+                        auto semantic_projection_output = lib->GetOutputManager().GetOutput("Semantic Projection");
+                        if (semantic_projection_output == nullptr) {
+                            std::cerr << "The library does not set any semantic projection output" << std::endl;
+                        } else {
+                            auto &gt_manager = config->GetGroundTruth();
+                            auto gt_segmentation = gt_manager.GetMainOutput(slambench::values::VT_LABELLEDFRAME);
 
+                            if (gt_segmentation) {
+                                const std::map<int, int> class_dictionary = read_dictionary(dictionary_filepath);
 
+                                auto semantic_metric = new slambench::metrics::SemanticPixelMetric(semantic_projection_output, gt_segmentation, class_dictionary);
+                                lib->GetMetricManager().AddFrameMetric(semantic_metric);
+                                cw.AddColumn(new slambench::ValueLibColumnInterface(lib, semantic_metric, lib->GetMetricManager().GetFramePhase()));
 
+                                auto confusion_matrix_metric = new slambench::metrics::ConfusionMatrixMetric(semantic_projection_output, gt_segmentation, class_dictionary);
+                                lib->GetMetricManager().AddFrameMetric(confusion_matrix_metric);
+                                cw.AddColumn(new slambench::CollectionValueLibColumnInterface(lib, confusion_matrix_metric, lib->GetMetricManager().GetFramePhase()));
+                            }
+                        }
+		}
 
 		//***************************************************************************************
 		// We Start the GUI
@@ -117,10 +187,11 @@ int main(int argc, char * argv[])
 		bool stay_on = true;
 		std::thread pangolin_thread(run_pangolin, &stay_on, config);
 		while(ui == nullptr) ; // spin until UI is initialised
-
-		//***************************************************************************************
 		// We Start the Experiment
 		//***************************************************************************************
+
+		config->AddFrameCallback([&cw]{cw.PrintRow();});
+		cw.PrintHeader();
 
 		SLAMBenchConfiguration::compute_loop_algorithm( config, &stay_on, ui);
 
@@ -143,7 +214,7 @@ int main(int argc, char * argv[])
 
 void run_pangolin(bool *stay_on, SLAMBenchConfiguration *config) {
 	std::cerr << "Creation of GUI interface." << std::endl;
-	auto ui_pangolin = new SLAMBenchUI_Pangolin();
+	SLAMBenchUI_Pangolin * ui_pangolin = new SLAMBenchUI_Pangolin();
 	ui_pangolin->AddOutputManager("Ground Truth", &config->GetGroundTruth());
 	for(auto lib : config->GetLoadedLibs()) {
 		ui_pangolin->AddOutputManager(lib->getName(), &lib->GetOutputManager());
