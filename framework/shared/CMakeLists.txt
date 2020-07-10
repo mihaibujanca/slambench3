@@ -157,16 +157,12 @@ add_library(slambench-io
 
 
 add_library(slambench-utils  
-	src/SLAMBenchConfiguration  
+	src/SLAMBenchConfiguration
 	src/sb_malloc 
 	src/ParameterComponent
     src/ParameterManager
 )
 
-
-target_include_directories(slambench-io  PRIVATE ${Boost_INCLUDE_DIRS})
-target_include_directories(slambench-metrics PRIVATE ${Boost_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
-target_link_libraries(slambench-io PRIVATE slambench-utils pthread  ${Boost_LIBRARIES} ${OpenCV_LIBRARIES})
 
 SET(EXTRA_LIBS_FOR_MEMORY "")
 
@@ -182,8 +178,13 @@ if (CUDA_FOUND)
   SET(EXTRA_LIBS_FOR_MEMORY "${EXTRA_LIBS_FOR_MEMORY};${CUDA_LIBRARIES}")
 ENDIF(CUDA_FOUND)
 
-  target_link_libraries(slambench-utils slambench-metrics "-Wl,--no-as-needed;${EXTRA_LIBS_FOR_MEMORY};-Wl,--as-needed")
 
+target_include_directories(slambench-metrics PRIVATE ${Boost_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
+target_include_directories(slambench-io  PRIVATE ${Boost_INCLUDE_DIRS})
+
+target_link_libraries(slambench-utils "-Wl,--no-as-needed;${EXTRA_LIBS_FOR_MEMORY};-Wl,--as-needed")
+target_link_libraries(slambench-metrics PRIVATE ${OpenCV_LIBRARIES})
+target_link_libraries(slambench-io PRIVATE slambench-utils pthread  ${Boost_LIBRARIES} ${OpenCV_LIBRARIES})
 
 
 if(OpenNI_FOUND)
@@ -202,7 +203,6 @@ ELSE (OpenNI_FOUND)
 	SET_TARGET_PROPERTIES(slambench-io-oni15  PROPERTIES COMPILE_FLAGS "-fPIC -Wno-error=unused-but-set-variable -Wno-error=return-type")
     target_link_libraries(slambench-utils slambench-io-oni15)
 ENDIF(OpenNI_FOUND)
-
 
 
 if(OpenNI2_FOUND)
