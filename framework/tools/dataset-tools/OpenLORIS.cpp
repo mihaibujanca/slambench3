@@ -68,21 +68,22 @@ void DFSPrint(int s, int v, std::vector<int> pre, std::vector<int> &result) {
     result.push_back(v);
 }
 
-Eigen::Matrix4f slambench::io::compute_trans_matrix(std::string input_name_1, std::string input_name_2,
-                                                    std::string filename) {
-    YAML::Node f = YAML::LoadFile(filename.c_str());
+Eigen::Matrix4f slambench::io::compute_trans_matrix(const std::string& input_name_1,
+                                                    const std::string& input_name_2,
+                                                    const std::string& filename) {
+    auto yaml = YAML::LoadFile(filename);
 
     std::map<std::string, int> name_to_index;
-    std::map<trans_direction, Eigen::Matrix4f> transations;
+    std::map<trans_direction, Eigen::Matrix4f> transforms;
     int num = 0;
-    for (size_t i = 0; i < f["trans_matrix"].size(); i++) {
+    for (size_t i = 0; i < yaml["trans_matrix"].size(); i++) {
         int index_1, index_2;
-        std::string name_1 = f["trans_matrix"][i]["parent_frame"].as<std::string>();
+        std::string name_1 = yaml["trans_matrix"][i]["parent_frame"].as<std::string>();
         if (name_to_index.count(name_1) == 0) {
             name_to_index[name_1] = num;
             num++;
         }
-        std::string name_2 = f["trans_matrix"][i]["child_frame"].as<std::string>();
+        std::string name_2 = yaml["trans_matrix"][i]["child_frame"].as<std::string>();
         if (name_to_index.count(name_2) == 0) {
             name_to_index[name_2] = num;
             num++;
@@ -91,25 +92,25 @@ Eigen::Matrix4f slambench::io::compute_trans_matrix(std::string input_name_1, st
         index_2 = name_to_index[name_2];
         trans_direction dir(index_1, index_2);
         Eigen::Matrix4f trans_matrix;
-        trans_matrix << f["trans_matrix"][i]["matrix"]["data"][0].as<float>(),
-            f["trans_matrix"][i]["matrix"]["data"][1].as<float>(),
-            f["trans_matrix"][i]["matrix"]["data"][2].as<float>(),
-            f["trans_matrix"][i]["matrix"]["data"][3].as<float>(),
-            f["trans_matrix"][i]["matrix"]["data"][4].as<float>(),
-            f["trans_matrix"][i]["matrix"]["data"][5].as<float>(),
-            f["trans_matrix"][i]["matrix"]["data"][6].as<float>(),
-            f["trans_matrix"][i]["matrix"]["data"][7].as<float>(),
-            f["trans_matrix"][i]["matrix"]["data"][8].as<float>(),
-            f["trans_matrix"][i]["matrix"]["data"][9].as<float>(),
-            f["trans_matrix"][i]["matrix"]["data"][10].as<float>(),
-            f["trans_matrix"][i]["matrix"]["data"][11].as<float>(),
-            f["trans_matrix"][i]["matrix"]["data"][12].as<float>(),
-            f["trans_matrix"][i]["matrix"]["data"][13].as<float>(),
-            f["trans_matrix"][i]["matrix"]["data"][14].as<float>(),
-            f["trans_matrix"][i]["matrix"]["data"][15].as<float>();  // problem
-        transations[dir] = trans_matrix;
+        trans_matrix << yaml["trans_matrix"][i]["matrix"]["data"][0].as<float>(),
+                        yaml["trans_matrix"][i]["matrix"]["data"][1].as<float>(),
+                        yaml["trans_matrix"][i]["matrix"]["data"][2].as<float>(),
+                        yaml["trans_matrix"][i]["matrix"]["data"][3].as<float>(),
+                        yaml["trans_matrix"][i]["matrix"]["data"][4].as<float>(),
+                        yaml["trans_matrix"][i]["matrix"]["data"][5].as<float>(),
+                        yaml["trans_matrix"][i]["matrix"]["data"][6].as<float>(),
+                        yaml["trans_matrix"][i]["matrix"]["data"][7].as<float>(),
+                        yaml["trans_matrix"][i]["matrix"]["data"][8].as<float>(),
+                        yaml["trans_matrix"][i]["matrix"]["data"][9].as<float>(),
+                        yaml["trans_matrix"][i]["matrix"]["data"][10].as<float>(),
+                        yaml["trans_matrix"][i]["matrix"]["data"][11].as<float>(),
+                        yaml["trans_matrix"][i]["matrix"]["data"][12].as<float>(),
+                        yaml["trans_matrix"][i]["matrix"]["data"][13].as<float>(),
+                        yaml["trans_matrix"][i]["matrix"]["data"][14].as<float>(),
+                        yaml["trans_matrix"][i]["matrix"]["data"][15].as<float>();  // problem
+        transforms[dir] = trans_matrix;
         trans_direction dir_inv(index_2, index_1);
-        transations[dir_inv] = trans_matrix.inverse();
+        transforms[dir_inv] = trans_matrix.inverse();
     }
 
     int s = name_to_index[input_name_1];
@@ -124,8 +125,8 @@ Eigen::Matrix4f slambench::io::compute_trans_matrix(std::string input_name_1, st
     for (int i = 0; i < n; i++) {
         G.push_back(g);
     }
-    for (std::map<trans_direction, Eigen::Matrix4f>::iterator it = transations.begin(); it != transations.end(); ++it) {
-        trans_direction index_pair = it->first;
+    for (auto& transform : transforms) {
+        trans_direction index_pair = transform.first;
         G[index_pair.first][index_pair.second] = 1;
     }
 
@@ -137,9 +138,9 @@ Eigen::Matrix4f slambench::io::compute_trans_matrix(std::string input_name_1, st
     DFSPrint(s, v, pre, result);
 
     Eigen::Matrix4f result_matrix = Eigen::MatrixXf::Identity(4, 4);
-    for (std::vector<int>::iterator it = result.begin(); it != (result.end() - 1); it++) {
+    for (auto it = result.begin(); it != (result.end() - 1); it++) {
         trans_direction dir(*it, *(it + 1));
-        Eigen::Matrix4f trans = transations[dir];
+        Eigen::Matrix4f trans = transforms[dir];
         result_matrix = result_matrix * trans;
     }
     //    std::cout<<input_name_1<<" to "<<input_name_2<<std::endl;
@@ -203,7 +204,7 @@ bool loadOpenLORISDepthData(const std::string &dirname,
     boost::smatch match;
 
     while (std::getline(infile, line)) {
-        if (line.size() == 0) {
+        if (line.empty()) {
             continue;
         } else if (boost::regex_match(line, match, boost::regex("^\\s*#.*$"))) {
             continue;
@@ -212,7 +213,7 @@ bool loadOpenLORISDepthData(const std::string &dirname,
             int timestampNS = std::stoi(match[2]) * std::pow(10, 9 - match[2].length());
             std::string depthfilename = match[3];
 
-            ImageFileFrame *depth_frame = new ImageFileFrame();
+            auto depth_frame = new ImageFileFrame();
             depth_frame->FrameSensor = depth_sensor;
             depth_frame->Timestamp.S = timestampS;
             depth_frame->Timestamp.Ns = timestampNS;
@@ -297,7 +298,7 @@ bool loadOpenLORISImageData(const std::string &dirname,         // directory of 
             int timestampNS = std::stoi(match[2]) * std::pow(10, 9 - match[2].length());
             std::string rgbfilename = match[3];
 
-            ImageFileFrame *grey_frame = new ImageFileFrame();
+            auto grey_frame = new ImageFileFrame();
             grey_frame->FrameSensor = sensor;
             grey_frame->Timestamp.S = timestampS;
             grey_frame->Timestamp.Ns = timestampNS;
@@ -365,12 +366,10 @@ bool loadOpenLORISGroundTruthData(const std::string &dirname, SLAMFile &file) {
             Eigen::Matrix3f rotationMat = Eigen::Quaternionf(QW, QX, QY, QZ).toRotationMatrix();
             Eigen::Matrix4f pose = Eigen::Matrix4f::Identity();
             pose.block(0, 0, 3, 3) = rotationMat;
-
             pose.block(0, 3, 3, 1) << tx, ty, tz;
-
             pose = pose * trans_mat;
 
-            SLAMInMemoryFrame *gt_frame = new SLAMInMemoryFrame();
+            auto gt_frame = new SLAMInMemoryFrame();
             gt_frame->FrameSensor = gt_sensor;
             gt_frame->Timestamp.S = timestampS;
             gt_frame->Timestamp.Ns = timestampNS;
@@ -433,7 +432,7 @@ bool loadOpenLORISAccelerometerData(const std::string &dirname,
             int timestampS = std::stoi(match[1]);
             int timestampNS = std::stoi(match[2]) * std::pow(10, 9 - match[2].length());
 
-            SLAMInMemoryFrame *accelerometer_frame = new SLAMInMemoryFrame();
+            auto accelerometer_frame = new SLAMInMemoryFrame();
             accelerometer_frame->FrameSensor = accelerometer_sensor;
             accelerometer_frame->Timestamp.S = timestampS;
             accelerometer_frame->Timestamp.Ns = timestampNS;
@@ -496,7 +495,7 @@ bool loadOpenLORISGyroData(const std::string &dirname,
             int timestampS = std::stoi(match[1]);
             int timestampNS = std::stoi(match[2]) * std::pow(10, 9 - match[2].length());
 
-            SLAMInMemoryFrame *gyro_frame = new SLAMInMemoryFrame();
+            auto gyro_frame = new SLAMInMemoryFrame();
             gyro_frame->FrameSensor = gyro_sensor;
             gyro_frame->Timestamp.S = timestampS;
             gyro_frame->Timestamp.Ns = timestampNS;
@@ -530,7 +529,7 @@ bool loadOpenLORISOdomData(const std::string &dirname, const std::string &sensor
     std::ifstream infile(dirname + "/" + "odom.txt");
 
     while (std::getline(infile, line)) {
-        if (line.size() == 0) {
+        if (line.empty()) {
             continue;
         } else if (boost::regex_match(line, match, boost::regex("^\\s*#.*$"))) {
             continue;
@@ -547,7 +546,7 @@ bool loadOpenLORISOdomData(const std::string &dirname, const std::string &sensor
             int timestampS = std::stoi(match[1]);
             int timestampNS = std::stoi(match[2]) * std::pow(10, 9 - match[2].length());
 
-            SLAMInMemoryFrame *odom_frame = new SLAMInMemoryFrame();
+            auto odom_frame = new SLAMInMemoryFrame();
             odom_frame->FrameSensor = odom_sensor;
             odom_frame->Timestamp.S = timestampS;
             odom_frame->Timestamp.Ns = timestampNS;
@@ -606,13 +605,13 @@ SLAMFile *OpenLORISReader::GenerateSLAMFile() {
         return nullptr;
     }
 
-    SLAMFile *slamfilep = new SLAMFile();
+    auto slamfilep = new SLAMFile();
     SLAMFile &slamfile = *slamfilep;
 
     DepthSensor::disparity_params_t disparity_params = {0.001, 0.0};
     DepthSensor::disparity_type_t disparity_type = DepthSensor::affine_disparity;
 
-    YAML::Node yaml = YAML::LoadFile((dirname + "/sensors.yaml").c_str());
+    auto yaml = YAML::LoadFile(dirname + "/sensors.yaml");
 
     /*** load RGB ***/
     if (color && !loadOpenLORISImageData(dirname, "d400_color_optical_frame", "color.txt", false, slamfile,"RGB", yaml)) {
