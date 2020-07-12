@@ -47,6 +47,13 @@ void CameraSensor::CopyEquidistantDistortion(const distortion_coefficients_t &ot
     EquidistantDistortion[i] = other[i];
   }
 }
+void CameraSensor::CopyDistortion(const distortion_coefficients_t &other, const distortion_type_t& type) {
+  for(unsigned int i = 0; i < 4 ; ++i) {
+    Distortion[i] = other[i];
+  }
+  if(type == distortion_type_t::Equidistant)
+      Distortion[4] = other[4];
+}
 
 void CameraSensor::CopyIntrinsics(const intrinsics_t &other) {
 	for(unsigned int i = 0; i < 4 ; ++i) {
@@ -69,8 +76,8 @@ class CameraSensorSerialiser : public SensorSerialiser {
 		serialiser->Write(&sensor->Intrinsics, sizeof(sensor->Intrinsics));
 		serialiser->Write(&sensor->DistortionType, sizeof(sensor->DistortionType));
 		serialiser->Write(&sensor->RadialTangentialDistortion, sizeof(sensor->RadialTangentialDistortion));
-          serialiser->Write(&sensor->EquidistantDistortion, sizeof(sensor->EquidistantDistortion));
-
+        serialiser->Write(&sensor->EquidistantDistortion, sizeof(sensor->EquidistantDistortion));
+        serialiser->Write(&sensor->Distortion, sizeof(sensor->Distortion));
           return true;
 	}
 };
@@ -98,7 +105,8 @@ class CameraSensorDeserialiser : public SensorDeserialiser {
 		deserialiser->Read(&sensor->Intrinsics, sizeof(sensor->Intrinsics));
 		deserialiser->Read(&sensor->DistortionType, sizeof(sensor->DistortionType));
 		deserialiser->Read(&sensor->RadialTangentialDistortion, sizeof(sensor->RadialTangentialDistortion));
-                deserialiser->Read(&sensor->EquidistantDistortion, sizeof(sensor->EquidistantDistortion));
+        deserialiser->Read(&sensor->EquidistantDistortion, sizeof(sensor->EquidistantDistortion));
+        deserialiser->Read(&sensor->Distortion, sizeof(sensor->Distortion));
 
 		return true;
 	}

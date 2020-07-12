@@ -25,18 +25,10 @@ namespace slambench {
 
             try {
                 if (!boost::filesystem::exists(directory_name)) return false;
-
-                boost::filesystem::directory_iterator end_itr;  // default construction yields past-the-end
-
                 for (auto const &requirement : requirements) {
-                    bool seen = false;
-
-                    for (boost::filesystem::directory_iterator itr(directory_name); itr != end_itr; ++itr) {
-                        if (requirement == itr->path().filename()) seen = true;
-                    }
-
-                    if (!seen) {
-                        std::cout << "File not found: <dataset_dir>/" << requirement << std::endl;
+                    auto fullpath = directory_name+"/"+requirement;
+                    if (!boost::filesystem::exists(fullpath)) {
+                        std::cout << "File not found:" << fullpath << std::endl;
                         return false;
                     }
                 }

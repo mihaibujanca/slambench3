@@ -18,6 +18,7 @@
 #include <io/sensor/CameraSensor.h>
 #include <io/sensor/IMUSensor.h>
 #include <io/sensor/Sensor.h>
+#include <yaml-cpp/yaml.h>
 
 #include <dirent.h>
 #include <cstring>
@@ -36,15 +37,45 @@ using namespace slambench::io;
 
 bool loadUZHFPVGreyData(const std::string& dirname,
                         const std::string& filename,
+                        const std::string& sensor_name_yaml,
                         SLAMFile &file,
-                        CameraSensor* grey_sensor) {
+                        const YAML::Node& yaml) {
+    auto width = yaml[sensor_name_yaml]["resolution"][0].as<int>();
+    auto height = yaml[sensor_name_yaml]["resolution"][1].as<int>();
+    slambench::io::CameraSensor::intrinsics_t intrinsics;
+    intrinsics[0] = yaml[sensor_name_yaml]["intrinsics"][0].as<float>() / width;
+    intrinsics[1] = yaml[sensor_name_yaml]["intrinsics"][1].as<float>() / height;
+    intrinsics[2] = yaml[sensor_name_yaml]["intrinsics"][2].as<float>() / width;
+    intrinsics[3] = yaml[sensor_name_yaml]["intrinsics"][3].as<float>() / height;
+
+    slambench::io::CameraSensor::distortion_coefficients_t distortion;
+    for(size_t i = 0; i < 4; i++)
+        distortion[i] = yaml[sensor_name_yaml]["distortion_coeffs"][i].as<float>();
+    distortion[4] = 0;
+
+    Eigen::Matrix4f pose;
+    pose << yaml[sensor_name_yaml]["T_cam_imu"][0][0].as<float>(), yaml[sensor_name_yaml]["T_cam_imu"][1][0].as<float>(), yaml[sensor_name_yaml]["T_cam_imu"][2][0].as<float>(), yaml[sensor_name_yaml]["T_cam_imu"][3][0].as<float>(),
+            yaml[sensor_name_yaml]["T_cam_imu"][0][1].as<float>(), yaml[sensor_name_yaml]["T_cam_imu"][1][1].as<float>(), yaml[sensor_name_yaml]["T_cam_imu"][2][1].as<float>(), yaml[sensor_name_yaml]["T_cam_imu"][3][1].as<float>(),
+            yaml[sensor_name_yaml]["T_cam_imu"][0][2].as<float>(), yaml[sensor_name_yaml]["T_cam_imu"][1][2].as<float>(), yaml[sensor_name_yaml]["T_cam_imu"][2][2].as<float>(), yaml[sensor_name_yaml]["T_cam_imu"][3][2].as<float>(),
+            yaml[sensor_name_yaml]["T_cam_imu"][0][3].as<float>(), yaml[sensor_name_yaml]["T_cam_imu"][1][3].as<float>(), yaml[sensor_name_yaml]["T_cam_imu"][2][3].as<float>(), yaml[sensor_name_yaml]["T_cam_imu"][3][3].as<float>();
+
+    auto rate = yaml["cam1"] ? 30 : 50; // if cam1 exists, it's Snapdragon (30fps), else it's Davis (50fps).
+    auto grey_sensor = GreySensorBuilder()
+            .name("Grey " + sensor_name_yaml)
+            .size(width, height)
+            .pose(pose.transpose())
+            .intrinsics(intrinsics)
+            .distortion(CameraSensor::distortion_type_t::Equidistant, distortion)
+            .rate(rate)
+            .index(file.Sensors.size())
+            .build();
+    //if(sensor_name_yaml.find("cam1"))
+    grey_sensor->Delay = yaml[sensor_name_yaml]["timeshift_cam_imu"].as<float>();
+    file.Sensors.AddSensor(grey_sensor);
 
     std::string line;
-
     std::ifstream infile(dirname + "/" + filename);
-
     boost::smatch match;
-
     boost::regex comment = boost::regex(RegexPattern::comment);
 
     const std::string& start = RegexPattern::start;
@@ -178,10 +209,19 @@ bool loadUZHFPVGroundTruthData(const std::string &dirname,
 
 bool loadUZHFPVIMUData(const std::string &dirname,
                        SLAMFile &file,
-                       IMUSensor *IMU_sensor) {
+                       const YAML::Node& yaml) {
+    auto imu_sensor = new IMUSensor(dirname);
+
+    // parameters from calibration imu.yaml
+    imu_sensor->AcceleratorNoiseDensity = yaml["accelerometer_noise_density"].as<float>();
+    imu_sensor->AcceleratorBiasDiffusion = yaml["accelerometer_random_walk"].as<float>();
+    imu_sensor->GyroscopeNoiseDensity = yaml["gyroscope_noise_density"].as<float>();
+    imu_sensor->GyroscopeBiasDiffusion = yaml["gyroscope_random_walk"].as<float>();
+    imu_sensor->Rate = yaml["update_rate"].as<float>();
+    imu_sensor->Index = file.Sensors.size();
+    file.Sensors.AddSensor(imu_sensor);
 
     std::string line;
-
     boost::smatch match;
     std::ifstream infile(dirname + "/" + "imu.txt");
 
@@ -226,10 +266,10 @@ bool loadUZHFPVIMUData(const std::string &dirname,
             float az = std::stof(match[9]);
 
             auto IMU_frame = new SLAMInMemoryFrame();
-            IMU_frame->FrameSensor = IMU_sensor;
+            IMU_frame->FrameSensor = imu_sensor;
             IMU_frame->Timestamp.S = timestampS;
             IMU_frame->Timestamp.Ns = timestampNS;
-            IMU_frame->Data = malloc(IMU_sensor->GetFrameSize(IMU_frame));
+            IMU_frame->Data = malloc(imu_sensor->GetFrameSize(IMU_frame));
 
             ((float *)IMU_frame->Data)[0] = gx;
             ((float *)IMU_frame->Data)[1] = gy;
@@ -301,9 +341,8 @@ bool loadUZHFPVEventData(const std::string &dirname,
         }
     }
 
-    size_t current_index = 0;
+    size_t current_index = 0, i;
     auto current_ts = events[current_index].ts;
-    size_t i = current_index;
 
     // loop runs once per SLAM Frame
     while(current_index < events.size() - 1) {
@@ -339,12 +378,12 @@ bool loadUZHFPVEventData(const std::string &dirname,
 SLAMFile *UZHFPVReader::GenerateSLAMFile() {
 
     std::string dirname = input;
-
     // check requirements for slamfile
     std::vector<std::string> requirements = {"img"};
 
     if (imu) {
         requirements.emplace_back("imu.txt");
+        requirements.emplace_back("imu.yaml");
     }
 
     if (gt) {
@@ -354,7 +393,9 @@ SLAMFile *UZHFPVReader::GenerateSLAMFile() {
     if (stereo) {
         requirements.emplace_back("left_images.txt");
         requirements.emplace_back("right_images.txt");
+
     } else {
+
         requirements.emplace_back("images.txt");
     }
 
@@ -366,9 +407,9 @@ SLAMFile *UZHFPVReader::GenerateSLAMFile() {
         std::cerr << "Invalid folder." << std::endl;
         return nullptr;
     }
+    YAML::Node yaml = YAML::LoadFile(dirname + "/sensors.yaml");
 
     // Setup slamfile
-
     auto slamfile_ptr = new SLAMFile();
     auto &slamfile = *slamfile_ptr;
 
@@ -393,38 +434,14 @@ SLAMFile *UZHFPVReader::GenerateSLAMFile() {
     if (stereo) {
 
         // snapdragon stereo left
-        auto left_sensor = GreySensorBuilder()
-                .name("Grey Left Stereo")
-                .size(640, 480)
-                .pose(pose)
-                .intrinsics(snapdragon_cam0_intrinsics)
-                .distortion(CameraSensor::distortion_type_t::Equidistant, snapdragon_cam0_distortion)
-                .rate(30)
-                .index(slamfile.Sensors.size())
-                .build();
-
-        slamfile.Sensors.AddSensor(left_sensor);
-
-        if (!loadUZHFPVGreyData(dirname, "left_images.txt", slamfile, left_sensor)) {
+        if (!loadUZHFPVGreyData(dirname, "left_images.txt", "cam0", slamfile, yaml)) {
             std::cerr << "Error while loading grey left stereo information." << std::endl;
             delete slamfile_ptr;
             return nullptr;
         }
 
         // snapdragon stereo right
-        auto right_sensor = GreySensorBuilder()
-                .name("Grey Right Stereo")
-                .size(640, 480)
-                .pose(pose)
-                .intrinsics(snapdragon_cam1_intrinsics)
-                .distortion(CameraSensor::distortion_type_t::Equidistant, snapdragon_cam1_distortion)
-                .rate(30) // from paper
-                .index(slamfile.Sensors.size())
-                .build();
-
-        slamfile.Sensors.AddSensor(right_sensor);
-
-        if (!loadUZHFPVGreyData(dirname, "right_images.txt", slamfile, right_sensor)) {
+        if (!loadUZHFPVGreyData(dirname, "right_images.txt", "cam1", slamfile, yaml)) {
             std::cerr << "Error while loading grey right stereo information." << std::endl;
             delete slamfile_ptr;
             return nullptr;
@@ -444,36 +461,8 @@ SLAMFile *UZHFPVReader::GenerateSLAMFile() {
 
         slamfile.Sensors.AddSensor(grey_sensor);
 
-        if (!loadUZHFPVGreyData(dirname, "images.txt", slamfile, grey_sensor)) {
+        if (!loadUZHFPVGreyData(dirname, "images.txt", "cam0", slamfile, yaml)) {
             std::cerr << "Error while loading Grey information." << std::endl;
-            delete slamfile_ptr;
-            return nullptr;
-        }
-    }
-
-    // load IMU data
-    if (imu) {
-        auto imu_sensor = new IMUSensor(dirname);
-
-        // parameters from calibration imu.yaml
-        imu_sensor->AcceleratorNoiseDensity = 0.1;
-        imu_sensor->AcceleratorBiasDiffusion = 0.002;
-        imu_sensor->GyroscopeNoiseDensity = 0.05;
-        imu_sensor->GyroscopeBiasDiffusion = 4.0e-05;
-
-        if (stereo) {
-            // snapdragon
-            imu_sensor->Rate = 500.0; // from calibration imu.yaml
-        } else {
-            // davis
-            imu_sensor->Rate = 1000.0; // from calibration imu.yaml
-        }
-
-        imu_sensor->Index = slamfile.Sensors.size();
-        slamfile.Sensors.AddSensor(imu_sensor);
-
-        if(!loadUZHFPVIMUData(dirname, slamfile, imu_sensor)) {
-            std::cerr << "Error while loading gt information." << std::endl;
             delete slamfile_ptr;
             return nullptr;
         }
@@ -490,6 +479,16 @@ SLAMFile *UZHFPVReader::GenerateSLAMFile() {
         slamfile.Sensors.AddSensor(gt_sensor);
 
         if(!loadUZHFPVGroundTruthData(dirname, slamfile, gt_sensor)) {
+            std::cerr << "Error while loading gt information." << std::endl;
+            delete slamfile_ptr;
+            return nullptr;
+        }
+    }
+
+    yaml = YAML::LoadFile(dirname + "/imu.yaml");
+    // load IMU data
+    if (imu) {
+        if(!loadUZHFPVIMUData(dirname, slamfile, yaml)) {
             std::cerr << "Error while loading gt information." << std::endl;
             delete slamfile_ptr;
             return nullptr;

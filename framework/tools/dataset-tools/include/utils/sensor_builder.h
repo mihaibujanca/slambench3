@@ -15,6 +15,7 @@
 #include <io/sensor/GroundTruthSensor.h>
 #include <io/sensor/EventCameraSensor.h>
 #include <io/sensor/AccelerometerSensor.h>
+#include <io/sensor/IMUSensor.h>
 #include <io/sensor/GyroSensor.h>
 #include <io/sensor/OdomSensor.h>
 
@@ -29,6 +30,7 @@ namespace slambench {
       uint8_t index_;
 
       float rate_;
+      float delay_;
       int width_;
       int height_;
 
@@ -85,6 +87,11 @@ namespace slambench {
         return static_cast<T&>(*this);
       }
 
+      T& delay(const float& delay) {
+        delay_ = delay;
+        return static_cast<T&>(*this);
+      }
+
       T& intrinsics(const CameraSensor::intrinsics_t& intrinsics) {
         for(unsigned int i = 0; i < 4 ; ++i) {
           intrinsics_[i] = intrinsics[i];
@@ -135,14 +142,7 @@ namespace slambench {
         sensor->CopyIntrinsics(intrinsics_);
 
         sensor->DistortionType = distortion_type_;
-
-        if (distortion_type_ == CameraSensor::RadialTangential) {
-          sensor->CopyRadialTangentialDistortion(distortion_);
-        }
-
-        if (distortion_type_ == CameraSensor::Equidistant) {
-          sensor->CopyEquidistantDistortion(distortion_);
-        }
+        sensor->CopyDistortion(distortion_,distortion_type_);
         check(sensor, name);
         return sensor;
       }
@@ -164,14 +164,7 @@ namespace slambench {
         sensor->CopyIntrinsics(intrinsics_);
 
         sensor->DistortionType = distortion_type_;
-
-        if (distortion_type_ == CameraSensor::RadialTangential) {
-          sensor->CopyRadialTangentialDistortion(distortion_);
-        }
-
-        if (distortion_type_ == CameraSensor::Equidistant) {
-          sensor->CopyEquidistantDistortion(distortion_);
-        }
+        sensor->CopyDistortion(distortion_,distortion_type_);
         check(sensor, name);
         return sensor;
       }
@@ -193,14 +186,8 @@ namespace slambench {
         sensor->CopyIntrinsics(intrinsics_);
 
         sensor->DistortionType = distortion_type_;
+        sensor->CopyDistortion(distortion_,distortion_type_);
 
-        if (distortion_type_ == CameraSensor::RadialTangential) {
-          sensor->CopyRadialTangentialDistortion(distortion_);
-        }
-
-        if (distortion_type_ == CameraSensor::Equidistant) {
-          sensor->CopyEquidistantDistortion(distortion_);
-        }
         check(sensor, name);
         return sensor;
       }
@@ -222,14 +209,7 @@ namespace slambench {
         sensor->CopyPose(pose_);
         sensor->CopyIntrinsics(intrinsics_);
         sensor->DistortionType = distortion_type_;
-
-        if (distortion_type_ == CameraSensor::RadialTangential) {
-          sensor->CopyRadialTangentialDistortion(distortion_);
-        }
-
-        if (distortion_type_ == CameraSensor::Equidistant) {
-          sensor->CopyEquidistantDistortion(distortion_);
-        }
+        sensor->CopyDistortion(distortion_,distortion_type_);
 
         sensor->DisparityType = disparity_type_;
         sensor->CopyDisparityParams(disparity_);

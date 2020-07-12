@@ -14,7 +14,9 @@
 #include <SLAMBenchUI_Pangolin.h>
 #include <pangolin/pangolin.h>
 #include <SLAMBenchAPI.h>
-
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 std::string default_output_filename;
 std::string output_filename;
