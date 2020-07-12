@@ -3,8 +3,7 @@
 ####################################
 check_generator:=if [ ! -e ./build/bin/dataset-generator ] ; then make slambench ; fi
 
-#### OpenLORIS-Scene ####################
-
+#### OpenLORIS-Scene ####
 datasets/OpenLORIS/%.7z :  # Example : $* = office1/office1-3
 	# extract 7z from the tar file of the scene, e.g. office1-1_7-package.tar
 	for f in $(@D)/*-package.tar; do echo $$f && mkdir -p $(@D) && tar xvf $$f -C $(@D); done
@@ -38,7 +37,7 @@ datasets/OpenLORIS/%.all :
 .SECONDARY: $(OBJS)
 
 
-#### EuRoCMAV ###############
+#### EuRoCMAV ####
 ./datasets/EuRoCMAV/%.zip :  # Example : $* = machine_hall/MH_01_easy/MH_01_easy
 	mkdir -p $(@D)
 	cd $(@D)  &&  ${WGET} "http://robotics.ethz.ch/~asl-datasets/ijrr_euroc_mav_dataset/$*.zip"
@@ -52,7 +51,7 @@ datasets/OpenLORIS/%.all :
 	${check_generator}
 	./build/bin/dataset-generator -d eurocmav -i $</mav0 -o $@ -imu true -stereo true -gt true
 
-#### TUM ##############
+#### TUM ####
 # check if using tgz file or rosbag
 ifeq (TUM, $(findstring TUM, $(MAKECMDGOALS)))
   ifeq (use_rosbag, $(filter use_rosbag, $(MAKECMDGOALS)))
@@ -81,7 +80,7 @@ else
 endif
 	./build/bin/dataset-generator -d $(DATASET) -i $(@D)/$(*F).dir/$(*F) -o $@ -grey true -rgb true -gt true -depth true -acc true
 
-#### ICL-NUIM ###############
+#### ICL-NUIM ####
 datasets/ICL_NUIM/living-room.ply :  datasets/ICL_NUIM/living-room.ply.tar.gz
 	cd datasets/ICL_NUIM  && tar xzf living-room.ply.tar.gz
 	touch datasets/ICL_NUIM/living-room.ply # This is a fix to ensure not regenerating the file again because of file create date
@@ -120,7 +119,7 @@ datasets/ICL_KLG/dyson_lab.klg :
 	mkdir -p datasets/ICL_KLG/
 	cd datasets/ICL_KLG/  &&  ${WGET} http://www.doc.ic.ac.uk/%7Esleutene/datasets/elasticfusion/dyson_lab.klg
 
-#### SVO-artificial ###############
+#### SVO-artificial ####
 datasets/SVO/artificial.tar.gz:
 	mkdir -p datasets/SVO/
 	cd datasets/SVO && ${WGET} -O artificial.tar.gz "http://rpg.ifi.uzh.ch/datasets/sin2_tex2_h1_v8_d.tar.gz"
@@ -134,8 +133,7 @@ datasets/SVO/artificial.slam: ./datasets/SVO/artificial.dir
 	./build/bin/dataset-generator -d svo -i $</sin2_tex2_h1_v8_d -o $@
 
 
-#### BONN #################
-
+#### BONN ####
 ./datasets/BONN/%.ply :  ./datasets/BONN/%.zip
 	unzip $< -d datasets/BONN
 	touch $@ # This is a fix to ensure not regenerating the file again because of file create date
@@ -157,48 +155,76 @@ datasets/SVO/artificial.slam: ./datasets/SVO/artificial.dir
 #	./build/bin/dataset-generator -d bonn -i $</* -o $@ -grey true -rgb true -gt true -depth true -ply datasets/BONN/rgbd_bonn_groundtruth.ply
 
 
-#### UZH-FPV Drone ###############
-./datasets/UZHFPV/%.zip :  # Example : $* = indoor_foward_3_snapdragon_with_gt
+#### UZH-FPV Drone ####
+ # Example : $* = indoor_foward_3_snapdragon_with_gt
+./datasets/UZHFPV/%.zip : ./datasets/UZHFPV/calib/getdatasets
 	echo download $*.zip
 	mkdir -p $(@D)
 	cd $(@D)  &&  ${WGET} "http://rpg.ifi.uzh.ch/datasets/uzh-fpv-newer-versions/v2/$*.zip"
 
+# if contains indoor_45 | outdoor_45 | indoor_forward | outdoor_forward
 ./datasets/UZHFPV/%.dir : ./datasets/UZHFPV/%.zip
-	mkdir $@
+	mkdir -p $@
 	unzip $< -d $@
+	case "$(@F)" in \
+				(*indoor_45*davis*) file=indoor_45_calib_davis.yaml;; \
+				(*indoor_45*snap*) file=indoor_45_calib_snapdragon.yaml ;; \
+				(*indoor_forward*davis*) file=indoor_forward_calib_davis.yaml ;; \
+				(*indoor_forward*snap*) file=indoor_forward_calib_snapdragon.yaml ;; \
+				(*outdoor_45*davis*) file=outdoor_45_calib_davis.yaml ;;\
+				(*outdoor_45*snap*) file=outdoor_45_calib_snapdragon.yaml ;;\
+				(*outdoor_forward*snap*) file=outdoor_forward_calib_davis.yaml ;;\
+				(*outdoor_forward*davis*) file=outdoor_forward_calib_snapdragon.yaml ;;\
+	esac; \
+	cp $(@D)/$$file $@/sensors.yaml; \
+	cp $(@D)/"imu_$$file" $@/imu.yaml
 
-./datasets/UZHFPV/%_snapdragon_with_gt.slam :  ./datasets/UZHFPV/%_snapdragon_with_gt.dir
+./datasets/UZHFPV/%_snapdragon_with_gt.slam:  ./datasets/UZHFPV/%_snapdragon_with_gt.dir
 	if [ ! -e ./build/bin/dataset-generator ] ; then make slambench ; fi
 	./build/bin/dataset-generator -d uzhfpv -i $< -o $@ -imu true --stereo true --event false -gt true
 
-./datasets/UZHFPV/%_davis_with_gt.slam :  ./datasets/UZHFPV/%_davis_with_gt.dir
+./datasets/UZHFPV/%_davis_with_gt.slam:  ./datasets/UZHFPV/%_davis_with_gt.dir
 	if [ ! -e ./build/bin/dataset-generator ] ; then make slambench ; fi
 	./build/bin/dataset-generator -d uzhfpv -i $< -o $@ -imu true --stereo false --event true -gt true
 
-./datasets/UZHFPV/%_snapdragon.slam :  ./datasets/UZHFPV/%_snapdragon.dir
+./datasets/UZHFPV/%_snapdragon.slam:  ./datasets/UZHFPV/%_snapdragon.dir
 	if [ ! -e ./build/bin/dataset-generator ] ; then make slambench ; fi
 	./build/bin/dataset-generator -d uzhfpv -i $< -o $@ -imu true --stereo true --event false -gt false
 
-./datasets/UZHFPV/%_davis.slam :  ./datasets/UZHFPV/%_davis.dir
+./datasets/UZHFPV/%_davis.slam:  ./datasets/UZHFPV/%_davis.dir
 	if [ ! -e ./build/bin/dataset-generator ] ; then make slambench ; fi
 	./build/bin/dataset-generator -d uzhfpv -i $< -o $@ -imu true --stereo false --event true -gt false
 
+./datasets/UZHFPV/calib/getdatasets: ./datasets/UZHFPV/calib/indoor_forward_calib_snapdragon.zip \
+                                     ./datasets/UZHFPV/calib/indoor_45_calib_snapdragon.zip \
+                                     ./datasets/UZHFPV/calib/outdoor_forward_calib_snapdragon.zip \
+                                     ./datasets/UZHFPV/calib/outdoor_45_calib_snapdragon.zip \
+             						 ./datasets/UZHFPV/calib/indoor_forward_calib_davis.zip \
+ 									 ./datasets/UZHFPV/calib/indoor_45_calib_davis.zip \
+									 ./datasets/UZHFPV/calib/outdoor_forward_calib_davis.zip \
+									 ./datasets/UZHFPV/calib/outdoor_45_calib_davis.zip
 
-#### ETH Illumination
-###############
-./datasets/ETHI/%.zip :
+./datasets/UZHFPV/calib/%.zip:
+	echo download $*.zip
+	mkdir -p $(@D)
+	cd $(@D)  &&  ${WGET} "http://rpg.ifi.uzh.ch/datasets/uzh-fpv/calib/$*.zip"
+	unzip $@ -d $(@D)
+	cp $(@D)/$*/camchain-imucam-..$*_imu.yaml datasets/UZHFPV/$*.yaml
+	cp $(@D)/$*/imu.yaml datasets/UZHFPV/imu_$*.yaml
+
+#### ETH Illumination ####
+./datasets/ETHI/%.zip:
 	echo download $*.zip
 	mkdir -p $(@D)
 	cd $(@D)  &&  ${WGET} "https://cvg.ethz.ch/research/illumination-change-robust-dslam/$*.zip"
 
-./datasets/ETHI/%.dir : ./datasets/ETHI/%.zip
+./datasets/ETHI/%.dir: ./datasets/ETHI/%.zip
 	mkdir $@
 	unzip $< -d $@
 
 ### TUM-based sequences contain "real", ICLNUIM-based sequences contain "syn"
 ### Add accelerometer.txt to prevent TUM breaking. Make sure depth.txt and rgb.txt exist in their respective folders.
-###
-./datasets/ETHI/%.slam : ./datasets/ETHI/%.dir ./datasets/ICL_NUIM/living-room.ply.tar.gz
+./datasets/ETHI/%.slam: ./datasets/ETHI/%.dir ./datasets/ICL_NUIM/living-room.ply.tar.gz
 	if [ ! -e ./build/bin/dataset-generator ] ; then make slambench ; fi
 	for d in $</*; do \
   		echo "$$d"; \
@@ -221,7 +247,7 @@ datasets/SVO/artificial.slam: ./datasets/SVO/artificial.dir
 		esac \
 	done;
 
-./datasets/ETHI/all :./datasets/ICL_NUIM/living-room.ply.tar.gz \
+./datasets/ETHI/all:./datasets/ICL_NUIM/living-room.ply.tar.gz \
 					./datasets/ETHI/ethl_real_flash.slam \
 					./datasets/ETHI/ethl_real_local.slam \
 					./datasets/ETHI/ethl_real_global.slam \
