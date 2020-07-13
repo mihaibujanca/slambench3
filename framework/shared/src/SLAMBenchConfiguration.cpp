@@ -152,7 +152,8 @@ SLAMBenchConfiguration::SLAMBenchConfiguration(void (*custom_input_callback)(Par
     this->log_stream_ = nullptr;
     this->slam_library_names_ = {};
     // Run Related
-    this->addParameter(TypedParameter<unsigned int>("fl",     "frame-limit",      "last frame to compute",                   &this->frame_limit, &default_frame_limit));
+    this->addParameter(TypedParameter<unsigned int>("fl", "frame-limit", "last frame to compute", &this->frame_limit_, &default_frame_limit));
+    this->addParameter(TypedParameter<unsigned int>("s", "start-frame", "first frame to compute", &this->start_frame_, &default_start_frame));
     this->addParameter(TypedParameter<std::string>("o", "log-file", "Output log file", &this->log_file_, &default_log_file, log_callback));
     this->addParameter(TypedParameter<std::vector<std::string>>("i", "input" , "Specify the input file or mode." , &this->input_files_, &default_input_files , custom_input_callback));
     this->addParameter(TypedParameter<std::vector<std::string> >("load", "load-slam-library" , "Load a specific SLAM library."     , &this->slam_library_names_, &default_slam_libraries, libs_callback));
@@ -250,12 +251,11 @@ void SLAMBenchConfiguration::ComputeLoopAlgorithm(SLAMBenchConfiguration* config
 
     int input_seq = 0;
     bool ongoing = false;
-    std::map<SLAMBenchLibraryHelper *, Eigen::Matrix4f> libs_trans;
+    std::map<SLAMBenchLibraryHelper*, Eigen::Matrix4f> libs_trans;
 
     // ********* [[ MAIN LOOP ]] *********
     while(true) {
         unsigned int frame_count = 0;
-
         if (ui) {
             if (frame_count != 0 && !ui->IsFreeRunning()) {
                 if (!ongoing) {
@@ -344,8 +344,8 @@ void SLAMBenchConfiguration::ComputeLoopAlgorithm(SLAMBenchConfiguration* config
                     if (ui) ui->stepFrame();
                     frame_count += 1;
 
-                    if (config->frame_limit) {
-                        if (frame_count >= config->frame_limit) {
+                    if (config->frame_limit_) {
+                        if (frame_count >= config->frame_limit_) {
                             break;
                         }
                     }
@@ -505,6 +505,7 @@ void SLAMBenchConfiguration::InitWriter() {
             gt_available_ = true;
             // Create an aligned trajectory
             auto aligned = new slambench::outputs::AlignedPoseOutput(lib_traj->GetName() + " (Aligned)", &*alignment_, lib_traj);
+            lib->GetOutputManager().RegisterOutput(aligned);
 
             // Add ATE metric
             auto ate_metric = std::make_shared<slambench::metrics::ATEMetric>(new slambench::outputs::PoseOutputTrajectoryInterface(aligned), new slambench::outputs::PoseOutputTrajectoryInterface(gt_traj));
@@ -541,7 +542,7 @@ void SLAMBenchConfiguration::InitWriter() {
             lib->GetMetricManager().AddFrameMetric(power_metric_);
             writer_->AddColumn(new slambench::CollectionValueLibColumnInterface(lib, &*power_metric_, lib->GetMetricManager().GetFramePhase()));
         }
-        //			FIXME: workaround for ground truth
+//            FIXME: workaround for ground truth
 //            auto depth_est_output = lib->GetOutputManager().GetOutput("depth_est");
 //            auto depth_est_gt = lib->GetOutputManager().GetOutput("depth_gt");
 //            if(!(depth_est_output&&depth_est_gt)) {
@@ -560,8 +561,6 @@ void SLAMBenchConfiguration::InitWriter() {
 
     frame_callbacks_.clear();
     this->AddFrameCallback([this]{writer_->PrintRow();}); // @suppress("Invalid arguments")
-    //this->AddFrameCallback([this]{cw_->PrintRow();}); // @suppress("Invalid arguments")
-    //cw_->PrintHeader();
     writer_->PrintHeader();
 }
 

@@ -30,6 +30,7 @@
 #define LOAD_FUNC2HELPER(handle,lib,f)     *(void**)(& lib->f) = dlsym(handle,#f); const char *dlsym_error_##lib##f = dlerror(); if (dlsym_error_##lib##f) {std::cerr << "Cannot load symbol " << #f << dlsym_error_##lib##f << std::endl; dlclose(handle); exit(1);}
 
 static const unsigned int default_frame_limit                  = 0;
+static const unsigned int default_start_frame                  = 0;
 static const double default_realtime_mult                      = 1;
 static const std::string default_dump_volume_file              = "";
 static const std::string default_log_file                      = "";
@@ -55,21 +56,21 @@ private:
     std::shared_ptr<slambench::metrics::Metric> power_metric_;
     slambench::io::SensorCollection* first_sensors_;
     std::unique_ptr<slambench::outputs::AlignmentOutput> alignment_;
-    std::string alignment_technique_ = "new";
+    std::string alignment_technique_ = "umeyama";
     std::string output_filename_;
 
     slambench::io::FrameStream *input_stream_;
     std::list<slambench::io::InputInterface*> input_interfaces_;
     std::vector<std::string> input_filenames_;
-
     slambench::ParameterManager param_manager_;
     slambench::outputs::OutputManager ground_truth_;
 
     std::vector<std::function<void()>> frame_callbacks_;
     double realtime_mult_;
     int current_input_id_ = 0;
-    unsigned int frame_limit;
+    unsigned int frame_limit_;
     bool initialised_;
+    unsigned int start_frame_;
     bool realtime_mode_;
     bool gt_available_;
     bool input_interface_updated_ = false;
