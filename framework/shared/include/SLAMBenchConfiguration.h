@@ -103,7 +103,7 @@ public:
     // Clean up data structures used by algorithms
     void CleanAlgorithms();
     void SaveResults();
-    static void ComputeLoopAlgorithm(SLAMBenchConfiguration *config, bool *stay_on, SLAMBenchUI *ui);
+    void ComputeLoopAlgorithm(bool *stay_on, SLAMBenchUI *ui);
 
     void AddSLAMLibrary(const std::string& so_file, const std::string &id);
     bool AddInput(const std::string& library_filename);
@@ -119,7 +119,7 @@ public:
     bool LoadNextInputInterface();
 
     void ResetSensors() {
-        GetParameterManager().ClearComponents();
+        param_manager_.ClearComponents();
     }
 
     inline std::ostream& GetLogStream() {

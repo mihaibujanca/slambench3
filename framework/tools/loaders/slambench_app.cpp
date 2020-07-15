@@ -104,14 +104,14 @@ int main(int argc, char * argv[])
 #ifdef WITH_GUI
             std::thread pangolin_thread(run_pangolin, &use_gui, config);
             while(ui == nullptr) ; // spin until UI is initialised
-            SLAMBenchConfiguration::ComputeLoopAlgorithm(config, &use_gui, ui);
+            config->ComputeLoopAlgorithm(&use_gui, ui);
             pangolin_thread.join();
 #else
             std::cerr<< "Not compiled with Pangolin support! Continuing without GUI." <<std::endl;
             SLAMBenchConfiguration::ComputeLoopAlgorithm(config, nullptr, nullptr);
 #endif
         } else {
-                SLAMBenchConfiguration::ComputeLoopAlgorithm(config, nullptr, nullptr);
+            config->ComputeLoopAlgorithm(nullptr, nullptr);
         }
 
 		// End of experiment, we output the map

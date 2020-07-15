@@ -39,11 +39,11 @@ namespace slambench {
 
 				void BuildStream();
 
-				xn::Context * _context;
-				ONI15FrameStream *_stream;
+				xn::Context * context_;
+				ONI15FrameStream *stream_;
 				
-				SensorCollection _sensors;
-				bool _sensors_ready;
+				SensorCollection sensors_;
+				bool sensors_ready_;
 			};
 		}
 	}

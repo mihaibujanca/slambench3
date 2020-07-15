@@ -23,7 +23,6 @@ ONI15InputInterface::ONI15InputInterface() : _stream(nullptr), _sensors_ready(fa
 	exit(1);
 }
 
-
 FrameStream& ONI15InputInterface::GetFrames() {
 }
 
