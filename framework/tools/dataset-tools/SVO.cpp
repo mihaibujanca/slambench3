@@ -30,6 +30,8 @@
 using namespace slambench::io;
 
 constexpr CameraSensor::intrinsics_t SVOReader::svo_grey;
+constexpr float SVOReader::translation[];
+constexpr float SVOReader::rotation[];
 
 bool loadSVOGreyData(const std::string &dirname,
                      SLAMFile &file,
