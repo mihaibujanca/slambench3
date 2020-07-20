@@ -15,6 +15,7 @@
 #include <sstream>
 #include "ColumnWriter.h"
 #include <vector>
+#include <memory>
 #include <string>
 #include <chrono>
 #include <list>
@@ -26,6 +27,7 @@
 #include <io/sensor/SensorCollection.h>
 #include <io/InputInterface.h>
 #include <dlfcn.h>
+#include <io/InputInterfaceManager.h>
 
 #define LOAD_FUNC2HELPER(handle,lib,f)     *(void**)(& lib->f) = dlsym(handle,#f); const char *dlsym_error_##lib##f = dlerror(); if (dlsym_error_##lib##f) {std::cerr << "Cannot load symbol " << #f << dlsym_error_##lib##f << std::endl; dlclose(handle); exit(1);}
 
@@ -51,7 +53,6 @@ private:
     std::vector<std::string> slam_library_names_;
     slambench::RowNumberColumn row_number_;
     std::unique_ptr<slambench::ColumnWriter> writer_;
-    std::unique_ptr<slambench::ColumnWriter> cw_;
     std::shared_ptr<slambench::metrics::Metric> duration_metric_;
     std::shared_ptr<slambench::metrics::Metric> power_metric_;
     slambench::io::SensorCollection* first_sensors_;
@@ -59,8 +60,6 @@ private:
     std::string alignment_technique_ = "umeyama";
     std::string output_filename_;
 
-    slambench::io::FrameStream *input_stream_;
-    std::list<slambench::io::InputInterface*> input_interfaces_;
     std::vector<std::string> input_filenames_;
     slambench::ParameterManager param_manager_;
     slambench::outputs::OutputManager ground_truth_;
@@ -73,13 +72,12 @@ private:
     unsigned int start_frame_;
     bool realtime_mode_;
     bool gt_available_;
-    bool input_interface_updated_ = false;
     bool aided_reloc_ = false;
 
 public:
     SLAMBenchConfiguration(void (*input_callback)(Parameter*, ParameterComponent*) = nullptr,
                            void (*libs_callback)(Parameter*, ParameterComponent*)  = nullptr);
-    virtual ~SLAMBenchConfiguration();
+    ~SLAMBenchConfiguration() override;
 
     void AddFrameCallback(std::function<void()> callback) { frame_callbacks_.push_back(callback); }
     const slam_lib_container_t &GetLoadedLibs() const { return slam_libs_; }
@@ -92,35 +90,14 @@ public:
      * Initialise the ground truth output manager. All ground truth sensors in
      * the sensor collection are registered as GT outputs, and all frames
      * within the collection are registered as GT output values.
-     *
      */
     void InitGroundtruth(bool with_point_cloud = true);
     void InitAlgorithms();
     void InitAlignment();
-    void InitSensors();
     void InitWriter();
-
-    // Clean up data structures used by algorithms
-    void CleanAlgorithms();
     void SaveResults();
     void ComputeLoopAlgorithm(bool *stay_on, SLAMBenchUI *ui);
-
     void AddSLAMLibrary(const std::string& so_file, const std::string &id);
-    bool AddInput(const std::string& library_filename);
-
-    const slambench::io::SensorCollection &GetSensors() {
-        return GetCurrentInputInterface()->GetSensors();
-    }
-
-    void SetInputInterface(slambench::io::InputInterface *input_ref) {
-        input_interfaces_.push_front(input_ref);
-    }
-    void AddInputInterface(slambench::io::InputInterface *input_ref);
-    bool LoadNextInputInterface();
-
-    void ResetSensors() {
-        param_manager_.ClearComponents();
-    }
 
     inline std::ostream& GetLogStream() {
         if (!log_stream_)
@@ -129,18 +106,18 @@ public:
     }
 
     inline void UpdateLogStream() {
-        if (this->log_file_ != "") {
-            this->log_filestream_.open(this->log_file_.c_str());
-            this->log_stream_ = &(this->log_filestream_);
+        if (log_file_ != "") {
+            log_filestream_.open(log_file_.c_str());
+            log_stream_ = &log_filestream_;
         } else {
-            this->log_stream_ = &std::cout;
+            log_stream_ = &std::cout;
         }
     }
 
     void FireEndOfFrame() { for(auto i : frame_callbacks_) { i(); } }
     void StartStatistics();
     void PrintDse();
-    slambench::io::InputInterface *GetCurrentInputInterface();
+    slambench::io::InputInterfaceManager* input_interface_manager_;
 };
 
 inline void input_callback(Parameter* param, ParameterComponent* caller) {
@@ -151,11 +128,17 @@ inline void input_callback(Parameter* param, ParameterComponent* caller) {
     auto parameter = dynamic_cast<TypedParameter<std::vector<std::string>>*>(param);
     assert(parameter && "parameter list corrupted");
 
-    for (const std::string& input_name : parameter->getTypedValue()) {
-        config->AddInput(input_name);
+    config->input_interface_manager_ = new slambench::io::InputInterfaceManager(parameter->getTypedValue());
+    //if(!config->input_interface_manager_.initialized()) {
+    //    first_sensors_ = &input_ref->GetSensors();
+    //} else {
+    //    input_ref->GetSensors() = *first_sensors_;
+    //}
+    for (slambench::io::Sensor *sensor : config->input_interface_manager_->GetCurrentInputInterface()->GetSensors()) {
+        config->GetParameterManager().AddComponent(dynamic_cast<ParameterComponent*>(&(*sensor)));
     }
-    config->InitSensors();
 }
+
 inline void help_callback(Parameter*, ParameterComponent* caller) {
     auto config = dynamic_cast<SLAMBenchConfiguration*> (caller);
 
@@ -187,7 +170,7 @@ inline void slam_library_callback(Parameter* param, ParameterComponent* caller) 
         std::string library_filename;
         std::string library_identifier;
 
-        auto pos = library_name.find("=");
+        auto pos = library_name.find('=');
         if (pos != std::string::npos)  {
             library_filename   = library_name.substr(0, pos);
             library_identifier = library_name.substr(pos+1);

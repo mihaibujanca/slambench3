@@ -16,6 +16,7 @@
 #include "io/openni2/ONI2FrameStream.h"
 
 #include <iostream>
+#include <io/sensor/sensor_builder.h>
 
 using namespace slambench::io;
 using namespace slambench::io::openni2;
@@ -47,7 +48,7 @@ ONI2InputInterface::ONI2InputInterface() : stream_(nullptr), sensors_ready_(fals
 
 }
 
-ONI2InputInterface::ONI2InputInterface(std::string oni2_filename) : stream_(nullptr), sensors_ready_(false) {
+ONI2InputInterface::ONI2InputInterface(const std::string& oni2_filename) : stream_(nullptr), sensors_ready_(false) {
 	openni::OpenNI::initialize();
 
     device_ = new openni::Device();
@@ -82,103 +83,64 @@ SensorCollection& ONI2InputInterface::GetSensors() {
 	return sensors_;
 }
 
-
-
-CameraSensor *ONI2InputInterface::BuildCameraSensor(const openni::SensorInfo *sensor_info) {
-
-	assert (sensor_info->getSensorType() == openni::SENSOR_COLOR);
-	
-	std::string sensor_type =  slambench::io::CameraSensor::kCameraType;
-
-	CameraSensor *sensor = new CameraSensor(sensor_type);
-	sensor->Description = "ONI2 RGB Sensor";
-	sensor->FrameFormat = frameformat::Raster;
-
-	// find a suitable video mode...?
-	auto vid_mode = sensor_info->getSupportedVideoModes()[0];
-	switch(vid_mode.getPixelFormat()) {
-		case openni::PIXEL_FORMAT_RGB888: sensor->PixelFormat = pixelformat::RGB_III_888; break;
-		case openni::PIXEL_FORMAT_DEPTH_1_MM: sensor->PixelFormat = pixelformat::D_I_16; break;
-		default:
-			throw std::logic_error("Unknown pixel format");
-	}
-
-	sensor->Width = vid_mode.getResolutionX();
-	sensor->Height = vid_mode.getResolutionY();
-
-	sensor->Pose = Eigen::Matrix4f::Identity();
-
-	bzero(sensor->Intrinsics, sizeof(sensor->Intrinsics));
-	// guess the intrinsics for now
-	std::cerr << "I'm guessing which intrinsics to use" << std::endl;
-	sensor->Intrinsics[0] = 0.751875;
-	sensor->Intrinsics[1] = 1.0;
-	sensor->Intrinsics[2] = 0.5;
-	sensor->Intrinsics[3] = 0.5;
-	
-	std::cerr << "Built an RGB  sensor with " << sensor->Width << ", " << sensor->Height << ", " << sensor->GetFrameSize(NULL) << "b per frame" << std::endl;
-
-	return sensor;
-}
-
-
-
-DepthSensor *ONI2InputInterface::BuildDepthSensor(const openni::SensorInfo *sensor_info) {
-
-	assert (sensor_info->getSensorType() == openni::SENSOR_DEPTH);
-
-	std::string sensor_type =  slambench::io::DepthSensor::kDepthType;
-
-	DepthSensor *sensor = new DepthSensor(sensor_type);
-	sensor->Description = "ONI2 Depth Sensor";
-	sensor->FrameFormat = frameformat::Raster;
-
-	// find a suitable video mode...?
-	auto vid_mode = sensor_info->getSupportedVideoModes()[0];
-	switch(vid_mode.getPixelFormat()) {
-		case openni::PIXEL_FORMAT_RGB888: sensor->PixelFormat = pixelformat::RGB_III_888; break;
-		case openni::PIXEL_FORMAT_DEPTH_1_MM: sensor->PixelFormat = pixelformat::D_I_16; break;
-		default:
-			throw std::logic_error("Unknown pixel format");
-	}
-
-	sensor->Width = vid_mode.getResolutionX();
-	sensor->Height = vid_mode.getResolutionY();
-
-	sensor->Pose = Eigen::Matrix4f::Identity();
-
-	bzero(sensor->Intrinsics, sizeof(sensor->Intrinsics));
-	// guess the intrinsics for now
-	std::cerr << "I'm guessing which intrinsics to use" << std::endl;
-	sensor->Intrinsics[0] = 0.751875;
-	sensor->Intrinsics[1] = 1.0;
-	sensor->Intrinsics[2] = 0.5;
-	sensor->Intrinsics[3] = 0.5;
-	
-	std::cerr << "Built a depth sensor with " << sensor->Width << ", " << sensor->Height << ", " << sensor->GetFrameSize(NULL) << "b per frame" << std::endl;
-	
-	return sensor;
-}
-
-void ONI2InputInterface::BuildSensors() {	
+void ONI2InputInterface::BuildSensors() {
 	if(sensors_ready_) return;
 
 	auto depth_sensor_info = device_->getSensorInfo(openni::SENSOR_DEPTH);
 	if(depth_sensor_info != nullptr) {
-		auto sensor = BuildDepthSensor(depth_sensor_info);
-		sensor->Index = sensors_.size();
-		sensors_.AddSensor(sensor);
+        // find a suitable video mode...?
+        auto vid_mode = depth_sensor_info->getSupportedVideoModes()[0];
+        slambench::io::CameraSensor::intrinsics_t intrinsics;
+        // guess the intrinsics for now
+        std::cerr << "I'm guessing which intrinsics to use" << std::endl;
+        intrinsics[0] = 0.751875;
+        intrinsics[1] = 1.0;
+        intrinsics[2] = 0.5;
+        intrinsics[3] = 0.5;
+
+        auto depth_sensor = DepthSensorBuilder()
+                .name("Depth")
+                .description("ONI2 Depth Sensor")
+                .size(vid_mode.getResolutionX(), vid_mode.getResolutionY())
+                .pose(Eigen::Matrix4f::Identity())
+                .intrinsics(intrinsics)
+                .frameFormat(frameformat::Raster)
+                .pixelFormat(pixelformat::D_I_16)
+                .rate(vid_mode.getFps())
+                //.distortion(distortion_type, distortion)
+                //.disparity(disparity_type, disparity_params)
+                .index(sensors_.size())
+                .build();
+
+		sensors_.AddSensor(depth_sensor);
 	}
-	
 
 	auto color_sensor_info = device_->getSensorInfo(openni::SENSOR_COLOR);
 	if(color_sensor_info != nullptr) {
-		auto sensor = BuildCameraSensor(color_sensor_info);
-		sensor->Index = sensors_.size();
+		// find a suitable video mode...?
+        auto vid_mode = color_sensor_info->getSupportedVideoModes()[0];
+
+        // guess the intrinsics for now
+        slambench::io::CameraSensor::intrinsics_t intrinsics;
+        intrinsics[0] = 0.751875;
+        intrinsics[1] = 1.0;
+        intrinsics[2] = 0.5;
+        intrinsics[3] = 0.5;
+
+        auto sensor = CameraSensorBuilder()
+                .name("RGB")
+                .description("ONI2 RGB Sensor")
+                .rate(vid_mode.getFps())
+                .size(vid_mode.getResolutionX(), vid_mode.getResolutionY())
+                .pose(Eigen::Matrix4f::Identity())
+                .intrinsics(intrinsics)
+                //.distortion(distortion_type, distortion)
+                .frameFormat(frameformat::Raster)
+                .pixelFormat(pixelformat::RGB_III_888)
+                .index(sensors_.size())
+                .build();
 		sensors_.AddSensor(sensor);
 	}
-
-
 
     sensors_ready_ = true;
 }

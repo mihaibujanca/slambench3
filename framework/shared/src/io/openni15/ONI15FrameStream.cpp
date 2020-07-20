@@ -70,7 +70,6 @@ bool ONI15FrameStream::HasNextFrame() {
 
 }
 
-
 bool ONI15FrameStream::ActivateSensor(CameraSensor* sensor) {
 
 	assert(context_);

@@ -6,12 +6,12 @@
  This code is licensed under the MIT License.
 
  */
-
+#ifdef DO_OPENNI15
 #ifndef IO_ONI15INPUTINTERFACE_H
 #define IO_ONI15INPUTINTERFACE_H
 
-#include "../InputInterface.h"
-#include "../sensor/SensorCollection.h"
+#include <io/InputInterface.h>
+#include <io/sensor/SensorCollection.h>
 
 #include <string>
 
@@ -49,5 +49,6 @@ namespace slambench {
 	}
 }
 
-#endif /* IO_ONI2INPUTINTERFACE_H */
+#endif /* IO_ONI15INPUTINTERFACE_H */
+#endif /* DO_OPENNI15 */
 

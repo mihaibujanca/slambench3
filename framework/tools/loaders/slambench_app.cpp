@@ -97,7 +97,8 @@ int main(int argc, char * argv[])
 		//       thus move memory metric later
 		//***************************************************************************************
 		config->InitAlgorithms();
-
+        config->InitAlignment();
+        config->InitWriter();
         // Run the experiment
         if(use_gui)
         {
