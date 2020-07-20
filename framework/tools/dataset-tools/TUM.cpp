@@ -10,7 +10,7 @@
 #include "include/TUM.h"
 #include "include/utils/RegexPattern.h"
 #include "include/utils/dataset_utils.h"
-#include "include/utils/sensor_builder.h"
+#include "io/sensor/sensor_builder.h"
 #include <io/SLAMFile.h>
 #include <io/SLAMFrame.h>
 #include <io/sensor/AccelerometerSensor.h>

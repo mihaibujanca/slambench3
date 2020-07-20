@@ -27,7 +27,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "utils/sensor_builder.h"
+#include "io/sensor/sensor_builder.h"
 #include "utils/dataset_utils.h"
 
 using namespace slambench::io;

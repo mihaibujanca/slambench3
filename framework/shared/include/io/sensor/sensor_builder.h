@@ -7,9 +7,9 @@
 
  */
 
-#ifndef FRAMEWORK_TOOLS_DATASET_TOOLS_INCLUDE_DATASET_BUILDER_H_
-#define FRAMEWORK_TOOLS_DATASET_TOOLS_INCLUDE_DATASET_BUILDER_H_
-
+#ifndef IO_SENSOR_SENSOR_BUILDER_H
+#define IO_SENSOR_SENSOR_BUILDER_H
+#include <iostream>
 #include <io/sensor/DepthSensor.h>
 #include <io/sensor/CameraSensor.h>
 #include <io/sensor/GroundTruthSensor.h>
@@ -268,4 +268,4 @@ namespace slambench {
   }  // namespace io
 }  // namespace slambench
 
-#endif  // FRAMEWORK_TOOLS_DATASET_TOOLS_INCLUDE_DATASET_BUILDER_H_
+#endif  // IO_SENSOR_SENSOR_BUILDER_H

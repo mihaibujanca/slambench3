@@ -8,7 +8,7 @@
  */
 
 #include "include/SVO.h"
-#include "include/utils/sensor_builder.h"
+#include "io/sensor/sensor_builder.h"
 
 #include <io/SLAMFile.h>
 #include <io/SLAMFrame.h>
