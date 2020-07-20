@@ -66,7 +66,7 @@ for item in targets:
         echo("Original repository: %s" % original_repo)
         echo("Used repository: %s" % new_repo)
         echo("=================================================================================================================")
-        echo()
+        print("")
         print("\t@echo \"Are you sure you want to download this use-case (y/n) ?\" && ${GET_REPLY} && echo REPLY=$$REPLY && if [ ! \"$$REPLY\" == \"y\" ] ; then echo -e \"\\nExit.\"; false; else echo -e \"\\nDownload starts.\"; fi")
     print("\tmkdir -p %s" % target_dir)
     print("\trm %s -rf" % target_dir)
@@ -76,11 +76,11 @@ for item in targets:
     previous = name
 
 list_str = " ".join(set([x["name"] for x in targets]))
-print()
+print("")
 print(".PHONY: %s" % list_str)
 print("algorithms :  %s" % list_str)
 
-print()
+print("")
 print("benchmarks_status:")
 for item in targets:
     name = item["name"]
