@@ -90,12 +90,13 @@ add_library(slambench-io
 	${sensors_files}
 	src/io/core/Core.cpp
 	src/io/FrameBuffer.cpp
-	src/io/FrameBufferSource.cpp 
-	src/io/FrameFormat.cpp 
-	src/io/SLAMFile.cpp 
-	src/io/SLAMFrame.cpp 
+	src/io/FrameBufferSource.cpp
+	src/io/FrameFormat.cpp
+	src/io/SLAMFile.cpp
+	src/io/SLAMFrame.cpp
 	src/io/PixelFormat.cpp
 	src/io/InputInterface.cpp
+	src/io/InputInterfaceManager.cpp
 	src/io/FrameSource.cpp
 
 	src/io/deserialisation/Deserialiser.cpp
@@ -151,16 +152,12 @@ if(OpenNI_FOUND)
         src/io/openni15/ONI15FrameStream.cpp
         src/io/openni15/ONI15InputInterface.cpp
     )
-    target_link_libraries(slambench-io-oni15 ${OPENNI_LIBRARIES})
+	add_definitions(-DDO_OPENNI15=1)
+	target_link_libraries(slambench-io-oni15 ${OPENNI_LIBRARIES})
     target_link_libraries(slambench-utils slambench-io-oni15)
 	SET_TARGET_PROPERTIES(slambench-io-oni15  PROPERTIES COMPILE_FLAGS "-fPIC -Wno-error=unused-but-set-variable -Wno-error=return-type  -Wno-error=strict-aliasing")
 else(OpenNI_FOUND)
 	message(STATUS "SLAMBENCH WILL NOT USE OPENNI 1.2 !!")
-	add_library(slambench-io-oni15
-        src/io/openni15/ONI15InputInterface_dummy.cpp
-    )
-	SET_TARGET_PROPERTIES(slambench-io-oni15  PROPERTIES COMPILE_FLAGS "-fPIC -Wno-error=unused-but-set-variable -Wno-error=return-type")
-    target_link_libraries(slambench-utils slambench-io-oni15)
 endif(OpenNI_FOUND)
 
 find_package(OpenNI2)
@@ -175,17 +172,29 @@ if(OpenNI2_FOUND)
         src/io/openni/ONI2FrameStream.cpp
         src/io/openni/ONI2InputInterface.cpp
     )
+	add_definitions(-DDO_OPENNI20=1)
     target_link_libraries(slambench-io-oni2 ${OPENNI2_LIBRARIES})
 	set_target_properties(slambench-io-oni2  PROPERTIES COMPILE_FLAGS "-fPIC -Wno-error=return-type -Wno-unused-variable -Wno-error=strict-aliasing")
     target_link_libraries(slambench-utils slambench-io-oni2)
 else(OpenNI2_FOUND)
 	message(STATUS "SLAMBENCH WILL NOT USE OPENNI 2.X !!")
-    add_library(slambench-io-oni2 
-        src/io/openni/ONI2InputInterface_dummy.cpp
-    )
-	set_target_properties(slambench-io-oni2  PROPERTIES COMPILE_FLAGS "-fPIC -Wno-unused-variable -Wno-error=return-type  -Wno-error=strict-aliasing")
-    target_link_libraries(slambench-utils slambench-io-oni2)
 endif(OpenNI2_FOUND)
+
+find_package(realsense2)
+if(realsense2_FOUND)
+	message(STATUS "Found realsense:" ${realsense2_INCLUDE_DIR})
+	include_directories(${realsense2_INCLUDE_DIR})
+	add_library(slambench-io-realsense
+			src/io/realsense/RealSense2Frame.cpp
+			src/io/realsense/RealSense2FrameStream.cpp
+			src/io/realsense/RealSense2InputInterface.cpp)
+	add_definitions(-DDO_REALSENSE=1)
+	set_target_properties(slambench-io-oni2  PROPERTIES COMPILE_FLAGS "-fPIC -Wno-unused-variable -Wno-error=return-type  -Wno-error=strict-aliasing")
+	target_link_libraries(slambench-io-realsense ${realsense2_LIBRARY})
+	target_link_libraries(slambench-utils slambench-io-realsense)
+else()
+	message(STATUS "No realsense")
+endif()
 
 target_link_libraries(slambench-utils "-Wl,--no-as-needed;${EXTRA_LIBS_FOR_MEMORY};-Wl,--as-needed" ${common_libraries} dl)
 set_target_properties(slambench-utils PROPERTIES COMPILE_FLAGS "-fPIC ${common_properties}")
