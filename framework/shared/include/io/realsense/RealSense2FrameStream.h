@@ -15,6 +15,7 @@
 #include <map>
 #include <vector>
 #include <librealsense2/hpp/rs_device.hpp>
+#include <librealsense2/hpp/rs_pipeline.hpp>
 
 namespace slambench {
 	namespace io {
@@ -30,19 +31,17 @@ namespace slambench {
 			
 			class RealSense2FrameStream : public FrameStream {
 			public:
-				RealSense2FrameStream(rs2::device device);
-				
-				bool ActivateSensor(CameraSensor *sensor);
-				bool StartStreams();
-				
+				RealSense2FrameStream(rs2::pipeline &pipe);
+				~RealSense2FrameStream();
+                bool ActivateSensor(rs2_stream stream, Sensor* sensor);
 				SLAMFrame* GetNextFrame() override;
 				bool HasNextFrame() override;
             //
 			private:
-                rs2::device &device_;
-			//
-			//	std::vector<realsense::VideoStream*> streams_;
-			//	std::map<realsense::VideoStream*, Sensor*> sensor_map_;
+                rs2::pipeline &pipe_;
+                rs2::frameset frameset_;
+                std::vector<rs2::frame> new_frames_;
+				std::map<rs2_stream, Sensor*> sensor_map_;
 			};
 			
 		}

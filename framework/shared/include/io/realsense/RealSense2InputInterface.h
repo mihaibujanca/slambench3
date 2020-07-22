@@ -16,6 +16,7 @@
 
 #include <string>
 #include <librealsense2/hpp/rs_device.hpp>
+#include <librealsense2/rs.hpp>
 
 namespace slambench {
 	namespace io {
@@ -29,15 +30,19 @@ namespace slambench {
 				RealSense2InputInterface();
 				FrameStream& GetFrames() override;
 				SensorCollection& GetSensors() override;
+                inline RealSense2FrameStream& GetStream() {return *stream_;}
 
 			private:
-				void BuildSensors();
+                void BuildRGBSensor(const rs2::stream_profile& color_profile);
+				void BuildDepthSensor(const rs2::stream_profile& depth_profile);
+				void BuildAccelerometerGyroSensor(const rs2::stream_profile& motion_profile);
 				void BuildStream();
 
-				RealSense2FrameStream *stream_;
+				RealSense2FrameStream* stream_;
 				SensorCollection sensors_;
 				bool sensors_ready_;
-                rs2::device dev_;
+                rs2::pipeline pipe_;
+                rs2::frameset frameset_;
             };
 		}
 	}

@@ -131,10 +131,10 @@ void SLAMBenchConfiguration::AddSLAMLibrary(const std::string& so_file, const st
     std::cerr << "SLAM library loaded: " << so_file << std::endl;
 }
 
+// FIXME: this breaks when using realsense rather than .slam file
 void SLAMBenchConfiguration::InitGroundtruth(bool with_point_cloud) {
-    if(initialised_) {
-        //return;
-    }
+    if(initialised_) return;
+
     auto interface = input_interface_manager_->GetCurrentInputInterface();
     if(interface != nullptr) {
         auto gt_buffering_stream = new slambench::io::GTBufferingFrameStream(interface->GetFrames());

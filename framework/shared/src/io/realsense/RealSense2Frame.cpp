@@ -11,7 +11,7 @@
 
 using namespace slambench::io::realsense;
 
-RealSense2Frame::RealSense2Frame(Sensor *sensor, const rs2::video_frame& frameref) {
+RealSense2Frame::RealSense2Frame(Sensor *sensor, const rs2::frame& frameref) {
 	FrameSensor = sensor;
 	Timestamp.Ns = (int)frameref.get_timestamp() % 1000000000;
 	Timestamp.S = frameref.get_timestamp() / 1000000000;

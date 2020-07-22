@@ -33,7 +33,9 @@ InputInterfaceManager::InputInterfaceManager(const std::vector<std::string> &lib
 #ifdef DO_REALSENSE
     if (library_filenames[0] == "realsense") {
         std::cerr << "Load RealSense interface ..." << std::endl;
-        input_interfaces_.push_back(new slambench::io::realsense::RealSense2InputInterface());
+        auto interface = new slambench::io::realsense::RealSense2InputInterface();
+        input_interfaces_.push_back(interface);
+        input_stream_ = &interface->GetStream();
         return;
     }
 #endif
@@ -80,8 +82,6 @@ SLAMFrame* InputInterfaceManager::GetNextFrame() {
         auto gt_buffering_stream = new slambench::io::GTBufferingFrameStream(GetCurrentInputInterface()->GetFrames());
         input_stream_ = gt_buffering_stream;
     }
-
-
 
     //input_interface_updated_ = true;
     //current_input_id_++;

@@ -20,7 +20,7 @@ namespace slambench {
 		namespace realsense {
 			class RealSense2Frame : public SLAMFrame {
 			public:
-				RealSense2Frame(Sensor *sensor, const rs2::video_frame& frameref);
+				RealSense2Frame(Sensor *sensor, const rs2::frame& frameref);
 				void* GetData() override;
 				void FreeData() override;
 			};
