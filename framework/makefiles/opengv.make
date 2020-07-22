@@ -9,7 +9,7 @@ ${REPOS_DIR}/opengv :
 
 ${DEPS_DIR}/opengv : ${REPOS_DIR}/opengv eigen3
 	mkdir ${REPOS_DIR}/opengv/build -p
-	rm ${REPOS_DIR}/opengv/buid/* -rf
+	rm ${REPOS_DIR}/opengv/build/* -rf
 	cd ${REPOS_DIR}/opengv/build && cmake .. "-DCMAKE_INSTALL_PREFIX:PATH=$@"  -DCMAKE_CXX_FLAGS="-w -O3 -std=c++11" -DEIGEN_VERSION_OK=3 -DEIGEN_INCLUDE_DIR=${EIGEN3_INCLUDE_DIR}
 	+cd ${REPOS_DIR}/opengv/build && make
 	mkdir -p $@
