@@ -166,7 +166,9 @@ add_library(slambench-utils
 
 target_include_directories(slambench-io  PRIVATE ${Boost_INCLUDE_DIRS})
 target_include_directories(slambench-metrics PRIVATE ${Boost_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
+
 target_link_libraries(slambench-io PRIVATE slambench-utils pthread  ${Boost_LIBRARIES} ${OpenCV_LIBRARIES})
+target_link_libraries(slambench-metrics PRIVATE ${OpenCV_LIBRARIES})
 
 SET(EXTRA_LIBS_FOR_MEMORY "")
 
