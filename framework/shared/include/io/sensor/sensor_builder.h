@@ -120,8 +120,10 @@ namespace slambench {
       {
           if(!s) {
               std::cout << name << " sensor not found..." << std::endl;
+              return false;
           } else {
               std::cout << s->GetName() << " sensor created..." << std::endl;
+              return true;
           }
       }
     };

@@ -1,7 +1,7 @@
 ECHO=/bin/echo
+#SHELL := /bin/bash
 WGET:=wget
 GET_REPLY:=read REPLY
-
 ifeq ("${SBQUIET}","1")
 GET_REPLY:=REPLY="y"
 WGET:=wget -q
@@ -104,9 +104,9 @@ demo-prepare :
 	make datasets/TUM/freiburg2/rgbd_dataset_freiburg2_desk.slam
 
 demo-droneflight :
-	make open_vins
-	make slambench APPS=open_vins
-	make datasets/UZHFPV/indoor_forward_3_snapdragon_with_gt.slam
+	$(MAKE) open_vins $(MFLAGS)
+	$(MAKE) slambench APPS=open_vins $(MFLAGS)
+	$(MAKE) datasets/UZHFPV/indoor_forward_3_snapdragon_with_gt.slam $(MFLAGS)
 	@echo "You can now run ${BoldGreen}./build/bin/slambench -i datasets/UZHFPV/indoor_forward_3_snapdragon_with_gt.slam -load build/lib/libopen_vins-original-library.so${ColorOff}"
 
 demo-lib :
@@ -131,6 +131,7 @@ demo-lib :
 	@${ECHO} -e "                        "
 	@${ECHO} -e " ======================="
 
+.PHONY: demo-droneflight demo-lib demo-prepare
 #### TESTS ####
 regression_test :
 	make -C docker fastCI-docker-image # First test compilation of slambench and run kfusion

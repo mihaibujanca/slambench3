@@ -199,21 +199,19 @@ void AlignedPoseOutput::Recalculate()
 {
 	auto &target = GetCachedValueMap();
 	
-	for(auto i : target) {
+	for(auto &i : target) {
 		delete i.second;
 	}
 	target.clear();
 	
-	if(!alignment_->IsActive()) return;
-	if (alignment_->Empty())  return;
-	if(!pose_output_->IsActive()) return;
-	if (pose_output_->Empty())  return;
-	
+	if(!alignment_->IsActive() || alignment_->Empty()) return;
+	if(!pose_output_->IsActive() || pose_output_->Empty()) return;
+
 	auto newest_alignment = alignment_->GetMostRecentValue().second;
-	values::TypedValue<Eigen::Matrix4f> *mv = (values::TypedValue<Eigen::Matrix4f>*)newest_alignment;	
+	auto mv = static_cast<const values::TypedValue<Eigen::Matrix4f>*>(newest_alignment);
 	
 	for(auto traj_point : pose_output_->GetValues()) {
-		values::PoseValue *pose = (values::PoseValue*)traj_point.second;
+		auto pose = static_cast<const values::PoseValue*>(traj_point.second);
 
 		Eigen::Matrix4f tmp = mv->GetValue() * pose->GetValue();
 		target.insert({traj_point.first, new values::PoseValue(tmp)});
@@ -347,8 +345,8 @@ void PointCloudHeatMap::Recalculate()
 	const BaseOutput::value_map_t::value_type &tested_frame = pointcloud_->GetMostRecentValue();
 	const BaseOutput::value_map_t::value_type &gt_frame = gt_pointcloud_->GetMostRecentValue();
 
-	const PointCloudValue *tested_pointcloud = reinterpret_cast<const PointCloudValue*>(tested_frame.second);
-	const PointCloudValue *gt_pointcloud = reinterpret_cast<const PointCloudValue*>(gt_frame.second);
+	const PointCloudValue *tested_pointcloud = static_cast<const PointCloudValue*>(tested_frame.second);
+	const PointCloudValue *gt_pointcloud = static_cast<const PointCloudValue*>(gt_frame.second);
 
 	pcl::PointCloud<point_t>::Ptr tested_cloud = pcl::PointCloud<point_t>::Ptr(new pcl::PointCloud<point_t>);
 

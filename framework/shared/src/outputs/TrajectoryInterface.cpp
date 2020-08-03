@@ -66,7 +66,7 @@ TrajectoryOutputInterface::TrajectoryOutputInterface(const BaseOutput *t):
 
 values::PoseValue TrajectoryOutputInterface::Get(const TimeStamp &when) const {
     const values::Value *raw_value = trajectory_output_->GetMostRecentValue().second;
-    const values::TrajectoryValue *tv = reinterpret_cast<const values::TrajectoryValue*>(raw_value);
+    auto tv = static_cast<const values::TrajectoryValue*>(raw_value);
 
     return tv->GetPoints().at(when);
 }
@@ -74,7 +74,7 @@ values::PoseValue TrajectoryOutputInterface::Get(const TimeStamp &when) const {
 values::TrajectoryValue::pose_container_t TrajectoryOutputInterface::GetAll() const {
 
     const values::Value *raw_value = trajectory_output_->GetMostRecentValue().second;
-    const values::TrajectoryValue *tv = reinterpret_cast<const values::TrajectoryValue*>(raw_value);
+    auto tv = static_cast<const values::TrajectoryValue*>(raw_value);
 
     return tv->GetPoints();
 }

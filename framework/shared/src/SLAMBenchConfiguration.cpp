@@ -186,6 +186,8 @@ void SLAMBenchConfiguration::InitAlgorithms() {
 }
 
 void SLAMBenchConfiguration::InitAlignment() {
+    if(!gt_available_)
+        return;
     slambench::outputs::TrajectoryAlignmentMethod *alignment_method;
     if(alignment_technique_ == "original") {
         alignment_method = new slambench::outputs::OriginalTrajectoryAlignmentMethod();
@@ -200,38 +202,31 @@ void SLAMBenchConfiguration::InitAlignment() {
 
     auto gt_traj = GetGroundTruth().GetMainOutput(slambench::values::VT_POSE);
 
-    assert(slam_libs_.size() == 1); // following code cannot work with multiple libs
-    SLAMBenchLibraryHelper *lib = slam_libs_.front();
-    auto lib_traj = lib->GetOutputManager().GetMainOutput(slambench::values::VT_POSE);
-    alignment_.reset(new slambench::outputs::AlignmentOutput("Alignment", new slambench::outputs::PoseOutputTrajectoryInterface(gt_traj), lib_traj, alignment_method));
-    alignment_->SetActive(true);
-    alignment_->SetKeepOnlyMostRecent(true);
-
-    //Align point cloud
-    auto pointcloud = lib->GetOutputManager().GetMainOutput(slambench::values::VT_POINTCLOUD);
-    if(pointcloud != nullptr) {
-        auto pc_aligned = new slambench::outputs::AlignedPointCloudOutput(pointcloud->GetName() + "(Aligned)", alignment_.get(), pointcloud);
-        lib->GetOutputManager().RegisterOutput(pc_aligned);
+    //alignments_.reserve(slam_libs_.size());
+    for(size_t i = 0; i < slam_libs_.size(); i++) {
+        SLAMBenchLibraryHelper *lib = slam_libs_[i];
+        auto lib_traj = lib->GetOutputManager().GetMainOutput(slambench::values::VT_POSE);
+        auto alignment = new slambench::outputs::AlignmentOutput(lib->getName() + "Alignment", new slambench::outputs::PoseOutputTrajectoryInterface(
+                                                                                                                           gt_traj), lib_traj, alignment_method);
+        alignment->SetActive(true);
+        alignment->SetKeepOnlyMostRecent(true);
+        alignments_.push_back(alignment);
+        //Align point cloud
+        auto pointcloud = lib->GetOutputManager().GetMainOutput(slambench::values::VT_POINTCLOUD);
+        if(pointcloud != nullptr) {
+            auto pc_aligned = new slambench::outputs::AlignedPointCloudOutput(lib->getName() + pointcloud->GetName() + "(Aligned)", alignment, pointcloud);
+            lib->GetOutputManager().RegisterOutput(pc_aligned);
+        }
     }
-
 }
 
 void SLAMBenchConfiguration::ComputeLoopAlgorithm(bool *stay_on, SLAMBenchUI *ui) {
 
     assert(initialised_);
 
-    // If no trajectory warn and disable trajectory metrics.
-    for (auto lib : slam_libs_) {
-        auto trajectory = lib->GetOutputManager().GetMainOutput(slambench::values::VT_POSE);
-        if (trajectory == nullptr) {
-            std::cerr << "Algorithm does not provide a main pose output" << std::endl;
-            exit(1);
-        }
-    }
-
     int input_seq = 0;
     bool ongoing = false;
-    std::map<SLAMBenchLibraryHelper*, Eigen::Matrix4f> libs_trans;
+    std::vector<Eigen::Matrix4f> libs_trans;
 
     // ********* [[ MAIN LOOP ]] *********
     unsigned int frame_count = 0;
@@ -249,6 +244,7 @@ void SLAMBenchConfiguration::ComputeLoopAlgorithm(bool *stay_on, SLAMBenchUI *ui
             frame_count++;
             if (current_frame->FrameSensor->GetType() != slambench::io::GroundTruthSensor::kGroundTruthTrajectoryType) {
                 // ********* [[ NEW FRAME PROCESSED BY ALGO ]] *********
+                size_t i = 0;
                 for (auto lib : slam_libs_) {
                     // ********* [[ SEND THE FRAME ]] *********
                     ongoing = not lib->c_sb_update_frame(lib, current_frame);
@@ -281,7 +277,8 @@ void SLAMBenchConfiguration::ComputeLoopAlgorithm(bool *stay_on, SLAMBenchUI *ui
                             aided_reloc_ = true;
                             //Find the nearest one
                             auto gt_frame = input_interface_manager_->GetClosestGTFrameToTime(ts);
-                            Eigen::Matrix4f &t = libs_trans[lib];
+                            Eigen::Matrix4f &t = alignments_[i]->getTransformation();
+                            i++;
                             Eigen::Matrix4f gt;
                             memcpy(gt.data(), gt_frame->GetData(), gt_frame->GetSize());
 
@@ -305,9 +302,6 @@ void SLAMBenchConfiguration::ComputeLoopAlgorithm(bool *stay_on, SLAMBenchUI *ui
                     }
 
                     lib->GetMetricManager().EndFrame();
-                    if (libs_trans.count(lib) == 0 && gt_available_) {
-                        libs_trans[lib] = alignment_->getTransformation();
-                    }
                 }
                 // ********* [[ FINALIZE ]] *********
                 if (!ongoing) {
@@ -327,7 +321,9 @@ void SLAMBenchConfiguration::ComputeLoopAlgorithm(bool *stay_on, SLAMBenchUI *ui
             SaveResults();
         // TODO: this needs to be after first firing of sequence end
         // Freeze the alignment after end of the first input
-        if (input_seq++ == 0) alignment_->SetFreeze(true);
+        if (input_seq++ == 0)
+            for(auto& alignment : alignments_)
+                alignment->SetFreeze(true);
     }
 }
 
@@ -406,7 +402,7 @@ void SLAMBenchConfiguration::InitWriter() {
     writer_.reset(new slambench::ColumnWriter(this->GetLogStream(), "\t"));
     writer_->AddColumn(&(row_number_));
     bool have_timestamp = false;
-
+    int  i = 0 ;
     for(SLAMBenchLibraryHelper *lib : slam_libs_) {
 
         // retrieve the trajectory of the lib
@@ -424,8 +420,8 @@ void SLAMBenchConfiguration::InitWriter() {
 
         if (gt_traj) {
             // Create an aligned trajectory
-            auto aligned = new slambench::outputs::AlignedPoseOutput(lib_traj->GetName() + " (Aligned)", &*alignment_, lib_traj);
-            //lib->GetOutputManager().RegisterOutput(aligned);
+            auto aligned = new slambench::outputs::AlignedPoseOutput(lib_traj->GetName() + " (Aligned)", &*alignments_[i], lib_traj);
+            lib->GetOutputManager().RegisterOutput(aligned);
 
             // Add ATE metric
             auto ate_metric = std::make_shared<slambench::metrics::ATEMetric>(new slambench::outputs::PoseOutputTrajectoryInterface(aligned), new slambench::outputs::PoseOutputTrajectoryInterface(gt_traj));
@@ -477,6 +473,7 @@ void SLAMBenchConfiguration::InitWriter() {
         auto traj = lib->GetOutputManager().GetMainOutput(slambench::values::VT_POSE);
         traj->SetActive(true);
         writer_->AddColumn(new slambench::CollectionValueLibColumnInterface(lib, new slambench::outputs::PoseToXYZOutput(traj)));
+        i++;
     }
 
     frame_callbacks_.clear();

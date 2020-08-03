@@ -28,7 +28,7 @@ CameraSensor::CameraSensor(const Sensor::sensor_name_t  &name,  const Sensor::se
 		PixelFormat(slambench::io::pixelformat::UNKNOWN),
 		DistortionType(NoDistortion)
 {
-	this->addParameter(TypedParameter<intrinsics_t>("ip", "intrinsics-parameters","Focal length and Principal Point Offset : fx,fy,cx,cy", &(this->Intrinsics),NULL));
+	this->addParameter(TypedParameter<intrinsics_t>("ip", "intrinsics-parameters","Focal length and Principal Point Offset : fx,fy,cx,cy", &(this->Intrinsics),nullptr));
 }
 
 size_t CameraSensor::GetFrameSize(const SLAMFrame *frame) const {

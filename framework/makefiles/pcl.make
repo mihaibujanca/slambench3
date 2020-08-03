@@ -39,6 +39,7 @@ ${DEPS_DIR}/pcl : ${REPOS_DIR}/pcl eigen3 flann
 	-DWITH_DAVIDSDK=FALSE \
 	-DWITH_DSSDK=FALSE \
 	-DWITH_RSSDK=FALSE \
+	-DWITH_VTK=FALSE \
 	-DWITH_PCAP=FALSE \
 	-DBUILD_common=TRUE                \
 	-DBUILD_octree=TRUE               \

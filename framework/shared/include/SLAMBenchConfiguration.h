@@ -56,7 +56,7 @@ private:
     std::shared_ptr<slambench::metrics::Metric> duration_metric_;
     std::shared_ptr<slambench::metrics::Metric> power_metric_;
     slambench::io::SensorCollection* first_sensors_;
-    std::unique_ptr<slambench::outputs::AlignmentOutput> alignment_;
+    std::vector<slambench::outputs::AlignmentOutput*> alignments_;
     std::string alignment_technique_ = "umeyama";
     std::string output_filename_;
 
