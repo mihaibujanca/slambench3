@@ -79,13 +79,11 @@ void RealSense2InputInterface::BuildRGBSensor(const rs2::stream_profile& color_p
         std::cerr<<"Unsupported distortion type!"<<std::endl;
         exit(EXIT_FAILURE);
     }
-
     auto sensor = CameraSensorBuilder()
             .name(color_profile.stream_name())
             .description("Intel Realsense RGB")
             .rate(color_profile.fps())
             .size(color_intrinsics.width, color_intrinsics.height)
-            .pose(Eigen::Matrix4f::Identity())
             .intrinsics(intrinsics)
             .distortion(distortion_type, distortion)
             .frameFormat(frameformat::Raster)
@@ -175,12 +173,10 @@ void RealSense2InputInterface::BuildDepthSensor(const rs2::stream_profile& depth
         std::cerr<<"Unsupported distortion type!"<<std::endl;
         exit(EXIT_FAILURE);
     }
-
     auto depth_sensor = DepthSensorBuilder()
             .name(depth_profile.stream_name())
             .description("Intel Realsense RGB")
             .size(dvsprofile.get_intrinsics().width, dvsprofile.get_intrinsics().height)
-            .pose(Eigen::Matrix4f::Identity())
             .intrinsics(intrinsics)
             .frameFormat(frameformat::Raster)
             .pixelFormat(pixelformat::D_I_16)

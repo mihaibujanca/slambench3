@@ -49,7 +49,7 @@ bool RealSense2FrameStream::HasNextFrame() {
     rs2::frameset frameset;
     pipe_.poll_for_frames(&frameset);
     for (const rs2::frame& f : frameset)
-             new_frames_.push_back(f);
+         new_frames_.push_back(f);
 
     return true;
 }

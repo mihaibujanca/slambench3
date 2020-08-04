@@ -244,8 +244,8 @@ void SLAMBenchConfiguration::ComputeLoopAlgorithm(bool *stay_on, SLAMBenchUI *ui
             frame_count++;
             if (current_frame->FrameSensor->GetType() != slambench::io::GroundTruthSensor::kGroundTruthTrajectoryType) {
                 // ********* [[ NEW FRAME PROCESSED BY ALGO ]] *********
-                size_t i = 0;
-                for (auto lib : slam_libs_) {
+                for (size_t i = 0; i < slam_libs_.size(); i++) {
+                    auto lib = slam_libs_[i];
                     // ********* [[ SEND THE FRAME ]] *********
                     ongoing = not lib->c_sb_update_frame(lib, current_frame);
 
@@ -278,7 +278,6 @@ void SLAMBenchConfiguration::ComputeLoopAlgorithm(bool *stay_on, SLAMBenchUI *ui
                             //Find the nearest one
                             auto gt_frame = input_interface_manager_->GetClosestGTFrameToTime(ts);
                             Eigen::Matrix4f &t = alignments_[i]->getTransformation();
-                            i++;
                             Eigen::Matrix4f gt;
                             memcpy(gt.data(), gt_frame->GetData(), gt_frame->GetSize());
 

@@ -42,7 +42,7 @@ namespace slambench {
 				SensorCollection sensors_;
 				bool sensors_ready_;
                 rs2::pipeline pipe_;
-                rs2::frameset frameset_;
+                //rs2::frameset frameset_;
             };
 		}
 	}
