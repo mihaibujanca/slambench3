@@ -76,7 +76,7 @@ namespace slambench {
 		class Output : public BaseOutput {
 		public:
 			Output(const std::string &name, values::ValueType type, bool main_output = false);
-			virtual ~Output() override = default;
+			~Output() override = default;
 			
 			void AddPoint(timestamp_t time, const values::Value *value);
 
@@ -92,7 +92,7 @@ namespace slambench {
 		class DerivedOutput : public BaseOutput {
 		public:
 			DerivedOutput(const std::string &name, values::ValueType type, const std::initializer_list<BaseOutput*> &derived_from, bool main = false);
-			virtual ~DerivedOutput() override = default;
+			~DerivedOutput() override = default;
 			
 			bool Empty() const override;
 			const value_map_t::value_type& GetMostRecentValue() const override;
@@ -112,7 +112,7 @@ namespace slambench {
 		class AlignmentOutput : public DerivedOutput {
 		public:
 			AlignmentOutput(const std::string &name, TrajectoryInterface *gt_trajectory, BaseOutput *trajectory, TrajectoryAlignmentMethod *method);
-			virtual ~AlignmentOutput() = default;
+			~AlignmentOutput() override = default;
 			
 			void Recalculate() override;
 			Eigen::Matrix4f& getTransformation() {
@@ -131,7 +131,7 @@ namespace slambench {
 		class AlignedPoseOutput : public DerivedOutput {
 		public:
 			AlignedPoseOutput(const std::string &name, AlignmentOutput *alignment, BaseOutput *pose_output);
-			virtual ~AlignedPoseOutput() = default;
+			~AlignedPoseOutput() override = default;
 			
 			void Recalculate() override;
 		private:
@@ -145,7 +145,7 @@ namespace slambench {
 		class AlignedPointCloudOutput : public DerivedOutput {
 		public:
 			AlignedPointCloudOutput(const std::string &name, AlignmentOutput *, BaseOutput *pc_output);
-			virtual ~AlignedPointCloudOutput() = default;
+			~AlignedPointCloudOutput() override = default;
 
 			void Recalculate() override;
 
@@ -160,7 +160,7 @@ namespace slambench {
 		class AlignedTrajectoryOutput : public DerivedOutput {
 			public:
 				AlignedTrajectoryOutput(const std::string &name, AlignmentOutput *, BaseOutput *trajectory_output);
-				virtual ~AlignedTrajectoryOutput() = default;
+				~AlignedTrajectoryOutput() override;
 
 				void Recalculate() override;
 			private:
@@ -176,7 +176,7 @@ namespace slambench {
 			PointCloudHeatMap(const std::string &name,
 							  BaseOutput *gt_pointcloud, BaseOutput *pointcloud,
 							  const std::function<values::ColoredPoint3DF(const values::HeatMapPoint3DF&, double, double)> &convert);
-			virtual ~PointCloudHeatMap()  = default;
+			~PointCloudHeatMap() override = default;
 
 			void Recalculate() override;
 			std::function<values::ColoredPoint3DF(const values::HeatMapPoint3DF&, double, double)> convert;
@@ -188,7 +188,7 @@ namespace slambench {
 		class PoseToXYZOutput : public BaseOutput {
 		public:
 			PoseToXYZOutput(BaseOutput *pose_output);
-			virtual ~PoseToXYZOutput() = default;
+			~PoseToXYZOutput() override = default;
 			const BaseOutput::value_map_t& GetValues() const override;
 			const value_map_t::value_type& GetMostRecentValue() const override;
 			

@@ -117,7 +117,8 @@ namespace slambench {
 	class ColumnWriter {
 	public:
 		ColumnWriter(std::ostream &str, const std::string &separator);
-		
+		~ColumnWriter() = default;
+
 		void AddColumn(ColumnInterface *interface);
 		void PrintRow();
 		void PrintHeader();

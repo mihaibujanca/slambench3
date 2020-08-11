@@ -323,9 +323,29 @@ void SLAMBenchConfiguration::ComputeLoopAlgorithm(bool *stay_on, SLAMBenchUI *ui
         if (input_seq++ == 0)
             for(auto& alignment : alignments_)
                 alignment->SetFreeze(true);
+
+        if (!LoadNextInputInterface())
+            break;
     }
 }
 
+bool SLAMBenchConfiguration::LoadNextInputInterface() {
+    //input_interface_manager_->.pop_front();
+    //ResetSensors();
+    if(!input_interface_manager_->updated_)
+        return false;
+
+    //InitSensors();
+    //InitGroundtruth();
+    //InitWriter();
+    //for (auto lib : this->libs) {
+    //    lib->update_input_interface(this->GetCurrentInputInterface());
+    //}
+    //input_interface_updated_ = true;
+    //current_input_id_++;
+
+    return true;
+}
 //FIXME: save results in TUM format
 void SLAMBenchConfiguration::SaveResults()
 {
@@ -422,17 +442,17 @@ void SLAMBenchConfiguration::InitWriter() {
             auto aligned = new slambench::outputs::AlignedPoseOutput(lib_traj->GetName() + " (Aligned)", &*alignments_[i], lib_traj);
             lib->GetOutputManager().RegisterOutput(aligned);
 
-            // Add ATE metric
-            auto ate_metric = std::make_shared<slambench::metrics::ATEMetric>(new slambench::outputs::PoseOutputTrajectoryInterface(aligned), new slambench::outputs::PoseOutputTrajectoryInterface(gt_traj));
-            if (ate_metric->GetValueDescription().GetStructureDescription().size() > 0) {
-                lib->GetMetricManager().AddFrameMetric(ate_metric);
-                writer_->AddColumn(new slambench::CollectionValueLibColumnInterface(lib, &*ate_metric, lib->GetMetricManager().GetFramePhase()));
-            }
-
-            // Add RPE metric
-            auto rpe_metric = std::make_shared<slambench::metrics::RPEMetric>(new slambench::outputs::PoseOutputTrajectoryInterface(aligned), new slambench::outputs::PoseOutputTrajectoryInterface(gt_traj));
-            lib->GetMetricManager().AddFrameMetric(rpe_metric);
-            writer_->AddColumn(new slambench::CollectionValueLibColumnInterface(lib, &*rpe_metric, lib->GetMetricManager().GetFramePhase()));
+            //// Add ATE metric
+            //auto ate_metric = std::make_shared<slambench::metrics::ATEMetric>(new slambench::outputs::PoseOutputTrajectoryInterface(aligned), new slambench::outputs::PoseOutputTrajectoryInterface(gt_traj));
+            //if (!ate_metric->GetValueDescription().GetStructureDescription().empty()) {
+            //    lib->GetMetricManager().AddFrameMetric(ate_metric);
+            //    writer_->AddColumn(new slambench::CollectionValueLibColumnInterface(lib, &*ate_metric, lib->GetMetricManager().GetFramePhase()));
+            //}
+            //
+            //// Add RPE metric
+            //auto rpe_metric = std::make_shared<slambench::metrics::RPEMetric>(new slambench::outputs::PoseOutputTrajectoryInterface(aligned), new slambench::outputs::PoseOutputTrajectoryInterface(gt_traj));
+            //lib->GetMetricManager().AddFrameMetric(rpe_metric);
+            //writer_->AddColumn(new slambench::CollectionValueLibColumnInterface(lib, &*rpe_metric, lib->GetMetricManager().GetFramePhase()));
         }
         else {
             std::cerr<<"NO GT TRAJECTORY!!"<<std::endl;

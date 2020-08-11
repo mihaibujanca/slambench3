@@ -62,12 +62,7 @@ public:
     inline std::ostream& GetLogStream() {return log_stream_;}
     inline slambench::metrics::MetricManager &GetMetricManager() { return metric_manager_; }
     inline slambench::outputs::OutputManager &GetOutputManager() { return output_manager_; }
-    inline slambench::io::InputInterface *GetInputInterface() {
-		if(input_interface_ == nullptr) {
-			throw std::logic_error("Input interface have not been added to SLAM configuration");
-		}
-		return input_interface_;
-	}
+    inline slambench::io::InputInterface *GetInputInterface() { return input_interface_;}
 
     inline const slambench::io::SensorCollection &get_sensors() {
 		return this->GetInputInterface()->GetSensors();

@@ -98,7 +98,7 @@ public:
     void SaveResults();
     void ComputeLoopAlgorithm(bool *stay_on, SLAMBenchUI *ui);
     void AddSLAMLibrary(const std::string& so_file, const std::string &id);
-
+    bool LoadNextInputInterface();
     inline std::ostream& GetLogStream() {
         if (!log_stream_)
             UpdateLogStream();

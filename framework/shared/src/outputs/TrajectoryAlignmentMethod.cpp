@@ -332,7 +332,5 @@ Eigen::Matrix4f OriginalTrajectoryAlignmentMethod::operator()(const TrajectoryAl
 Eigen::Matrix4f UmeyamaTrajectoryAlignmentMethod::operator()(const TrajectoryAlignmentMethod::trajectory_t & ground_truth,
                                                              const TrajectoryAlignmentMethod::trajectory_t & trajectory)
 {
-    //if(trajectory.size() < 50)
-    //    return align_trajectories_original(ground_truth, trajectory);
     return align_trajectories_umeyama_eigen(ground_truth, trajectory);
 }

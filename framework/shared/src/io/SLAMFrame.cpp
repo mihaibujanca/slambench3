@@ -219,31 +219,32 @@ void *TxtFileFrame::LoadCameraFile() {
 	CameraSensor *camera = (CameraSensor*)FrameSensor;
 	
 	void *data = nullptr;
+	auto frame_size = camera->Width * camera->Height;
 	switch(input_pixel_format) {
 		case pixelformat::G_I_8:
-			data = LoadData<unsigned char>(filename, 1, camera->Width * camera->Height);
+			data = LoadData<unsigned char>(filename, 1, frame_size);
 			break;
 		case pixelformat::RGB_III_888:
-			data = LoadData<unsigned char>(filename, 3, camera->Width * camera->Height);
+			data = LoadData<unsigned char>(filename, 3, frame_size);
 			break;
 		case pixelformat::D_I_8:
-			data = LoadData<unsigned char>(filename, 1, camera->Width * camera->Height);
+			data = LoadData<unsigned char>(filename, 1, frame_size);
 			break;
 		case pixelformat::D_F_32:
-			data = LoadData<float>(filename, 1, camera->Width * camera->Height);
+			data = LoadData<float>(filename, 1, frame_size);
 			break;
 		case pixelformat::D_F_64:
-			data = LoadData<double>(filename, 1, camera->Width * camera->Height);
+			data = LoadData<double>(filename, 1, frame_size);
 			break;
 		case pixelformat::D_I_16:
-			data = LoadData<float>(filename, 1, camera->Width * camera->Height);
+			data = LoadData<float>(filename, 1, frame_size);
 			break;
 		default:
 			assert(false);
 	}
 	
 	if(camera->PixelFormat != input_pixel_format) {
-		void *newdata = Convert(data, camera->Width * camera->Height, input_pixel_format, camera->PixelFormat);
+		void *newdata = Convert(data, frame_size, input_pixel_format, camera->PixelFormat);
 		free(data);
 		data = newdata;
 	}
