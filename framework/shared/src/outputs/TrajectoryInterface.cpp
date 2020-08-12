@@ -7,6 +7,7 @@
 
  */
 
+
 #include "outputs/TrajectoryInterface.h"
 
 #include <iostream>
@@ -17,14 +18,12 @@ using namespace slambench::values;
 
 PoseOutputTrajectoryInterface::PoseOutputTrajectoryInterface(BaseOutput* pose_output) : pose_output_(pose_output), newest_point_(TimeStamp::get(0,0))
 {
-	assert(pose_output_->GetType() == VT_POSE);
+    assert(pose_output_->GetType() == VT_POSE);
 }
-
-PoseOutputTrajectoryInterface::~PoseOutputTrajectoryInterface(){}
 
 PoseValue PoseOutputTrajectoryInterface::Get(const TimeStamp& when) const
 {
-	return *static_cast<const PoseValue*>(pose_output_->GetValues().at(when));
+    return *dynamic_cast<const PoseValue*>(pose_output_->GetValues().at(when));
 }
 
 TrajectoryValue::pose_container_t PoseOutputTrajectoryInterface::GetAll() const
@@ -33,31 +32,34 @@ TrajectoryValue::pose_container_t PoseOutputTrajectoryInterface::GetAll() const
     ((!pose_output_->IsActive())  ||  pose_output_->GetMostRecentValue().first > newest_point_))
     || cached_traj_.empty()) {
         recalculate();
-	}
-	
-	return cached_traj_;
+    }
+
+    return cached_traj_;
 }
 void PoseOutputTrajectoryInterface::recalculate() const {
-	cached_traj_.clear();
-	
-	for(auto i : pose_output_->GetValues()) {
-		const PoseValue *point = static_cast<const PoseValue*>(i.second);
-		cached_traj_.insert({i.first, *point});
-	}
-	
-	if(!cached_traj_.empty()) {
-		newest_point_ = cached_traj_.rbegin()->first;
-	}
+    cached_traj_.clear();
+
+    for(auto i : pose_output_->GetValues()) {
+        auto point = dynamic_cast<const PoseValue*>(i.second);
+        auto newval = new PoseValue(point->GetValue());
+        cached_traj_.insert({i.first, *newval});
+    }
+
+    if(!cached_traj_.empty()) {
+        newest_point_ = cached_traj_.rbegin()->first;
+    }
 }
 
-TrajectoryValueWrapper::TrajectoryValueWrapper(const TrajectoryValue *t) : trajectoryValue_(t) {}
+
+TrajectoryValueWrapper::TrajectoryValueWrapper(const TrajectoryValue *t) : trajectoryValue_(t) {
+}
 
 values::PoseValue TrajectoryValueWrapper::Get(const TimeStamp &when) const {
-	return trajectoryValue_->GetPoints().at(when);
+    return trajectoryValue_->GetPoints().at(when);
 }
 
 values::TrajectoryValue::pose_container_t TrajectoryValueWrapper::GetAll() const {
-	return trajectoryValue_->GetPoints();
+    return trajectoryValue_->GetPoints();
 }
 
 TrajectoryOutputInterface::TrajectoryOutputInterface(const BaseOutput *t):
@@ -66,7 +68,7 @@ TrajectoryOutputInterface::TrajectoryOutputInterface(const BaseOutput *t):
 
 values::PoseValue TrajectoryOutputInterface::Get(const TimeStamp &when) const {
     const values::Value *raw_value = trajectory_output_->GetMostRecentValue().second;
-    auto tv = static_cast<const values::TrajectoryValue*>(raw_value);
+    const auto tv = reinterpret_cast<const values::TrajectoryValue*>(raw_value);
 
     return tv->GetPoints().at(when);
 }
@@ -74,7 +76,7 @@ values::PoseValue TrajectoryOutputInterface::Get(const TimeStamp &when) const {
 values::TrajectoryValue::pose_container_t TrajectoryOutputInterface::GetAll() const {
 
     const values::Value *raw_value = trajectory_output_->GetMostRecentValue().second;
-    auto tv = static_cast<const values::TrajectoryValue*>(raw_value);
+    const auto tv = reinterpret_cast<const values::TrajectoryValue*>(raw_value);
 
     return tv->GetPoints();
 }

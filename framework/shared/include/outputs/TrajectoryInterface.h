@@ -29,7 +29,7 @@ namespace slambench {
 		class PoseOutputTrajectoryInterface : public TrajectoryInterface {
 		public:
 			PoseOutputTrajectoryInterface(BaseOutput *pose_output);
-			virtual ~PoseOutputTrajectoryInterface();
+			~PoseOutputTrajectoryInterface() = default;
 			
 			values::PoseValue Get(const TimeStamp& when) const override;
 			values::TrajectoryValue::pose_container_t GetAll() const override;

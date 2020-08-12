@@ -83,12 +83,13 @@ void BaseOutput::Updated() const
 	}
 }
 
-DerivedOutput::DerivedOutput(const std::string &name, values::ValueType type, const std::initializer_list<BaseOutput*> &derived_from, bool main) : BaseOutput(name, type, main), derived_from_(derived_from)
+DerivedOutput::DerivedOutput(const std::string &name, values::ValueType type, const std::initializer_list<BaseOutput*> &derived_from, bool main) : BaseOutput(name, type, main), derived_from_(derived_from), up_to_date_(false)
 {
 	for(BaseOutput *i : derived_from_) {
 		i->AddUpdateCallback([this](const BaseOutput*){this->Invalidate();});
 	}
 }
+
 bool DerivedOutput::Empty() const
 {
 	if(!up_to_date_) {
@@ -157,6 +158,7 @@ void AlignmentOutput::Recalculate()
 
 	slambench::outputs::PoseOutputTrajectoryInterface traj_int(trajectory_);
 
+    //transformation_ = (*method_)(gt_trajectory_->GetAll(), traj_int.GetAll());
     auto transformation = (*method_)(gt_trajectory_->GetAll(), traj_int.GetAll());
 	auto &last_point = trajectory_->GetMostRecentValue();
 
@@ -172,22 +174,24 @@ void AlignedPoseOutput::Recalculate()
 {
 	auto &target = GetCachedValueMap();
 
-	for(auto &i : target) {
+	for(auto i : target) {
 		delete i.second;
 	}
 	target.clear();
 
-	if(!alignment_->IsActive() || alignment_->Empty()) return;
-	if(!pose_output_->IsActive() || pose_output_->Empty()) return;
+	if(!alignment_->IsActive()) return;
+	if(alignment_->Empty()) return;
+	if(!pose_output_->IsActive()) return;
+	if(pose_output_->Empty()) return;
 
-	auto newest_alignment = alignment_->GetMostRecentValue().second;
-	auto mv = static_cast<const values::TypedValue<Eigen::Matrix4f>*>(newest_alignment);
+    auto newest_alignment = alignment_->GetMostRecentValue().second;
+    values::TypedValue<Eigen::Matrix4f> *mv = (values::TypedValue<Eigen::Matrix4f>*)newest_alignment;
 
-	for(auto traj_point : pose_output_->GetValues()) {
-		auto pose = static_cast<const values::PoseValue*>(traj_point.second);
+    for(auto traj_point : pose_output_->GetValues()) {
+        auto pose = (values::PoseValue*)traj_point.second;
 
 		Eigen::Matrix4f tmp = mv->GetValue() * pose->GetValue();
-		target.insert({traj_point.first, new values::PoseValue(tmp)});
+		target.insert({traj_point.first, const_cast<values::PoseValue*>(new values::PoseValue(tmp))});
 	}
 }
 
@@ -226,6 +230,11 @@ AlignedTrajectoryOutput::AlignedTrajectoryOutput(const std::string &name, Alignm
 	SetKeepOnlyMostRecent(true);
 }
 
+AlignedTrajectoryOutput::~AlignedTrajectoryOutput()
+{
+	SetKeepOnlyMostRecent(true);
+}
+
 void AlignedTrajectoryOutput::Recalculate()
 {
 	assert(GetKeepOnlyMostRecent());
@@ -255,7 +264,7 @@ void AlignedTrajectoryOutput::Recalculate()
 
 		Eigen::Matrix4f transformed_pose = latest_alignment * pose;
 
-		t->push_back(point.first, transformed_pose);
+		t->push_back(point.first, values::PoseValue(transformed_pose));
 	}
 
 	auto new_trajectory = new values::TrajectoryValue(*t);
@@ -308,8 +317,8 @@ void PointCloudHeatMap::Recalculate()
 	const BaseOutput::value_map_t::value_type &tested_frame = pointcloud_->GetMostRecentValue();
 	const BaseOutput::value_map_t::value_type &gt_frame = gt_pointcloud_->GetMostRecentValue();
 
-	const PointCloudValue *tested_pointcloud = static_cast<const PointCloudValue*>(tested_frame.second);
-	const PointCloudValue *gt_pointcloud = static_cast<const PointCloudValue*>(gt_frame.second);
+	const PointCloudValue *tested_pointcloud = reinterpret_cast<const PointCloudValue*>(tested_frame.second);
+	const PointCloudValue *gt_pointcloud = reinterpret_cast<const PointCloudValue*>(gt_frame.second);
 
 	pcl::PointCloud<point_t>::Ptr tested_cloud = pcl::PointCloud<point_t>::Ptr(new pcl::PointCloud<point_t>);
 

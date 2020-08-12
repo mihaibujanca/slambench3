@@ -49,7 +49,7 @@ datasets/OpenLORIS/%.all :
 
 ./datasets/EuRoCMAV/%.slam :  ./datasets/EuRoCMAV/%.dir
 	${check_generator}
-	./build/bin/dataset-generator -d eurocmav -i $</mav0 -o $@ -imu true -stereo true -gt true
+	./build/bin/dataset-generator -d eurocmav -i $</mav0 -o $@ -imu true --stereo-grey true -gt true
 
 #### TUM ####
 # check if using tgz file or rosbag
