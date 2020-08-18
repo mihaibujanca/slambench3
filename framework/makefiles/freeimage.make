@@ -1,7 +1,6 @@
 FREEIMAGE_INCLUDE_PATH=${DEPS_DIR}/freeimage/include
 FREEIMAGE_DYNAMIC_LIBRARY=${DEPS_DIR}/freeimage/lib/libfreeimage.so
 FREEIMAGE_URL=http://downloads.sourceforge.net/freeimage/FreeImage3180.zip
-PATCH_DIR=${ROOT_DIR}/framework/patchs
 
 ${REPOS_DIR}/FreeImage :
 	mkdir ${REPOS_DIR} -p
@@ -10,7 +9,7 @@ ${REPOS_DIR}/FreeImage :
 	sed -i.bak "s/-o root -g root//" ${REPOS_DIR}/FreeImage/Makefile.gnu
 	sed -i.bak "s/-Wno-ctor-dtor-privacy/-w/" ${REPOS_DIR}/FreeImage/Makefile.gnu
 	sed -i.bak "s/defined._ARM_./defined\(_ARM_\) or defined\(__arm__\)/"  ${REPOS_DIR}/FreeImage/Source/LibRawLite/libraw/libraw_types.h
-	cd ${REPOS_DIR}/FreeImage && git apply ${PATCH_DIR}/freeimage.patch
+	cd ${REPOS_DIR}/FreeImage && git apply ${ROOT_DIR}/framework/patchs/freeimage.patch
 
 ${DEPS_DIR}/freeimage : ${REPOS_DIR}/FreeImage
 	+cd ${REPOS_DIR}/FreeImage && make DESTDIR=$@ 
