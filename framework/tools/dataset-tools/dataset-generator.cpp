@@ -32,6 +32,7 @@
 #include "include/TUM.h"
 #include "include/UZHFPV.h"
 #include "include/OpenLORIS.h"
+#include "include/VolumeDeform.h"
 
 using namespace slambench::io;
 
@@ -99,6 +100,8 @@ public:
             config->reader = new UZHFPVReader("");
         } else if (dataset_name == "OpenLORIS") {
             config->reader = new OpenLORISReader("");
+        } else if (dataset_name == "VolumeDeform") {
+            config->reader = new VolumeDeformReader("");
         } else if (dataset_name == "ethi") {
             auto eth_reader = new ETHIReader("");
             if(eth_reader->dataset == "iclnuim")
