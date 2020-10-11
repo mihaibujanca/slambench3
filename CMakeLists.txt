@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-project(slambench2_repository)
+project(slambench)
 
 
 # CMake variables
@@ -15,13 +15,13 @@ SET(CMAKE_BUILD_FILES_DIRECTORY    ${PROJECT_BINARY_DIR}/bfd)
 SET(CMAKE_BINARY_DIR               ${PROJECT_BINARY_DIR}/bindir)
 SET(CMAKE_CACHEFILE_DIR            ${PROJECT_BINARY_DIR}/cache)
 SET(CMAKE_BUILD_DIRECTORY          ${PROJECT_BINARY_DIR}/builddir)
-  
-  
+
+
 
 # Most common compiler flags
 #######################################################
 
-set(GENERAL_COMPILATION_FLAGS "-g -O3  -Wall  -Wextra")
+set(GENERAL_COMPILATION_FLAGS "-g -O3 -Wall  -Wextra")
 
 
 if (CMAKE_COMPILER_IS_GNUCC)
@@ -36,7 +36,6 @@ if (CMAKE_COMPILER_IS_GNUCC)
   endif()
   if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 7.0)
     set(GENERAL_COMPILATION_FLAGS "${GENERAL_COMPILATION_FLAGS}     -Wno-error=implicit-fallthrough= -Wno-int-in-bool-context ")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}    -Wno-catch-value")   # too noisy when using Pangolin
   endif()
 endif()
 

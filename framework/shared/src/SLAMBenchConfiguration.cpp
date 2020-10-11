@@ -202,7 +202,6 @@ void SLAMBenchConfiguration::InitAlignment() {
 
     auto gt_traj = GetGroundTruth().GetMainOutput(slambench::values::VT_POSE);
 
-    //alignments_.reserve(slam_libs_.size());
     for(size_t i = 0; i < slam_libs_.size(); i++) {
         SLAMBenchLibraryHelper *lib = slam_libs_[i];
         auto lib_traj = lib->GetOutputManager().GetMainOutput(slambench::values::VT_POSE);

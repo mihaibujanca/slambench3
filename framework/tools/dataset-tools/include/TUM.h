@@ -227,6 +227,8 @@ namespace slambench {
                     for (uint32_t i = 0; i < 4; i++) {
                         rgb_intrinsics[i] = fr1_intrinsics_rgb[i];
                         depth_intrinsics[i] = fr1_intrinsics_depth[i];
+                    }
+                    for (uint32_t i = 0; i < 5; i++) {
                         rgb_distortion[i] = fr1_distortion_rgb[i];
                         depth_distortion[i] = fr1_distortion_depth[i];
                     }
@@ -237,6 +239,8 @@ namespace slambench {
                     for (uint32_t i = 0; i < 4; i++) {
                         rgb_intrinsics[i] = fr2_intrinsics_rgb[i];
                         depth_intrinsics[i] = fr2_intrinsics_depth[i];
+                    }
+                    for (uint32_t i = 0; i < 5; i++) {
                         rgb_distortion[i] = fr2_distortion_rgb[i];
                         depth_distortion[i] = fr2_distortion_depth[i];
                     }
@@ -247,6 +251,8 @@ namespace slambench {
                     for (uint32_t i = 0; i < 4; i++) {
                         rgb_intrinsics[i] = fr3_intrinsics_rgb[i];
                         depth_intrinsics[i] = fr3_intrinsics_depth[i];
+                    }
+                    for (uint32_t i = 0; i < 5; i++) {
                         rgb_distortion[i] = fr3_distortion_rgb[i];
                         depth_distortion[i] = fr3_distortion_depth[i];
                     }
@@ -257,6 +263,8 @@ namespace slambench {
                     for (uint32_t i = 0; i < 4; i++) {
                         rgb_intrinsics[i] = ethi_intrinsics_rgb[i];
                         depth_intrinsics[i] = ethi_intrinsics_depth[i];
+                    }
+                    for (uint32_t i = 0; i < 5; i++) {
                         rgb_distortion[i] = ethi_distortion_rgb[i];
                         depth_distortion[i] = ethi_distortion_depth[i];
                     }
@@ -267,6 +275,8 @@ namespace slambench {
                 for (uint32_t i = 0; i < 4; i++) {
                     rgb_intrinsics[i] = default_intrinsics_rgb[i];
                     depth_intrinsics[i] = default_intrinsics_depth[i];
+                }
+                for (uint32_t i = 0; i < 5; i++) {
                     rgb_distortion[i] = default_distortion_rgb[i];
                     depth_distortion[i] = default_distortion_depth[i];
                 }
