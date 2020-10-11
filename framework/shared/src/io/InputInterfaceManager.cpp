@@ -15,23 +15,23 @@
 
 using namespace slambench::io;
 
-InputInterfaceManager::InputInterfaceManager(const std::vector<std::string> &library_filenames) {
+InputInterfaceManager::InputInterfaceManager(const std::vector<std::string> & dataset_filenames) {
 #ifdef DO_OPENNI20
-    if (library_filenames[0] == "oni2") {
+    if (dataset_filenames[0] == "oni2") {
         std::cerr << "Load OpenNI 2 interface ..." << std::endl;
         input_interfaces_.push_back(new slambench::io::openni2::ONI2InputInterface());
         return;
     }
 #endif
 #ifdef DO_OPENNI15
-    if (library_filenames[0] == "oni15") {
+    if (dataset_filenames[0] == "oni15") {
             std::cerr << "Load OpenNI 1.5 interface ..." << std::endl;
             input_interfaces_.push_back(new slambench::io::openni15::ONI15InputInterface());
             return;
         }
 #endif
 #ifdef DO_REALSENSE
-    if (library_filenames[0] == "realsense") {
+    if (dataset_filenames[0] == "realsense") {
         std::cerr << "Load RealSense interface ..." << std::endl;
         auto interface = new slambench::io::realsense::RealSense2InputInterface();
         input_interfaces_.push_back(interface);
@@ -42,9 +42,9 @@ InputInterfaceManager::InputInterfaceManager(const std::vector<std::string> &lib
     // TODO: Handle other types of interface
     // TODO: Add a getFrameStream in Config to handle that
     // TODO: config will be aware of sensors and then sensors will be able to add there arguments
-    for(const auto &library_filename : library_filenames) {
+    for(const auto &filename : dataset_filenames) {
 
-        FILE *input_desc = fopen(library_filename.c_str(), "r");
+        FILE *input_desc = fopen(filename.c_str(), "r");
         if (input_desc == nullptr) {
             throw std::logic_error("Could not open the input file");
         }
@@ -55,53 +55,48 @@ InputInterfaceManager::InputInterfaceManager(const std::vector<std::string> &lib
         ////assume different input_interface_manager_ has exactly the same types of sensors.
         ////If sensors are different, may introduce problems.
         // FIXME: this works for a single library but doesn't work for more than that. Should be moved inside each library
-        //if(!initialized()) {
-        //    first_sensors_ = &input_ref->GetSensors();
-        //} else {
-        //    input_ref->GetSensors() = *first_sensors_;
-        //}
     }
+    first_sensors_ = &GetCurrentInputInterface()->GetSensors();
+}
+
+InputInterfaceManager::~InputInterfaceManager() {
+    for(auto interface : input_interfaces_)
+        delete interface;
+    if(first_sensors_)
+        delete first_sensors_;
+    if(input_stream_)
+        delete input_stream_;
 }
 
 InputInterface* InputInterfaceManager::GetCurrentInputInterface()
 {
     if(input_interfaces_.empty()) {
-        throw std::logic_error("Input interface has not been added to SLAM configuration");
+         throw std::logic_error("Input interface has not been added to SLAM configuration");
     }
     return input_interfaces_.front();
 }
-// if this is a new dataset, fire sequence end callback
-// sequence end callback will trigger a bunch of stuff such as sending the new gt pose in lifelong SLAM, the logger creates a new logging directory, summary is generated (all the below)
-SLAMFrame* InputInterfaceManager::GetNextFrame() {
-    if (input_stream_ == nullptr) {
+
+SLAMFrame* InputInterfaceManager::GetNextFrame() const {
+    if (input_stream_ == nullptr || !input_stream_->HasNextFrame()) {
         std::cerr << "No input loaded." << std::endl;
         return nullptr;
     }
-    if (!input_stream_->HasNextFrame()) {
-        input_interfaces_.pop_front();
-        auto gt_buffering_stream = new slambench::io::GTBufferingFrameStream(GetCurrentInputInterface()->GetFrames());
-        input_stream_ = gt_buffering_stream;
-    }
-
-    //input_interface_updated_ = true;
-    //current_input_id_++;
-    //return true;
 
     return input_stream_->GetNextFrame();
 }
 
-// callback
-//TODO: all this in the callback!
-//param_manager_.ClearComponents();
-//for (slambench::io::Sensor *sensor : GetCurrentInputInterface()->GetSensors()) {
-//    param_manager_.AddComponent(dynamic_cast<ParameterComponent*>(&(*sensor)));
-//}
-//InitGroundtruth();
-//InitWriter();
-//for (auto lib : slam_libs_) {
-//    lib->update_input_interface(GetCurrentInputInterface());
-//}
-
 SLAMFrame* InputInterfaceManager::GetClosestGTFrameToTime(slambench::TimeStamp& ts) const {
     return dynamic_cast<slambench::io::GTBufferingFrameStream*>(input_stream_)->GetGTFrames()->GetClosestFrameToTime(ts);
+}
+
+bool InputInterfaceManager::LoadNextInputInterface()
+{
+    input_interfaces_.pop_front();
+    delete input_stream_;
+    if(input_interfaces_.empty())
+        return false;
+    updated_ = true;
+
+    GetCurrentInputInterface()->GetSensors() = *first_sensors_;
+    return true;
 }

@@ -55,7 +55,6 @@ private:
     std::unique_ptr<slambench::ColumnWriter> writer_;
     std::shared_ptr<slambench::metrics::Metric> duration_metric_;
     std::shared_ptr<slambench::metrics::Metric> power_metric_;
-    slambench::io::SensorCollection* first_sensors_;
     std::vector<slambench::outputs::AlignmentOutput*> alignments_;
     std::string alignment_technique_ = "umeyama";
     std::string output_filename_;
@@ -91,7 +90,7 @@ public:
      * the sensor collection are registered as GT outputs, and all frames
      * within the collection are registered as GT output values.
      */
-    void InitGroundtruth(bool with_point_cloud = true);
+    void InitGroundtruth(bool with_point_cloud = false);
     void InitAlgorithms();
     void InitAlignment();
     void InitWriter();
@@ -113,7 +112,12 @@ public:
             log_stream_ = &std::cout;
         }
     }
-
+    inline void ResetSensors() {
+        param_manager_.ClearComponents();
+        for (slambench::io::Sensor *sensor : input_interface_manager_->GetCurrentInputInterface()->GetSensors()) {
+            GetParameterManager().AddComponent(dynamic_cast<ParameterComponent*>(&(*sensor)));
+        }
+    }
     void FireEndOfFrame() { for(auto i : frame_callbacks_) { i(); } }
     void StartStatistics();
     void PrintDse();

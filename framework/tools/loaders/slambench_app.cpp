@@ -86,7 +86,7 @@ int main(int argc, char * argv[])
         config->GetParameterManager().ReadArgumentsOrQuit(argc, argv);
 
         // Initialise the configuration, retrieve the ground truth and set the alignement
-        config->InitGroundtruth(false);
+        config->InitGroundtruth();
 
         // Prepare the logging
         config->StartStatistics();

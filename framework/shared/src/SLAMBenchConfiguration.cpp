@@ -131,9 +131,9 @@ void SLAMBenchConfiguration::AddSLAMLibrary(const std::string& so_file, const st
     std::cerr << "SLAM library loaded: " << so_file << std::endl;
 }
 
-// FIXME: this breaks when using realsense rather than .slam file
 void SLAMBenchConfiguration::InitGroundtruth(bool with_point_cloud) {
-    if(initialised_) return;
+    if(initialised_)
+        return;
 
     auto interface = input_interface_manager_->GetCurrentInputInterface();
     if(interface != nullptr) {
@@ -169,8 +169,9 @@ void SLAMBenchConfiguration::InitAlgorithms() {
 
     for (auto &lib : slam_libs_) {
 
-        bool init_worked = lib->c_sb_init_slam_system(lib) ;
-        //lib->GetMetricManager().EndInit();
+        lib->GetMetricManager().BeginInit();
+        bool init_worked = lib->c_sb_init_slam_system(lib);
+        lib->GetMetricManager().EndInit();
 
         if (!init_worked) {
             std::cerr << "Algorithm initialization failed." << std::endl;
@@ -201,7 +202,7 @@ void SLAMBenchConfiguration::InitAlignment() {
     }
 
     auto gt_traj = GetGroundTruth().GetMainOutput(slambench::values::VT_POSE);
-
+    alignments_.clear();
     for(size_t i = 0; i < slam_libs_.size(); i++) {
         SLAMBenchLibraryHelper *lib = slam_libs_[i];
         auto lib_traj = lib->GetOutputManager().GetMainOutput(slambench::values::VT_POSE);
@@ -269,6 +270,7 @@ void SLAMBenchConfiguration::ComputeLoopAlgorithm(bool *stay_on, SLAMBenchUI *ui
                         //Mihai: need assertion / safety mechanism to avoid ugly errors
                         bool res = lib->c_sb_relocalize(lib);
                         input_interface_manager_->updated_ = false;
+                        frame_count = 0;
                         /* If the library failed to re-localize at the beginning of a new input,
                            the framework will send a ground-truth pose to it (so-called aided_reloc).
                            The sent pose is transformed to be relative to the first estimated pose
@@ -328,28 +330,28 @@ void SLAMBenchConfiguration::ComputeLoopAlgorithm(bool *stay_on, SLAMBenchUI *ui
             break;
     }
 }
-// FIXME: loading next dataset
+
 bool SLAMBenchConfiguration::LoadNextInputInterface() {
-    //input_interface_manager_->.pop_front();
-    //ResetSensors();
-    if(!input_interface_manager_->updated_)
+    if(!input_interface_manager_->LoadNextInputInterface())
         return false;
 
-    //InitSensors();
-    //InitGroundtruth();
-    //InitWriter();
-    //for (auto lib : this->libs) {
-    //    lib->update_input_interface(this->GetCurrentInputInterface());
-    //}
-    //input_interface_updated_ = true;
-    //current_input_id_++;
+    initialised_ = false;
+    ResetSensors();
+    InitGroundtruth();
+    InitAlignment();
+    InitWriter();
+    for (auto lib : this->slam_libs_) {
+        lib->update_input_interface(input_interface_manager_->GetCurrentInputInterface());
+    }
+    current_input_id_++;
 
     return true;
 }
-//FIXME: save results in TUM format
+
+//saves results in TUM format TODO: move out of SLAMBenchConfiguration
 void SLAMBenchConfiguration::SaveResults()
 {
-    if (output_filename_ == "" ) {
+    if (output_filename_.empty() ) {
         return;
     }
     boost::filesystem::path input_name(input_filenames_[current_input_id_]);
@@ -418,9 +420,9 @@ void SLAMBenchConfiguration::InitWriter() {
     }
     auto gt_traj = ground_truth_.GetMainOutput(slambench::values::VT_POSE);
 
-    writer_.reset(new slambench::ColumnWriter(this->GetLogStream(), "\t"));
+    writer_ = std::make_unique<slambench::ColumnWriter>(this->GetLogStream(), "\t");
     writer_->AddColumn(&(row_number_));
-    int  i = 0 ;
+    int i = 0;
     for(SLAMBenchLibraryHelper *lib : slam_libs_) {
 
         // retrieve the trajectory of the lib
@@ -470,17 +472,7 @@ void SLAMBenchConfiguration::InitWriter() {
             lib->GetMetricManager().AddFrameMetric(power_metric_);
             writer_->AddColumn(new slambench::CollectionValueLibColumnInterface(lib, &*power_metric_, lib->GetMetricManager().GetFramePhase()));
         }
-//            FIXME: workaround for ground truth
-//            auto depth_est_output = lib->GetOutputManager().GetOutput("depth_est");
-//            auto depth_est_gt = lib->GetOutputManager().GetOutput("depth_gt");
-//            if(!(depth_est_output&&depth_est_gt)) {
-//                std::cerr<<"This algorithm does not provide depth estimation"<<std::endl;
-//            }
-//            else {
-//                auto depth_metric = new slambench::metrics::DepthEstimationMetric(depth_est_output,depth_est_gt);
-//                lib->GetMetricManager().AddFrameMetric(depth_metric);
-//                cw.AddColumn(new slambench::CollectionValueLibColumnInterface(lib, depth_metric, lib->GetMetricManager().GetFramePhase()));
-//            }
+
         // Add XYZ row from the trajectory
         auto traj = lib->GetOutputManager().GetMainOutput(slambench::values::VT_POSE);
         traj->SetActive(true);

@@ -55,7 +55,7 @@ unsigned int GTBufferingFrameStream::GTFrameCollection::GetFrameCount()
 
 GTBufferingFrameStream::GTBufferingFrameStream(FrameStream& base_stream) : base_stream_(base_stream), buffered_frame_(nullptr)
 {
-	fastForward();
+    fastForward();
 }
 
 SLAMFrame* GTBufferingFrameStream::GetNextFrame()

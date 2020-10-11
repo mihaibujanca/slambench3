@@ -36,8 +36,8 @@ namespace slambench {
 			typedef std::vector<MetricPtr> metric_list_t;
 			typedef std::vector<Phase*> phase_list_t;
 
-			void AddPhaseMetric(MetricPtr m);
-			void AddFrameMetric(MetricPtr m);
+			void AddPhaseMetric(const MetricPtr& m);
+			void AddFrameMetric(const MetricPtr& m);
 
 			void AddPhase(Phase *p);
 			void AddPhase(const std::string &phase_name);
