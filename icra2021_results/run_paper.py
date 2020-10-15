@@ -74,4 +74,7 @@ for config_no in range(0, len(run_config_array)):
         log_pathname = log_filenames_array[config_no] + "_run" + str(run) + ".log"
         output_args = ["-o", log_pathname]
         final_config = run_config_array[config_no] + output_args
-        subprocess.run(final_config)
+        try:
+            subprocess.run(final_config, timeout=30)
+        except TimeoutError:
+            print(final_config, "Timed out!")
