@@ -13,12 +13,6 @@
 #include "sb_malloc.h"
 
 #include <io/FrameBufferSource.h>
-#include <io/openni2/ONI2FrameStream.h>
-#include <io/openni2/ONI2InputInterface.h>
-#include <io/openni15/ONI15FrameStream.h>
-#include <io/openni15/ONI15InputInterface.h>
-
-#include <io/InputInterface.h>
 #include <io/SLAMFrame.h>
 #include <io/format/PointCloud.h>
 #include <io/sensor/Sensor.h>

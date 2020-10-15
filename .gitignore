@@ -44,7 +44,7 @@ paper/*.tex
 
 /datasets
 /iros2020_results_backup
-/iros2020_results
+/icra2021_results/results
 !/datasets/README.md
 !/datasets/datasets.repos
 
