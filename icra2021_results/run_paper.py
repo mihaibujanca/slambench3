@@ -76,5 +76,5 @@ for config_no in range(0, len(run_config_array)):
         final_config = run_config_array[config_no] + output_args
         try:
             subprocess.run(final_config, timeout=1800)
-        except TimeoutError:
+        except subprocess.TimeoutExpired:
             print(final_config, "Timed out!")
