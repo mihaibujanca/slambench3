@@ -58,7 +58,7 @@ for dataset, values in config.items():
                 lib_filename = LIBS_PATH + "lib" + libname + ORIGINAL_SUFFIX
             else:
                 print("UNKNOWN OR INVALID LIBRARY PATH!!!", libname)
-            run_config = [SLAMBENCH_EXECUTABLE, "-a", "umeyama" "-i", dataset_fullpath, "-load", lib_filename]
+            run_config = [SLAMBENCH_EXECUTABLE, "-a", "umeyama", "-i", dataset_fullpath, "-load", lib_filename]
             run_config.extend(arguments)
             log_file = sequence_dir + "/" + libname
             run_config_array.append(run_config)
