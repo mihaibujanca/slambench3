@@ -148,7 +148,7 @@ datasets/SVO/artificial.slam: ./datasets/SVO/artificial.dir
 
 ./datasets/BONN/%.slam : ./datasets/BONN/%.dir ./datasets/BONN/rgbd_bonn_groundtruth_1mm_section.ply
 	if [ ! -e ./build/bin/dataset-generator ] ; then make slambench ; fi
-	./build/bin/dataset-generator -d bonn -i $</* -o $@ -grey true -rgb true -gt true -depth true -ply datasets/BONN/rgbd_bonn_groundtruth_1mm_section.ply
+	./build/bin/dataset-generator -d bonn -i $</* -o $@ -grey true -rgb true -gt true -depth true
 
 #./datasets/BONN/%.slam : ./datasets/BONN/%.dir ./datasets/BONN/rgbd_bonn_groundtruth.ply
 #	if [ ! -e ./build/bin/dataset-generator ] ; then make slambench ; fi

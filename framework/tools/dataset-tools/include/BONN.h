@@ -26,7 +26,7 @@ namespace slambench {
     namespace io {
 
         class BONNReader : public DatasetReader {
-        private:
+           public:
             static constexpr image_params_t image_params =
                     { 640, 480, 30.0, 5000.0 };
 
@@ -46,7 +46,6 @@ namespace slambench {
             static constexpr DepthSensor::disparity_type_t disparity_type = DepthSensor::affine_disparity;
             static constexpr CameraSensor::distortion_type_t distortion_type = CameraSensor::distortion_type_t::RadialTangential;
 
-        public:
             std::string input;
             std::string plyfile;
             bool grey = true, rgb = true, depth = true, gt = true;
