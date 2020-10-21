@@ -45,8 +45,8 @@ for dataset, values in config.items():
     for sequence, runs in values.items():
         dataset_fullpath = DATASETS_PATH + dataset + "/" + sequence
         if not os.path.isfile(dataset_fullpath):
-            print("Dataset not found, please make sure all datasets are built. Skipping,", dataset_fullpath)
-            continue
+             print("Dataset not found, please make sure all datasets are built. Skipping,", dataset_fullpath)
+             continue
         sequence_name = os.path.splitext(os.path.basename(sequence))[0] # get sequence name without extension
         sequence_dir = dataset_seq + sequence_name
         os.makedirs(sequence_dir, exist_ok=True)
@@ -72,6 +72,9 @@ if len(sys.argv) > 2:
 for config_no in range(0, len(run_config_array)):
     for run in range(0, runs):
         log_pathname = log_filenames_array[config_no] + "_run" + str(run) + ".log"
+        if os.path.isfile(log_pathname):
+            print("File already exists, skipping:", log_pathname)
+            continue
         output_args = ["-o", log_pathname]
         final_config = run_config_array[config_no] + output_args
         try:
