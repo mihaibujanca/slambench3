@@ -47,7 +47,7 @@
 #include "ResultWriter.h"
 
 SLAMBenchConfiguration::SLAMBenchConfiguration(void (*custom_input_callback)(Parameter*, ParameterComponent*),void (*libs_callback)(Parameter*, ParameterComponent*)) :
-        ParameterComponent("") {
+    ParameterComponent("") {
 
     if(!custom_input_callback)
         custom_input_callback = input_callback;
@@ -57,8 +57,8 @@ SLAMBenchConfiguration::SLAMBenchConfiguration(void (*custom_input_callback)(Par
     log_stream_ = nullptr;
     slam_library_names_ = {};
     // Run Related
-    addParameter(TypedParameter<unsigned int>("fl", "frame-limit", "last frame to compute", &frame_limit_, &default_frame_limit));
-    addParameter(TypedParameter<unsigned int>("s", "start-frame", "first frame to compute", &start_frame_, &default_start_frame));
+    addParameter(TypedParameter<unsigned int>("", "frame-limit", "last frame to compute", &frame_limit_, &default_frame_limit));
+//    addParameter(TypedParameter<unsigned int>("", "start-frame", "first frame to compute", &start_frame_, &default_start_frame));
     addParameter(TypedParameter<std::string>("o", "log-file", "Output log file", &log_file_, &default_log_file, log_callback));
     addParameter(TypedParameter<std::vector<std::string>>("i", "input" , "Specify the input file or mode." , &input_files_, &default_input_files , custom_input_callback));
     addParameter(TypedParameter<std::vector<std::string> >("load", "load-slam-library" , "Load a specific SLAM library."     , &slam_library_names_, &default_slam_libraries, libs_callback));
@@ -201,7 +201,7 @@ void SLAMBenchConfiguration::InitAlignment() {
         SLAMBenchLibraryHelper *lib = slam_libs_[i];
         auto lib_traj = lib->GetOutputManager().GetMainOutput(slambench::values::VT_POSE);
         auto alignment = new slambench::outputs::AlignmentOutput(lib->getName() + "Alignment", new slambench::outputs::PoseOutputTrajectoryInterface(
-                                                                                                                           gt_traj), lib_traj, alignment_method);
+            gt_traj), lib_traj, alignment_method);
         alignment->SetActive(true);
         alignment->SetKeepOnlyMostRecent(true);
         alignments_.push_back(alignment);
@@ -235,21 +235,29 @@ void SLAMBenchConfiguration::ComputeLoopAlgorithm(bool *stay_on, SLAMBenchUI *ui
         }
 
         auto current_frame = input_interface_manager_->GetNextFrame();
-
+        slambench::TimeStamp first_ts;
+        if(frame_count==0 || frame_count==start_frame_)
+            first_ts = input_interface_manager_->GetClosestGTFrameToTime(current_frame->Timestamp)->Timestamp;
+        std::cerr<<"First_gt_frame timestamp:"<<first_ts<<std::endl;
         while (current_frame != nullptr) {
-            frame_count++;
             if (current_frame->FrameSensor->GetType() != slambench::io::GroundTruthSensor::kGroundTruthTrajectoryType) {
                 // ********* [[ NEW FRAME PROCESSED BY ALGO ]] *********
                 for (size_t i = 0; i < slam_libs_.size(); i++) {
                     auto lib = slam_libs_[i];
                     // ********* [[ SEND THE FRAME ]] *********
                     ongoing = not lib->c_sb_update_frame(lib, current_frame);
-
+//                  Haven't reached the first gt timestamp
+//                    ongoing = ongoing || first_gt_frame->Timestamp >= current_frame->Timestamp;
                     // This algorithm hasn't received enough frames yet.
                     if (ongoing) {
                         continue;
                     }
-
+//                    if(first_ts >= current_frame->Timestamp)
+//                    {
+//                        lib->c_sb_process_once(lib);
+//                        ongoing = true;
+//                        continue;
+//                    }
                     // ********* [[ PROCESS ALGO START ]] *********
                     lib->GetMetricManager().BeginFrame();
                     slambench::TimeStamp ts = current_frame->Timestamp;
@@ -301,12 +309,12 @@ void SLAMBenchConfiguration::ComputeLoopAlgorithm(bool *stay_on, SLAMBenchUI *ui
                 }
                 // ********* [[ FINALIZE ]] *********
                 if (!ongoing) {
+                    frame_count++;
                     FireEndOfFrame();
                     if (ui) ui->stepFrame();
-                    frame_count += 1;
 
                     if (frame_limit_ > 0 && frame_count >= frame_limit_) {
-                            break;
+                        break;
                     }
                 }
             }
@@ -414,7 +422,8 @@ void SLAMBenchConfiguration::InitWriter() {
     }
     auto gt_traj = ground_truth_.GetMainOutput(slambench::values::VT_POSE);
 
-    writer_ = std::make_unique<slambench::ColumnWriter>(this->GetLogStream(), "\t");
+//    writer_ = std::make_unique<slambench::ColumnWriter>(this->GetLogStream(), "\t");
+    writer_ = new slambench::ColumnWriter(this->GetLogStream(), "\t");
     writer_->AddColumn(&(row_number_));
     int i = 0;
     for(SLAMBenchLibraryHelper *lib : slam_libs_) {

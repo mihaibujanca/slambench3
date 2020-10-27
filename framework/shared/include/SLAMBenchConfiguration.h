@@ -52,7 +52,8 @@ private:
     std::vector<std::string> input_files_;
     std::vector<std::string> slam_library_names_;
     slambench::RowNumberColumn row_number_;
-    std::unique_ptr<slambench::ColumnWriter> writer_;
+//    std::unique_ptr<slambench::ColumnWriter> writer_;
+    slambench::ColumnWriter *writer_;
     std::shared_ptr<slambench::metrics::Metric> duration_metric_;
     std::shared_ptr<slambench::metrics::Metric> power_metric_;
     std::vector<slambench::outputs::AlignmentOutput*> alignments_;
