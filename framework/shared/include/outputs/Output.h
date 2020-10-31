@@ -20,7 +20,7 @@
 #include <set>
 #include <vector>
 #include <functional>
-
+#include <iostream>
 namespace slambench {
 	namespace outputs {
 		class TrajectoryInterface;
@@ -85,7 +85,22 @@ namespace slambench {
 			void reset() override {
 				values_.clear();
 			}
-		private:
+                        void resetAllPoses(std::vector<Eigen::Matrix4f> &new_poses) {
+                            if(new_poses.size() != values_.size()) {
+                                std::cerr<<"Called resetAllValues with incorrect number of new values. Old values size:" << values_.size()
+                                         << ", New values size:" << new_poses.size() << std::endl;
+                                return;
+                            }
+                            size_t i = 0;
+                            for(auto &keyval : values_) {
+                                delete keyval.second;
+                                keyval.second = new values::PoseValue(new_poses[i]);
+                                i++;
+                            }
+
+                        }
+
+                   private:
 			value_map_t values_;
 		};
 		

@@ -141,7 +141,7 @@ void SLAMBenchConfiguration::InitGroundtruth(bool with_point_cloud) {
         } else {
             std::cerr << "Process every frame mode enabled" << std::endl;
         }
-
+        ground_truth_.reset();
         ground_truth_.LoadGTOutputsFromSLAMFile(interface->GetSensors(), gt_buffering_stream->GetGTFrames(), with_point_cloud);
     }
 
@@ -280,6 +280,7 @@ void SLAMBenchConfiguration::ComputeLoopAlgorithm(bool *stay_on, SLAMBenchUI *ui
                            from the library. */
                         if(!res && gt_available_)
                         {
+                            std::cerr<<"RELOCALIZATION FAILED!"<<std::endl;
                             aided_reloc_ = true;
                             //Find the nearest one
                             auto gt_frame = input_interface_manager_->GetClosestGTFrameToTime(ts);
@@ -341,12 +342,11 @@ bool SLAMBenchConfiguration::LoadNextInputInterface() {
     initialised_ = false;
     ResetSensors();
     InitGroundtruth();
-    InitAlignment();
-    InitWriter();
-//    input_interface_manager_->LoadNextInputInterface()
+//    InitAlignment();
     for (auto lib : this->slam_libs_) {
         lib->update_input_interface(input_interface_manager_->GetCurrentInputInterface());
     }
+    InitWriter();
     current_input_id_++;
 
     return true;
@@ -394,14 +394,14 @@ void SLAMBenchConfiguration::SaveResults()
         out << std::endl;
         writer.WriteKV("input", input_name.string());
         writer.WriteKV("aided_reloc", std::to_string(aided_reloc_));
-        slambench::outputs::BaseOutput::value_map_t traj = lib->GetOutputManager().GetOutput("Pose")->GetValues();
+        slambench::outputs::BaseOutput::value_map_t traj = lib->GetOutputManager().GetMainOutput(slambench::values::VT_POSE)->GetValues();
         writer.WriteTrajectory(traj);
         std::cout << "Results saved into " << filename << std::endl;
     }
 
     if (!boost::filesystem::exists(gt_file)) {
         std::ofstream out(gt_file.string());
-        slambench::outputs::BaseOutput::value_map_t traj = GetGroundTruth().GetMainOutput(slambench::values::VT_POSE)->GetValues();
+        slambench::outputs::BaseOutput::value_map_t traj = ground_truth_.GetMainOutput(slambench::values::VT_POSE)->GetValues();
         ResultWriter writer(out);
         writer.WriteKV("input", input_name.string());
         writer.WriteTrajectory(traj);
@@ -417,6 +417,7 @@ void SLAMBenchConfiguration::InitWriter() {
         }
         //TODO: move this to callback when starting a new sequence
         aided_reloc_ = false;
+        delete writer_;
     } else {
         // the following metrics last for all inputs; other metrics are allocated for only one input
         duration_metric_ = std::make_shared<slambench::metrics::DurationMetric>();
@@ -425,6 +426,7 @@ void SLAMBenchConfiguration::InitWriter() {
     auto gt_traj = ground_truth_.GetMainOutput(slambench::values::VT_POSE);
 
 //    writer_ = std::make_unique<slambench::ColumnWriter>(this->GetLogStream(), "\t");
+
     writer_ = new slambench::ColumnWriter(this->GetLogStream(), "\t");
     writer_->AddColumn(&(row_number_));
     int i = 0;

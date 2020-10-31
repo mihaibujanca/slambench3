@@ -61,6 +61,10 @@ bool OutputManager::WriteFile(const std::string& filename)
 	return writer.Write(*this, filename);
 }
 
+void OutputManager::reset() {
+    output_map_.clear();
+}
+
 void OutputManager::LoadGTOutputsFromSLAMFile(io::SLAMFile* file)
 {
 	LoadGTOutputsFromSLAMFile(file->Sensors, file, true);
