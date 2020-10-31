@@ -36,6 +36,7 @@ static const unsigned int default_start_frame                  = 0;
 static const double default_realtime_mult                      = 1;
 static const std::string default_dump_volume_file              = "";
 static const std::string default_log_file                      = "";
+static const std::string default_tum_output                    = "";
 static const std::string default_save_map                      = "";
 static const std::vector<std::string> default_slam_libraries   = {};
 static const std::vector<std::string> default_input_files      = {};
@@ -58,9 +59,9 @@ private:
     std::shared_ptr<slambench::metrics::Metric> power_metric_;
     std::vector<slambench::outputs::AlignmentOutput*> alignments_;
     std::string alignment_technique_ = "umeyama";
-    std::string output_filename_;
+    std::string tum_output_;
 
-    std::vector<std::string> input_filenames_;
+//    std::vector<std::string> input_filenames_;
     slambench::ParameterManager param_manager_;
     slambench::outputs::OutputManager ground_truth_;
 

@@ -60,6 +60,7 @@ SLAMBenchConfiguration::SLAMBenchConfiguration(void (*custom_input_callback)(Par
     addParameter(TypedParameter<unsigned int>("", "frame-limit", "last frame to compute", &frame_limit_, &default_frame_limit));
 //    addParameter(TypedParameter<unsigned int>("", "start-frame", "first frame to compute", &start_frame_, &default_start_frame));
     addParameter(TypedParameter<std::string>("o", "log-file", "Output log file", &log_file_, &default_log_file, log_callback));
+    addParameter(TypedParameter<std::string>("tum-fo", "tum-file-output", "File to write slamfile containing outputs", &tum_output_, &default_tum_output));
     addParameter(TypedParameter<std::vector<std::string>>("i", "input" , "Specify the input file or mode." , &input_files_, &default_input_files , custom_input_callback));
     addParameter(TypedParameter<std::vector<std::string> >("load", "load-slam-library" , "Load a specific SLAM library."     , &slam_library_names_, &default_slam_libraries, libs_callback));
     addParameter(TriggeredParameter("dse",   "dse",    "Output solution space of parameters.",    dse_callback));
@@ -321,7 +322,7 @@ void SLAMBenchConfiguration::ComputeLoopAlgorithm(bool *stay_on, SLAMBenchUI *ui
             current_frame->FreeData();
             current_frame = input_interface_manager_->GetNextFrame();
         } // we're done with the frame
-        if (!output_filename_.empty())
+        if (!tum_output_.empty())
             SaveResults();
         // Freeze the alignment after end of the first input
         if (input_seq++ == 0)
@@ -342,6 +343,7 @@ bool SLAMBenchConfiguration::LoadNextInputInterface() {
     InitGroundtruth();
     InitAlignment();
     InitWriter();
+//    input_interface_manager_->LoadNextInputInterface()
     for (auto lib : this->slam_libs_) {
         lib->update_input_interface(input_interface_manager_->GetCurrentInputInterface());
     }
@@ -353,12 +355,12 @@ bool SLAMBenchConfiguration::LoadNextInputInterface() {
 //saves results in TUM format TODO: move out of SLAMBenchConfiguration
 void SLAMBenchConfiguration::SaveResults()
 {
-    if (output_filename_.empty() ) {
+    if (tum_output_.empty() ) {
         return;
     }
-    boost::filesystem::path input_name(input_filenames_[current_input_id_]);
+    boost::filesystem::path input_name(input_files_[current_input_id_]);
     input_name = input_name.filename();
-    boost::filesystem::path output_name = boost::filesystem::path(output_filename_);
+    boost::filesystem::path output_name = boost::filesystem::path(tum_output_);
     boost::filesystem::path output_prefix;
     boost::filesystem::path gt_dir;
     if (boost::filesystem::is_directory(output_name)) {
@@ -384,7 +386,7 @@ void SLAMBenchConfiguration::SaveResults()
         ResultWriter writer(out);
         if (first_input) {
             writer.WriteKV("benchmark", lib->GetLibraryName());
-            writer.WriteKV("inputs", input_filenames_);
+            writer.WriteKV("inputs", input_files_);
             writer.WriteKV("CPU", cpu_info);
             if (!gpu_info.empty()) writer.WriteKV("GPU", gpu_info);
             writer.WriteKV("memory", mem_info);

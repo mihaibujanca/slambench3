@@ -23,7 +23,6 @@ bool lifelong_slam, default_lifelong_slam = false;
 
 std::string alignment_technique = "new";
 std::string default_alignment_technique = "new";
-TypedParameter<std::string> file_output_parameter ("fo", "file-output", "File to write slamfile containing outputs", &output_filename, &default_output_filename);
 TypedParameter<std::string> alignment_type_parameter("a",     "alignment-technique",      "Select an alignment technique by name, if not found, \"new alignment\" used (original,new,umeyama).", &alignment_technique, &default_alignment_technique);
 TypedParameter<bool> gui_parameter("gui", "gui", "Whether or not to display the graphical user interface", &use_gui, &default_use_gui);
 TypedParameter<bool> lifelong_parameter("ll",     "lifelong",      "If given multiple sequences, relocalise in between sequences rather than starting a new ", &lifelong_slam, &default_lifelong_slam);
@@ -71,13 +70,11 @@ void run_pangolin(bool *stay_on, SLAMBenchConfiguration *config) {
     //	compute_thread.join();
 }
 #endif
-
 int main(int argc, char * argv[])
 {
     try {
         auto config = new SLAMBenchConfiguration();
 
-        config->addParameter(file_output_parameter);
         config->addParameter(alignment_type_parameter);
         config->addParameter(gui_parameter);
         config->addParameter(lifelong_parameter);
@@ -127,7 +124,7 @@ int main(int argc, char * argv[])
 
             main_lib->GetOutputManager().GetMainOutput(slambench::values::VT_POSE)->SetActive(true);
             main_lib->GetOutputManager().GetMainOutput(slambench::values::VT_POINTCLOUD)->SetActive(true);
-            main_lib->GetOutputManager().GetMainOutput(slambench::values::VT_FRAME)->SetActive(true);
+//            main_lib->GetOutputManager().GetMainOutput(slambench::values::VT_FRAME)->SetActive(true);
             auto timestamp = main_lib->GetOutputManager().GetMainOutput(slambench::values::VT_POSE)->GetMostRecentValue().first;
 
             main_lib->c_sb_update_outputs(main_lib, &timestamp);
