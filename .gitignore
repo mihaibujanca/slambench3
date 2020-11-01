@@ -51,3 +51,4 @@ paper/*.tex
 # macOS
 .DS_Store
 
+/openloris-scene-tools/

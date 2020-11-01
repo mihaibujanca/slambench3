@@ -135,9 +135,10 @@ namespace slambench {
 			}
 			/* When freezed, the alignment will stop updating in recalculate() */
 			void SetFreeze(bool freeze) { freeze_ = freeze; }
-		private:
+                        TrajectoryInterface *gt_trajectory_;
+
+                   private:
 			bool freeze_;
-			TrajectoryInterface *gt_trajectory_;
 			BaseOutput *trajectory_;
 			TrajectoryAlignmentMethod *method_;
 			Eigen::Matrix4f transformation_;

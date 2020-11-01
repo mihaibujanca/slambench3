@@ -152,6 +152,12 @@ void SLAMBenchConfiguration::InitGroundtruth(bool with_point_cloud) {
         std::cerr << "Dataset does not provide a GT trajectory" << std::endl;
     }
     else {
+        for(auto alignment : alignments_)
+        {
+            delete alignment->gt_trajectory_;
+            alignment->gt_trajectory_ = new slambench::outputs::PoseOutputTrajectoryInterface(gt_trajectory);
+        }
+
         gt_available_ = true;
     }
 
@@ -274,6 +280,11 @@ void SLAMBenchConfiguration::ComputeLoopAlgorithm(bool *stay_on, SLAMBenchUI *ui
                         bool res = lib->c_sb_relocalize(lib);
                         input_interface_manager_->updated_ = false;
                         frame_count = 0;
+//                        int max_reloc_time = 100;
+//                        while(!res && max_reloc_time > 0)
+//                        {
+//                            res =
+//                        }
                         /* If the library failed to re-localize at the beginning of a new input,
                            the framework will send a ground-truth pose to it (so-called aided_reloc).
                            The sent pose is transformed to be relative to the first estimated pose
