@@ -274,6 +274,11 @@ usecases:
 	@echo    "    available targets are : semanticfusion"
 	@echo ""
 
+	@echo -n "  - semantic_empty : "; if [ -f benchmarks/semantic_empty ] ; then echo -e "\033[1;32mFound\033[0m" ; else echo -e "\033[1;31mNot found (make semantic_empty)\033[0m" ; fi
+	@echo    "    repository: https://github.com/Paul92/slambench-semantic_fusion"
+	@echo    "    available targets are : semantic_empty"
+	@echo ""
+
 	@echo "If you want to test SLAMBench with existing SLAM algorithms, once you have download it please run \"make slambench APPS=slam1,slam2,...\""
 	@echo "   e.g. make slambench APPS=kfusion,orbslam2"
 	@echo "   You can also use \"make slambench APPS=all\" to compile them all."
@@ -449,9 +454,20 @@ semanticfusion:
 	    tar xf nyu_rgbd_model.tar.gz; rm nyu_rgbd_model.tar.gz;
 
 
+semantic_empty:
+	@echo "================================================================================================================="
+	@echo    "  - semantic_empty "
+	@echo    "    Used repository: https://github.com/Paul92/slambench-semantic_empty"
+	@echo "================================================================================================================="
+	@echo ""
+	@echo "Are you sure you want to download this use-case (y/n) ?" && ${GET_REPLY} && echo REPLY=$$REPLY && if [ ! "$$REPLY" == "y" ] ; then echo -e "\nExit."; false; else echo -e "\nDownload starts."; fi
+	mkdir benchmarks/semantic_empty/src/original -p
+	git clone   https://github.com/Paul92/slambench-semantic_empty   benchmarks/semantic_empty/src/original
+	@echo "cmake_minimum_required(VERSION 2.8)"      > benchmarks/semantic_empty/src/CMakeLists.txt
+	@echo "explore_implementations ( $@ src/* )"     >> benchmarks/$@/CMakeLists.txt
 
-.PHONY: efusion infinitam kfusion lsdslam monoslam okvis orbslam2 ptam svo flame semanticfusion
-algorithms : efusion infinitam kfusion lsdslam monoslam okvis orbslam2 ptam svo flame semanticfusion
+.PHONY: efusion infinitam kfusion lsdslam monoslam okvis orbslam2 ptam svo flame semanticfusion semantic_empty
+algorithms : efusion infinitam kfusion lsdslam monoslam okvis orbslam2 ptam svo flame semanticfusion semantic_empty
 
 
 datasets :
