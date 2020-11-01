@@ -72,9 +72,6 @@ void SemanticPixelMetric::viewMatches(const SemanticPixelMetric::MatchStatusMatr
                 target = 255;
         }
     }
-
-    cv::namedWindow("win");
-    cv::imshow("win", viz);
 }
 
 
@@ -100,16 +97,16 @@ Value *SemanticPixelMetric::GetValue(Phase* /* unused */) {
 
         cv::Mat translated = sm.getTranslatedMap();
 
-        cv::namedWindow("pred");
-        cv::namedWindow("translated");
-        cv::namedWindow("gt");
-        cv::imshow("pred", sm.getPred() * 1000);
-        cv::imshow("translated", sm.getTranslatedMap() * 1000);
-        cv::imshow("gt", sm.getGT() * 1000);
-
-        cv::imwrite("pred.png", sm.getPred());
-        cv::imwrite("translated.png", sm.getTranslatedMap());
-        cv::imwrite("gt.png", sm.getGT());
+//        cv::namedWindow("pred");
+//        cv::namedWindow("translated");
+//        cv::namedWindow("gt");
+//        cv::imshow("pred", sm.getPred() * 1000);
+//        cv::imshow("translated", sm.getTranslatedMap() * 1000);
+//        cv::imshow("gt", sm.getGT() * 1000);
+//
+//        cv::imwrite("pred.png", sm.getPred());
+//        cv::imwrite("translated.png", sm.getTranslatedMap());
+//        cv::imwrite("gt.png", sm.getGT());
 
 
         const auto matches = getMatched(sm.getPred(), sm.getTranslatedMap());
