@@ -29,96 +29,97 @@ class PoseOutputDrawContext;
 class SLAMBenchUI_Pangolin : public SLAMBenchUI
 {
 
-    public:
-        SLAMBenchUI_Pangolin();
-		
-		void InitialiseOutputs();
-		void AddControlsForOutput(const std::string &prefix, slambench::outputs::BaseOutput *output);
-		void AddBackgroundControls();
-		void AddFollowControls();
-		
-		bool DrawPoseOutput(slambench::outputs::BaseOutput *output);
-		bool DrawPointCloudOutput(slambench::outputs::BaseOutput *output);
-		bool DrawColouredPointCloudOutput(slambench::outputs::BaseOutput *output);
-		bool DrawFrameOutput(slambench::outputs::BaseOutput *output);
-		bool DrawOutput(slambench::outputs::BaseOutput *output);
-		bool DrawList(slambench::outputs::BaseOutput *output);
-		bool DrawFeature(slambench::values::FeatureValue* value);
-		bool DrawString(slambench::outputs::BaseOutput* value);
-        void drawTrajectory(const slambench::outputs::TrajectoryInterface *traj, float R, float G, float B, int print_poses = 0 );
-        void drawFrustum(Eigen::Matrix4f currPose, float R, float G, float B);
-		
-        bool process();
-        void preCall();
-		void DrawAxis();
-        void drawBackground(slambench::values::FrameValue * frame);
+   public:
+    SLAMBenchUI_Pangolin();
+
+    void InitialiseOutputs();
+    void AddControlsForOutput(const std::string &prefix, slambench::outputs::BaseOutput *output);
+    void AddBackgroundControls();
+    void AddFollowControls();
+
+    bool DrawPoseOutput(slambench::outputs::BaseOutput *output);
+    bool DrawPointCloudOutput(slambench::outputs::BaseOutput *output);
+    bool DrawColouredPointCloudOutput(slambench::outputs::BaseOutput *output);
+    bool DrawFrameOutput(slambench::outputs::BaseOutput *output);
+    bool DrawOutput(slambench::outputs::BaseOutput *output);
+    bool DrawList(slambench::outputs::BaseOutput *output);
+    bool DrawFeature(slambench::values::FeatureValue* value);
+    bool DrawString(slambench::outputs::BaseOutput* value);
+    void drawTrajectory(const slambench::outputs::TrajectoryInterface *traj, float R, float G, float B, int print_poses = 0, const std::string& name="");
+    void drawFrustum(Eigen::Matrix4f currPose, float R, float G, float B);
+    void drawFrustumText(Eigen::Matrix4f currPose, float R, float G, float B);
+
+    bool process();
+    void preCall();
+    void DrawAxis();
+    void drawBackground(slambench::values::FrameValue * frame);
 
 
-		unsigned int get_next_texture_id();
-		
-		void FollowPose(Eigen::Matrix4f currPose ) ;
-        void postCall();
-        void StopTracking();
-        ~SLAMBenchUI_Pangolin();
+    unsigned int get_next_texture_id();
 
-		bool CanFreeRun() override;
-		bool CanStep() override;
-		bool ClearFreeRunning() override;
-		bool IsFreeRunning() override;
-		bool SetFreeRunning() override;
-		bool WaitForFrame() override;
+    void FollowPose(Eigen::Matrix4f currPose ) ;
+    void postCall();
+    void StopTracking();
+    ~SLAMBenchUI_Pangolin();
 
-    private:
-		std::map<slambench::outputs::BaseOutput *, pangolin::Var<bool>*> outputs_enabled_, outputs_visible_, outputs_follow_, outputs_background_;
-		std::map<slambench::outputs::BaseOutput *, PoseOutputDrawContext*> pose_output_draw_contexts_;
-		
-		std::map<slambench::outputs::BaseOutput *, pangolin::Var<std::string>*> outputs_text_;
-		
-		pangolin::Var<bool>* last_background_ = nullptr;
-		pangolin::Var<bool>* last_follow_ = nullptr;
+    bool CanFreeRun() override;
+    bool CanStep() override;
+    bool ClearFreeRunning() override;
+    bool IsFreeRunning() override;
+    bool SetFreeRunning() override;
+    bool WaitForFrame() override;
 
-		std::map<slambench::outputs::BaseOutput *, pangolin::Var<double>*> outputs_colour_;
-		
-		typedef struct {
-			slambench::TimeStamp timestamp;
-			GLuint VBO;
-		} PointCloudState;
-		std::map<slambench::outputs::BaseOutput *, PointCloudState> pointcloud_state_;
-		
-		std::vector<slambench::values::FrameValue> frames_;
-		bool EnqueueFrame(slambench::values::FrameValue*);
-		bool DrawQueuedFrames();
-		bool DrawBackgrounds();
-		bool FollowPoses();
-		void lockOutputs();
-		void unlockOutputs();
+   private:
+    std::map<slambench::outputs::BaseOutput *, pangolin::Var<bool>*> outputs_enabled_, outputs_visible_, outputs_follow_, outputs_background_;
+    std::map<slambench::outputs::BaseOutput *, PoseOutputDrawContext*> pose_output_draw_contexts_;
 
-        pangolin::Var<long long> * frameCount;
-        pangolin::Var<long long> * VRSS;
-        pangolin::Var<long long> * VSIZE;
-        pangolin::Var<long long> * TVM;
-        pangolin::Var<long long> * CVM;
-        pangolin::Var<long long> * TPM;
-        pangolin::Var<long long> * CPM;
-        pangolin::Var<bool> * showBackground;
-        pangolin::Var<bool> * followPose;
+    std::map<slambench::outputs::BaseOutput *, pangolin::Var<std::string>*> outputs_text_;
 
-        pangolin::Var<int> * showEveryPose;
-		pangolin::Var<bool> * freeRunning;
-        pangolin::Var<bool> * nextFrame;
-        pangolin::Var<bool> * unFollow;
+    pangolin::Var<bool>* last_background_ = nullptr;
+    pangolin::Var<bool>* last_follow_ = nullptr;
 
-        // RGB View
-        pangolin::OpenGlRenderState s_cam;
-        GLuint vbo;
+    std::map<slambench::outputs::BaseOutput *, pangolin::Var<double>*> outputs_colour_;
 
-		std::vector<uint> feature_texture_ids;
-		uint32_t next_feature_texture_id_idx;
-		
-        uint textureId[MAX_WINDOW];
-		std::condition_variable step_cv;
-		std::mutex step_mutex;
-		bool isFreeRunning;
+    typedef struct {
+        slambench::TimeStamp timestamp;
+        GLuint VBO;
+    } PointCloudState;
+    std::map<slambench::outputs::BaseOutput *, PointCloudState> pointcloud_state_;
+
+    std::vector<slambench::values::FrameValue> frames_;
+    bool EnqueueFrame(slambench::values::FrameValue*);
+    bool DrawQueuedFrames();
+    bool DrawBackgrounds();
+    bool FollowPoses();
+    void lockOutputs();
+    void unlockOutputs();
+
+    pangolin::Var<long long> * frameCount;
+    pangolin::Var<long long> * VRSS;
+    pangolin::Var<long long> * VSIZE;
+    pangolin::Var<long long> * TVM;
+    pangolin::Var<long long> * CVM;
+    pangolin::Var<long long> * TPM;
+    pangolin::Var<long long> * CPM;
+    pangolin::Var<bool> * showBackground;
+    pangolin::Var<bool> * followPose;
+
+    pangolin::Var<int> * showEveryPose;
+    pangolin::Var<bool> * freeRunning;
+    pangolin::Var<bool> * nextFrame;
+    pangolin::Var<bool> * unFollow;
+
+    // RGB View
+    pangolin::OpenGlRenderState s_cam;
+    GLuint vbo;
+
+    std::vector<uint> feature_texture_ids;
+    uint32_t next_feature_texture_id_idx;
+
+    uint textureId[MAX_WINDOW];
+    std::condition_variable step_cv;
+    std::mutex step_mutex;
+    bool isFreeRunning;
 };
 
 

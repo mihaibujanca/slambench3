@@ -20,11 +20,13 @@ std::string default_output_filename;
 std::string output_filename;
 bool use_gui, default_use_gui = false;
 bool lifelong_slam, default_lifelong_slam = false;
+bool use_writer, default_use_writer = true;
 
-std::string alignment_technique = "new";
-std::string default_alignment_technique = "new";
+std::string alignment_technique = "umeyama";
+std::string default_alignment_technique = "umeyama";
 TypedParameter<std::string> alignment_type_parameter("a",     "alignment-technique",      "Select an alignment technique by name, if not found, \"new alignment\" used (original,new,umeyama).", &alignment_technique, &default_alignment_technique);
 TypedParameter<bool> gui_parameter("gui", "gui", "Whether or not to display the graphical user interface", &use_gui, &default_use_gui);
+TypedParameter<bool> writer_parameter("w", "write-measurements", "Whether or not to write metrics to the console/log", &use_writer, &default_use_writer);
 TypedParameter<bool> lifelong_parameter("ll",     "lifelong",      "If given multiple sequences, relocalise in between sequences rather than starting a new ", &lifelong_slam, &default_lifelong_slam);
 
 #ifdef WITH_GUI
@@ -95,11 +97,11 @@ int main(int argc, char * argv[])
         //***************************************************************************************
         config->InitAlgorithms();
         config->InitAlignment();
-        config->InitWriter();
         // Run the experiment
         if(use_gui)
         {
 #ifdef WITH_GUI
+//            if(use_writer)
             std::thread pangolin_thread(run_pangolin, &use_gui, config);
             while(ui == nullptr) ; // spin until UI is initialised
             config->ComputeLoopAlgorithm(&use_gui, ui);
@@ -109,6 +111,7 @@ int main(int argc, char * argv[])
             SLAMBenchConfiguration::ComputeLoopAlgorithm(config, nullptr, nullptr);
 #endif
         } else {
+            config->InitWriter();
             config->ComputeLoopAlgorithm(nullptr, nullptr);
         }
 

@@ -203,9 +203,11 @@ void SLAMBenchConfiguration::InitAlignment() {
     }
 
     auto gt_traj = GetGroundTruth().GetMainOutput(slambench::values::VT_POSE);
+    for(auto alignment : alignments_)
+        delete alignment;
     alignments_.clear();
     for(size_t i = 0; i < slam_libs_.size(); i++) {
-        SLAMBenchLibraryHelper *lib = slam_libs_[i];
+        auto lib = slam_libs_[i];
         auto lib_traj = lib->GetOutputManager().GetMainOutput(slambench::values::VT_POSE);
         auto alignment = new slambench::outputs::AlignmentOutput(lib->getName() + "Alignment", new slambench::outputs::PoseOutputTrajectoryInterface(
             gt_traj), lib_traj, alignment_method);
@@ -240,14 +242,17 @@ void SLAMBenchConfiguration::ComputeLoopAlgorithm(bool *stay_on, SLAMBenchUI *ui
                 break;
             }
         }
+        if(ui)
+            if(!ui->IsFreeRunning())
+                continue;
 
         auto current_frame = input_interface_manager_->GetNextFrame();
         slambench::TimeStamp first_ts;
-        if(frame_count==0 || frame_count==start_frame_)
+        if(frame_count == 0 || frame_count == start_frame_)
             first_ts = input_interface_manager_->GetClosestGTFrameToTime(current_frame->Timestamp)->Timestamp;
-        std::cerr<<"First_gt_frame timestamp:"<<first_ts<<std::endl;
-        while (current_frame != nullptr) {
-            if (current_frame->FrameSensor->GetType() != slambench::io::GroundTruthSensor::kGroundTruthTrajectoryType) {
+
+        while(current_frame != nullptr) {
+            if(current_frame->FrameSensor->GetType() != slambench::io::GroundTruthSensor::kGroundTruthTrajectoryType) {
                 // ********* [[ NEW FRAME PROCESSED BY ALGO ]] *********
                 for (size_t i = 0; i < slam_libs_.size(); i++) {
                     auto lib = slam_libs_[i];
@@ -259,12 +264,7 @@ void SLAMBenchConfiguration::ComputeLoopAlgorithm(bool *stay_on, SLAMBenchUI *ui
                     if (ongoing) {
                         continue;
                     }
-//                    if(first_ts >= current_frame->Timestamp)
-//                    {
-//                        lib->c_sb_process_once(lib);
-//                        ongoing = true;
-//                        continue;
-//                    }
+
                     // ********* [[ PROCESS ALGO START ]] *********
                     lib->GetMetricManager().BeginFrame();
                     slambench::TimeStamp ts = current_frame->Timestamp;
@@ -353,7 +353,7 @@ bool SLAMBenchConfiguration::LoadNextInputInterface() {
     initialised_ = false;
     ResetSensors();
     InitGroundtruth();
-//    InitAlignment();
+    InitAlignment();
     for (auto lib : this->slam_libs_) {
         lib->update_input_interface(input_interface_manager_->GetCurrentInputInterface());
     }
@@ -422,10 +422,7 @@ void SLAMBenchConfiguration::SaveResults()
 
 void SLAMBenchConfiguration::InitWriter() {
     if (writer_) {
-        for(SLAMBenchLibraryHelper *lib : slam_libs_) {
-            lib->GetMetricManager().reset();
-            lib->GetOutputManager().GetMainOutput(slambench::values::VT_POSE)->reset();
-        }
+
         //TODO: move this to callback when starting a new sequence
         aided_reloc_ = false;
         delete writer_;
@@ -442,6 +439,8 @@ void SLAMBenchConfiguration::InitWriter() {
     writer_->AddColumn(&(row_number_));
     int i = 0;
     for(SLAMBenchLibraryHelper *lib : slam_libs_) {
+        lib->GetMetricManager().reset();
+        lib->GetOutputManager().GetMainOutput(slambench::values::VT_POSE)->reset();
 
         // retrieve the trajectory of the lib
         auto lib_traj = lib->GetOutputManager().GetMainOutput(slambench::values::VT_POSE);
