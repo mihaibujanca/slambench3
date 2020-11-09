@@ -7,13 +7,15 @@ cmake_minimum_required(VERSION 2.8)
 
  include_directories(./include)
 
+########## OpenCV (required) ####################
+
+find_package(OpenCV REQUIRED)
+message("OEPNCV ${OpenCV_INCLUDE_DIRS}")
+
 ########## Boost (required) ####################
  
  find_package(Boost 1.54 REQUIRED COMPONENTS program_options regex)
  
- 
-
-
 ########## OpenNI 2.0 and OpenNI 1.5 (optional) ####################
 
 find_package(OpenNI2)
@@ -82,6 +84,10 @@ SET(MetricFiles
     src/metrics/Metric.cpp
     src/metrics/MetricManager.cpp
     src/metrics/DepthEstimationMetric.cpp
+    src/metrics/ConfusionMatrixMetric.cpp
+    src/metrics/DoubleMetric.cpp
+    src/metrics/SemanticPixelMetric.cpp
+    src/metrics/SemanticMetric.cpp
 
     src/outputs/Output.cpp
     src/outputs/OutputManager.cpp
@@ -107,14 +113,14 @@ list(APPEND MetricFiles src/metrics/power_utils/XU3Monitor.cpp)
 # You need to install papi-devel and lm_sensors-devel
 ###########################################################
 
-find_package(PAPI)
-
-if (PAPI_FOUND) 
-   	include_directories(${PAPI_INCLUDE_DIRS})
-	set(common_properties "${common_properties}  -DPAPI_MONITORING")
-	set(common_libraries   "${common_libraries}" ${PAPI_LIBRARIES})
-	list(APPEND MetricFiles src/metrics/power_utils/PAPIMonitor.cpp)
-endif(PAPI_FOUND)
+#find_package(PAPI)
+#
+#if (PAPI_FOUND) 
+#   	include_directories(${PAPI_INCLUDE_DIRS})
+#	set(common_properties "${common_properties}  -DPAPI_MONITORING")
+#	set(common_libraries   "${common_libraries}" ${PAPI_LIBRARIES})
+#	list(APPEND MetricFiles src/metrics/power_utils/PAPIMonitor.cpp)
+#endif(PAPI_FOUND)
 
 	
 
@@ -151,16 +157,12 @@ add_library(slambench-io
 
 
 add_library(slambench-utils  
-	src/SLAMBenchConfiguration  
+	src/SLAMBenchConfiguration
 	src/sb_malloc 
 	src/ParameterComponent
     src/ParameterManager
 )
 
-
-target_include_directories(slambench-io  PRIVATE ${Boost_INCLUDE_DIRS})
-target_include_directories(slambench-metrics PRIVATE ${Boost_INCLUDE_DIRS})
-target_link_libraries(slambench-io PRIVATE slambench-utils pthread  ${Boost_LIBRARIES})
 
 SET(EXTRA_LIBS_FOR_MEMORY "")
 
@@ -176,8 +178,13 @@ if (CUDA_FOUND)
   SET(EXTRA_LIBS_FOR_MEMORY "${EXTRA_LIBS_FOR_MEMORY};${CUDA_LIBRARIES}")
 ENDIF(CUDA_FOUND)
 
-  target_link_libraries(slambench-utils  "-Wl,--no-as-needed;${EXTRA_LIBS_FOR_MEMORY};-Wl,--as-needed")
 
+target_include_directories(slambench-metrics PRIVATE ${Boost_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
+target_include_directories(slambench-io  PRIVATE ${Boost_INCLUDE_DIRS})
+
+target_link_libraries(slambench-utils slambench-metrics "-Wl,--no-as-needed;${EXTRA_LIBS_FOR_MEMORY};-Wl,--as-needed")
+target_link_libraries(slambench-metrics PRIVATE ${OpenCV_LIBRARIES})
+target_link_libraries(slambench-io PRIVATE slambench-utils pthread  ${Boost_LIBRARIES} ${OpenCV_LIBRARIES})
 
 
 if(OpenNI_FOUND)
@@ -196,7 +203,6 @@ ELSE (OpenNI_FOUND)
 	SET_TARGET_PROPERTIES(slambench-io-oni15  PROPERTIES COMPILE_FLAGS "-fPIC -Wno-error=unused-but-set-variable -Wno-error=return-type")
     target_link_libraries(slambench-utils slambench-io-oni15)
 ENDIF(OpenNI_FOUND)
-
 
 
 if(OpenNI2_FOUND)

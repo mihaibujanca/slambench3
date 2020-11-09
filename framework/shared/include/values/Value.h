@@ -38,9 +38,11 @@ namespace slambench {
 			VT_POSE, // A matrix which specifically represents a pose (position + orientation)
 			VT_POINTCLOUD, // A list of point positions
 			VT_COLOUREDPOINTCLOUD, // A list of point positions with colours
+			VT_SEMANTICPOINTCLOUD, // A point cloud coloured based on class segmentation
 			VT_FEATURE, // A tracked feature
 			VT_FEATURELIST,
 			VT_FRAME,
+			VT_LABELLEDFRAME,
 			VT_MATRIX //Can represent an arbitrary matrix
 		};
 		
@@ -55,6 +57,8 @@ namespace slambench {
 			case VT_POSE        : return "VT_POSE        ";
 			case VT_POINTCLOUD  : return "VT_POINTCLOUD  ";
 			case VT_COLOUREDPOINTCLOUD  : return "VT_COLOUREDPOINTCLOUD  ";
+			case VT_SEMANTICPOINTCLOUD  : return "VT_SEMANTICPOINTCLOUD  ";
+			case VT_LABELLEDFRAME       : return "VT_LABELLEDFRAME       ";
 			case VT_FEATURE     : return "VT_FEATURE     ";
 			case VT_FEATURELIST : return "VT_FEATURELIST ";
 			case VT_FRAME       : return "VT_FRAME       ";
@@ -212,7 +216,17 @@ namespace slambench {
 			uint8_t   R, G, B;
 		};
 
-
+		class SemanticPoint3DF {
+		public:
+			SemanticPoint3DF() : SemanticPoint3DF(0, 0, 0, 0, 0, 0, 0) {}
+			SemanticPoint3DF(float x, float y, float z,
+					 uint8_t r, uint8_t g, uint8_t b,
+					 int cls) :
+			    X(x), Y(y), Z(z), R(r), G(g), B(b), cls(cls) {}
+			float X, Y, Z;
+			uint8_t R, G, B;
+			int cls;
+		};
 
 		class PointCloudValue : public Value {
 		public:
@@ -281,6 +295,51 @@ namespace slambench {
 			slambench::io::pixelformat::EPixelFormat pxl_format_;
 			std::vector<unsigned char> data_;
 		};
+
+		class SemanticPointCloudValue : public Value {
+		public:
+			typedef std::vector<SemanticPoint3DF> point_container_t;
+
+			SemanticPointCloudValue() : Value(VT_SEMANTICPOINTCLOUD), points_(std::make_shared<point_container_t>()), transform_(Eigen::Matrix4f::Identity()) { }
+			SemanticPointCloudValue(const SemanticPointCloudValue &other) : Value(VT_SEMANTICPOINTCLOUD), points_(other.points_), transform_(other.transform_) { }
+			virtual ~SemanticPointCloudValue() { }
+
+			void AddPoint(const SemanticPoint3DF &point) { makeUnique(); points_->push_back(point);  }
+			void Clear() { makeUnique(); points_->clear(); }
+
+			const point_container_t &GetPoints() const { assert(points_); return *points_; }
+
+			const Eigen::Matrix4f &GetTransform() const { return transform_; }
+			void SetTransform(const Eigen::Matrix4f &new_txfm) { transform_ = new_txfm; }
+
+		private:
+			void makeUnique() { if(!points_.unique()) { points_ = std::make_shared<point_container_t>(*points_); } }
+
+			std::shared_ptr<point_container_t> points_;
+			Eigen::Matrix4f transform_;
+		};
+
+		class LabelledFrameValue : public Value {
+		public:
+			LabelledFrameValue(const LabelledFrameValue&) = default;
+			LabelledFrameValue(uint32_t width, uint32_t height,
+                                           const std::map<int, std::string> &map, void *data);
+
+			LabelledFrameValue(uint32_t width, uint32_t height,
+                                           const std::map<int, std::string> &map);
+			
+			void *GetData() { return data_.data(); }
+			const void *GetData() const { return data_.data(); }
+			uint32_t GetWidth() const { return width_; }
+			uint32_t GetHeight() const { return height_; }
+                        const std::map<int, std::string> GetMap() const { return map_; }
+			
+		private:
+			uint32_t width_, height_;
+			std::vector<unsigned char> data_;
+                        std::map<int, std::string> map_;
+		};
+		
 		
 		class FeatureValue : public Value {
 		public:
@@ -304,6 +363,8 @@ namespace slambench {
 		template<> struct TypeForVT<VT_TRAJECTORY> { typedef TrajectoryValue type; };
 		template<> struct TypeForVT<VT_POSE> { typedef PoseValue type; };
 		template<> struct TypeForVT<VT_POINTCLOUD> { typedef PointCloudValue type; };
+		template<> struct TypeForVT<VT_SEMANTICPOINTCLOUD> { typedef SemanticPointCloudValue type; };
+		template<> struct TypeForVT<VT_LABELLEDFRAME> { typedef LabelledFrameValue type; };
 		template<> struct TypeForVT<VT_MATRIX> { typedef TypedValue<Eigen::Matrix4f> type; };
 	
 		template<> struct VTForType<uint64_t> { static constexpr ValueType value() { return VT_U64; } };

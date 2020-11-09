@@ -34,6 +34,7 @@ benchmarks/svo/
 benchmarks/monoslam/
 benchmarks/kfusion/
 benchmarks/flame/
+benchmarks/semanticfusion/
 
 
 # Exotic builds

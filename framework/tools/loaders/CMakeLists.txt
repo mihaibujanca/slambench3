@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
 
-
-
 ######################################################################################
 #################        COMMONS
 ######################################################################################
@@ -22,6 +20,7 @@ target_link_libraries(benchmark_loader PRIVATE pthread ${SLAMBENCH_LIBRARIES})
 
 find_package(Pangolin QUIET)
 find_package(TOON QUIET)
+find_package(OpenCV REQUIRED)
 
 IF(Pangolin_FOUND)
 	set(main_common_libraries     ${SLAMBENCH_LIBRARIES})
@@ -33,7 +32,9 @@ IF(Pangolin_FOUND)
 	TARGET_INCLUDE_DIRECTORIES(pangolin_loader PUBLIC ${SLAMBENCH_INCLUDE_DIR})
 	TARGET_INCLUDE_DIRECTORIES(pangolin_loader PUBLIC ${Pangolin_INCLUDE_DIR})
 	TARGET_INCLUDE_DIRECTORIES(pangolin_loader PUBLIC ${TOON_INCLUDE_PATHS})
+        TARGET_INCLUDE_DIRECTORIES(pangolin_loader PUBLIC ${OpenCV_INCLUDE_DIRS})
 	target_link_libraries(pangolin_loader PRIVATE ${gui_pangolin_libraries})
+        target_link_libraries(pangolin_loader PRIVATE ${OpenCV_LIBRARIES})
 	SET_TARGET_PROPERTIES(pangolin_loader PROPERTIES COMPILE_FLAGS ${gui_pangolin_compile_flags})
 	SET_TARGET_PROPERTIES(pangolin_loader PROPERTIES LINK_FLAGS ${gui_pangolin_compile_flags})
 ENDIF(Pangolin_FOUND)

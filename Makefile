@@ -269,6 +269,16 @@ usecases:
 	@echo    "    available targets are : flame"
 	@echo ""
 
+	@echo -n "  - SemanticFusion [McCormac et al, ICRA '17]: "; if [ -f benchmarks/semanticfusion ] ; then echo -e "\033[1;32mFound\033[0m" ; else echo -e "\033[1;31mNot found (make semanticfusion)\033[0m" ; fi
+	@echo    "    repository: https://github.com/Paul92/semanticfusion"
+	@echo    "    available targets are : semanticfusion"
+	@echo ""
+
+	@echo -n "  - semantic_empty : "; if [ -f benchmarks/semantic_empty ] ; then echo -e "\033[1;32mFound\033[0m" ; else echo -e "\033[1;31mNot found (make semantic_empty)\033[0m" ; fi
+	@echo    "    repository: https://github.com/Paul92/slambench-semantic_fusion"
+	@echo    "    available targets are : semantic_empty"
+	@echo ""
+
 	@echo "If you want to test SLAMBench with existing SLAM algorithms, once you have download it please run \"make slambench APPS=slam1,slam2,...\""
 	@echo "   e.g. make slambench APPS=kfusion,orbslam2"
 	@echo "   You can also use \"make slambench APPS=all\" to compile them all."
@@ -424,9 +434,40 @@ flame:
 	@echo "cmake_minimum_required(VERSION 2.8)"      > benchmarks/flame/src/CMakeLists.txt
 	@echo "explore_implementations ( $@ src/* )"     >> benchmarks/$@/CMakeLists.txt
 
+semanticfusion:
+	@echo "================================================================================================================="
+	@echo    "  - SemanticFusion [McCormac et al. ICRA'17]: "
+	@echo    "    repository: https://github.com/seaun163/semanticfusion"
+	@echo    "    Used repository: https://github.com/Paul92/semanticfusion"
+	@echo "================================================================================================================="
+	@echo ""
+	@echo "Are you sure you want to download this use-case (y/n) ?" && ${GET_REPLY} && echo REPLY=$$REPLY && if [ ! "$$REPLY" == "y" ] ; then echo -e "\nExit."; false; else echo -e "\nDownload starts."; fi
+	mkdir benchmarks/semanticfusion/src/original -p
+	git clone   https://github.com/Paul92/semanticfusion   benchmarks/semanticfusion/src/original
+	@echo "cmake_minimum_required(VERSION 2.8)"      > benchmarks/semanticfusion/src/CMakeLists.txt
+	@echo "explore_implementations ( $@ src/* )"     >> benchmarks/$@/CMakeLists.txt
+	cd benchmarks/semanticfusion/src/original; git submodule init; git submodule update
+	cd benchmarks/semanticfusion/src/original/elasticfusionpublic; git apply ../elasticfusion.patch
+	cd benchmarks/semanticfusion/src/original/caffe_semanticfusion; git apply ../caffe.patch
+	cd benchmarks/semanticfusion/src/original/caffe_semanticfusion/models; \
+	    curl "https://www.doc.ic.ac.uk/~bjm113/semantic_fusion_data/nyu_rgbd_model.tar.gz" -o nyu_rgbd_model.tar.gz; \
+	    tar xf nyu_rgbd_model.tar.gz; rm nyu_rgbd_model.tar.gz;
 
-.PHONY: efusion infinitam kfusion lsdslam monoslam okvis orbslam2 ptam svo flame
-algorithms : efusion infinitam kfusion lsdslam monoslam okvis orbslam2 ptam svo flame
+
+semantic_empty:
+	@echo "================================================================================================================="
+	@echo    "  - semantic_empty "
+	@echo    "    Used repository: https://github.com/Paul92/slambench-semantic_empty"
+	@echo "================================================================================================================="
+	@echo ""
+	@echo "Are you sure you want to download this use-case (y/n) ?" && ${GET_REPLY} && echo REPLY=$$REPLY && if [ ! "$$REPLY" == "y" ] ; then echo -e "\nExit."; false; else echo -e "\nDownload starts."; fi
+	mkdir benchmarks/semantic_empty/src/original -p
+	git clone   https://github.com/Paul92/slambench-semantic_empty   benchmarks/semantic_empty/src/original
+	@echo "cmake_minimum_required(VERSION 2.8)"      > benchmarks/semantic_empty/src/CMakeLists.txt
+	@echo "explore_implementations ( $@ src/* )"     >> benchmarks/$@/CMakeLists.txt
+
+.PHONY: efusion infinitam kfusion lsdslam monoslam okvis orbslam2 ptam svo flame semanticfusion semantic_empty
+algorithms : efusion infinitam kfusion lsdslam monoslam okvis orbslam2 ptam svo flame semanticfusion semantic_empty
 
 
 datasets :
@@ -446,6 +487,7 @@ datasets :
 	@echo "   - SVO sample dataset [Forster et al, ICRA 2014]: https://github.com/uzh-rpg/rpg_svo"
 	@echo "   - Bonn RGB-D Dynamic Dataset [Palazzolo et al, IROS'19]: http://www.ipb.uni-bonn.de/data/rgbd-dynamic-dataset/"
 	@echo "   - UZH-FPV Drone Racing Dataset [Delmerico et al, ICRA'19]: http://rpg.ifi.uzh.ch/uzh-fpv.html"
+	@echo "   - NYURGBDv2 [Silberman et al, ECCV 2012]: https://cs.nyu.edu/~silberman/datasets/nyu_depth_v2.html"
 	@echo "================================================================================================================="
 
 datasetslist:
@@ -631,6 +673,15 @@ datasetslist:
 	@echo "make datasets/SVO/artificial.slam"
 	@echo ""
 	@echo ""
+	@echo "### NYURGBDv2 dataset"
+	@echo ""
+	@echo "make ./datasets/NYURGBDv2/<sequence>_<sequence_id>.slam"
+	@echo ""
+	@echo "e.g."
+	@echo "make ./datasets/NYURGBDv2/bathroom_0003.slam"
+	@echo "make ./datasets/NYURGBDv2/office_0005.slam"
+	@echo ""
+	@echo ""
 	@echo "================================================================================================================="
 	@echo -e "If you are using one of those dataset, \033[1;31mplease refer to their respective publications\033[0m:"
 	@echo "   - TUM RGB-D SLAM dataset [Sturm et al, IROS'12]: https://vision.in.tum.de/data/datasets/rgbd-dataset"
@@ -639,6 +690,7 @@ datasetslist:
 	@echo "   - SVO sample dataset [Forster et al, ICRA 2014]: https://github.com/uzh-rpg/rpg_svo"
 	@echo "   - Bonn RGB-D Dynamic Dataset [Palazzolo et al, IROS'19]: http://www.ipb.uni-bonn.de/data/rgbd-dynamic-dataset/"
 	@echo "   - UZH-FPV Drone Racing Dataset [Delmerico et al, ICRA'19]: http://rpg.ifi.uzh.ch/uzh-fpv.html"
+	@echo "   - NYURGBDv2 [Silberman et al, ECCV 2012]: https://cs.nyu.edu/~silberman/datasets/nyu_depth_v2.html"
 	@echo "================================================================================================================="
 
 .PHONY: slambench benchmarks benchmarkslist datasets datasetslist
@@ -783,6 +835,14 @@ datasets/SVO/artificial.slam: ./datasets/SVO/artificial.dir
 ./datasets/UZHFPV/%_davis.slam :  ./datasets/UZHFPV/%_davis.dir
 	if [ ! -e ./build/bin/dataset-generator ] ; then make slambench ; fi
 	./build/bin/dataset-generator -d uzhfpv -i $< -o $@ -imu true --stereo false --event true -gt false
+
+
+#### NYURGBDv2
+###############
+datasets/NYURGBDv2/%.slam:
+	mkdir -p datasets/NYURGBDv2
+	if [ ! -e ./build/bin/dataset-generator ] ; then make slambench ; fi
+	./scripts/get_nyurgbd.sh $@
 
 
 #### ORBSLAM Voc

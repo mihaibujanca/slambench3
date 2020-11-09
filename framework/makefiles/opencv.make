@@ -5,8 +5,8 @@ ANDROID_OPENCV_DIR=${ANDROID_DEPS_DIR}/opencv/share/OpenCV/
 ${REPOS_DIR}/opencv :
 	mkdir ${REPOS_DIR} -p
 	rm ${REPOS_DIR}/opencv -rf
-	git clone "https://github.com/Itseez/opencv.git" ${REPOS_DIR}/opencv
-	cd ${REPOS_DIR}/opencv && git checkout 2c9547e && git cherry-pick bbe007159ad6b99e15f47171b7b6be7c892ca9fa
+	git clone "https://github.com/opencv/opencv.git" ${REPOS_DIR}/opencv
+	cd ${REPOS_DIR}/opencv && git checkout 3.4
 
 
 ${DEPS_DIR}/opencv : ${REPOS_DIR}/opencv
@@ -18,12 +18,9 @@ ${DEPS_DIR}/opencv : ${REPOS_DIR}/opencv
 	  -D BUILD_opencv_java=OFF -D WITH_CUDA=OFF -DWITH_GTK=ON   -D BUILD_opencv_ml=ON  -D BUILD_opencv_videostab=OFF             \
 	   -D BUILD_opencv_ts=OFF    -D BUILD_opencv_photo=ON  -D BUILD_opencv_video=ON -D BUILD_opencv_stitching=OFF -D BUILD_opencv_contrib=OFF -DENABLE_PRECOMPILED_HEADERS=OFF .. > ${REPOS_DIR}/opencv/build_dir/opencv_cmake.log
 	cat ${REPOS_DIR}/opencv/build_dir/opencv_cmake.log
-	cat ${REPOS_DIR}/opencv/build_dir/opencv_cmake.log | grep -E "     GTK[+] 2[.]x:                    YES"
-	cat ${REPOS_DIR}/opencv/build_dir/opencv_cmake.log | grep -E "     To be built:                 .*nonfree.*"
 	+cd ${REPOS_DIR}/opencv/build_dir && make
 	mkdir -p $@
 	cd ${REPOS_DIR}/opencv/build_dir && make install
-	sed -i.bak "s/.*contrib.*//" $@/include/opencv2/opencv.hpp # FIX contrib.hpp bug
 
 $(ANDROID_DEPS_DIR)/opencv : ${REPOS_DIR}/opencv  ${REPOS_DIR}/android-cmake
 	cd ${REPOS_DIR}/opencv && mkdir build_dir -p

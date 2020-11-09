@@ -4,7 +4,7 @@ ${REPOS_DIR}/pangolin :
 	mkdir ${REPOS_DIR} -p
 	rm ${REPOS_DIR}/pangolin -rf
 	git clone "https://github.com/stevenlovegrove/Pangolin.git" ${REPOS_DIR}/pangolin
-	cd ${REPOS_DIR}/pangolin && git checkout 8b8b7b96adcf58ac2755dedd3f681fc512385af0
+#	cd ${REPOS_DIR}/pangolin && git checkout 8b8b7b96adcf58ac2755dedd3f681fc512385af0
 # git checkout b107252bf6dbb50b26597f5f2c2ca39c4412f72c
 # git checkout master
 # git checkout   021ed52ca8e355abf7cd2c783e12a316fc07218d

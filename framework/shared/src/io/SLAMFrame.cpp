@@ -12,6 +12,7 @@
 #include "io/sensor/Sensor.h"
 #include "io/sensor/CameraSensor.h"
 #include "io/sensor/DepthSensor.h"
+#include "io/sensor/LabelledCameraSensor.h"
 
 #include "lodepng.h"
 #include "io/sensor/AccelerometerSensor.h"
@@ -62,6 +63,10 @@ void SLAMInMemoryFrame::FreeData() {
 SLAMFileFrame::SLAMFileFrame() : _data(nullptr) {}
 
 void *SLAMFileFrame::GetData() {
+
+	if(FrameSensor->IsVariableSize() && GetVariableSize() == 0)
+		return nullptr;
+
 	if(_data != nullptr) return _data;
 	_data = LoadFile();
 	
@@ -79,7 +84,9 @@ void SLAMFileFrame::FreeData() {
 void *TxtFileFrame::LoadFile() {
 	// Figure out the underlying data type to load
 	const Sensor::sensor_type_t &type = FrameSensor->GetType();
-	if(type == CameraSensor::kCameraType || type == DepthSensor::kDepthType) {
+	if (type == CameraSensor::kCameraType ||
+		type == DepthSensor::kDepthType ||
+		type == LabelledCameraSensor::kLabelType) {
 		return LoadCameraFile();
 	} else {
 		return nullptr;
@@ -330,7 +337,7 @@ void* ImageFileFrame::LoadFile() {
 	
 	if(ext == "png") return LoadPng();
 	else if(ext == "pgm") return LoadPbm();
-	else throw std::logic_error("Unrecognized file type");
+	else throw std::logic_error("Unrecognized file type " + ext + " for file " + Filename);
 }
 
 void* ImageFileFrame::LoadPbm() {
@@ -380,7 +387,7 @@ void* ImageFileFrame::LoadPng() {
 	Sensor *sensor = nullptr;
 	
 	auto &type = FrameSensor->GetType();
-	if(type == CameraSensor::kCameraType || type == DepthSensor::kDepthType) {
+	if(type == CameraSensor::kCameraType || type == DepthSensor::kDepthType || type == LabelledCameraSensor::kLabelType) {
 		sensor = (CameraSensor*)FrameSensor;
 	} else {
 		std::cerr << "Sensor type is " << FrameSensor->GetType() << std::endl;
@@ -473,8 +480,6 @@ void* ImageFileFrame::LoadPng() {
 					((uint16_t*)outdata)[k++] = r;
 				}
 			}
-
-
 			break;
 		}
 		default:  {

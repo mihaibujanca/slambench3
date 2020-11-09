@@ -112,6 +112,30 @@ FrameValue::FrameValue(uint32_t width, uint32_t height, slambench::io::pixelform
 	data_.resize(datasize);
 }
 
+
+LabelledFrameValue::LabelledFrameValue(uint32_t width, uint32_t height,
+                                       const std::map<int, std::string> &map, void *data) :
+    Value(VT_LABELLEDFRAME),
+    width_(width),
+    height_(height),
+    map_(map)
+{
+	size_t datasize = width * height * 2;
+	data_.resize(datasize);
+	memcpy(data_.data(), data, datasize);
+}
+
+LabelledFrameValue::LabelledFrameValue(uint32_t width, uint32_t height,
+                                       const std::map<int, std::string> &map) :
+    Value(VT_LABELLEDFRAME),
+    width_(width),
+    height_(height),
+    map_(map)
+{
+	size_t datasize = width * height * 2;
+	data_.resize(datasize);
+}
+
 ValueCollectionValue::~ValueCollectionValue() {
 	for(auto i : values_) {
 		delete i.second;
