@@ -37,7 +37,7 @@ namespace slambench {
       frameformat::EFrameFormat frameFormat_;
       pixelformat::EPixelFormat pixelFormat_;
 
-      Sensor::pose_t pose_;
+      Sensor::pose_t pose_ = Sensor::pose_t::Identity();
       CameraSensor::intrinsics_t intrinsics_;
       CameraSensor::distortion_type_t distortion_type_ = CameraSensor::NoDistortion;
       CameraSensor::distortion_coefficients_t distortion_;
@@ -159,8 +159,8 @@ namespace slambench {
         sensor->Rate = rate_;
         sensor->Width = width_;
         sensor->Height = height_;
-        sensor->FrameFormat = frameformat::Raster;
-        sensor->PixelFormat = pixelformat::RGB_III_888;
+        sensor->FrameFormat = frameFormat_ ? frameFormat_ : frameformat::Raster;
+        sensor->PixelFormat = pixelFormat_ ? pixelFormat_ : pixelformat::RGB_III_888;
         sensor->Description = description_.empty() ? "RGB" : description_;
         sensor->CopyPose(pose_);
         sensor->CopyIntrinsics(intrinsics_);
@@ -181,7 +181,7 @@ namespace slambench {
         sensor->Rate = rate_;
         sensor->Width = width_;
         sensor->Height = height_;
-        sensor->FrameFormat = frameformat::Raster;
+        sensor->FrameFormat = frameFormat_ ? frameFormat_ : frameformat::Raster;
         sensor->PixelFormat = pixelformat::G_I_8;
         sensor->Description = description_.empty() ? "Grey" : description_;
         sensor->CopyPose(pose_);
@@ -206,7 +206,7 @@ namespace slambench {
         sensor->Width = width_;
         sensor->Height = height_;
         sensor->FrameFormat = frameformat::Raster;
-        sensor->PixelFormat = pixelformat::D_I_16;
+        sensor->PixelFormat = pixelFormat_ ? pixelFormat_ : pixelformat::D_I_16;
         sensor->Description = description_.empty() ? "Depth" : description_;
         sensor->CopyPose(pose_);
         sensor->CopyIntrinsics(intrinsics_);

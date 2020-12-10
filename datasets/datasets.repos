@@ -41,3 +41,6 @@ openloris-corridor;Corridor;corridor1/corridor1-1.slam;corridor1/corridor1-2.sla
 openloris-home;Home;home1/home1-1.slam;home1/home1-2.slam;home1/home1-3.slam;home1/home1-4.slam;home1/home1-5.slam
 openloris-market;Market;market1/market1-1.slam;market1/market1-2.slam;market1/market1-3.slam
 openloris-office;Office;office1/office1-1.slam;office1/office1-2.slam;office1/office1-3.slam;office1/office1-4.slam;office1/office1-5.slam;office1/office1-6.slam;office1/office1-7.slam
+
+Dataset:VolumeDeform
+volumedeform;VolumeDeform;adventcalender.slam;boxing.slam;hoodie.slam;minion.slam;shirt.slam;sunflower.slam;umbrella.slam;upperbody.slam

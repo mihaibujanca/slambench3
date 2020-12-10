@@ -1,4 +1,3 @@
-
 #ifndef SLAMBENCHUI_H_
 #define SLAMBENCHUI_H_
 
@@ -18,18 +17,11 @@
 #endif
 #include <cassert>
 
-
-/*
- * ************************************************************************************************
- * ********************** SLAMBenchUI
- * ************************************************************************************************
- */
-
 class SLAMBenchUI
 {
 
 protected :
-	int frame  = 0;
+    int frame  = 0;
     int width  = 0;
     int height = 0;
     float cx = 0,cy = 0,fx = 0,fy = 0;
@@ -42,13 +34,13 @@ public :
 
     virtual bool process() = 0;
 
-	virtual void stepFrame()        { this->frame += 1; }
-	virtual bool IsFreeRunning()    { return true; }
+	virtual void stepFrame()        { this->frame++; }
 	virtual bool CanFreeRun()       { return true; }
 	virtual bool SetFreeRunning()   { return true; }
 	virtual bool ClearFreeRunning() { return false; }
 	virtual bool WaitForFrame()     { return false; }
 	virtual bool CanStep()          { return false; }
+        virtual bool IsFreeRunning() = 0;
 
     inline void update_camera(int height , int width, float fx, float  fy , float  cx , float  cy ) {
         this->width = width;

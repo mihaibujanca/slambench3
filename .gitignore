@@ -26,17 +26,9 @@ framework/makefiles/datasets.makefile
 
 
 # Ignore benchmarks folders
-
-benchmarks/*/*
-
-# Exotic builds
-
-/benchmarks/monoslam/src/arm_m7/scenelib2/support/*.o
-/benchmarks/monoslam/src/arm_m7/scenelib2/*.o
-/benchmarks/monoslam/src/arm_m7/scenelib2/improc/*.o
-/benchmarks/monoslam/src/arm_m7/*.o
-/benchmarks/monoslam/src/arm_m7/*.a
-/benchmarks/monoslam/src/arm_m7/benchmark
+benchmarks/*
+!benchmarks/CMakeLists.txt
+!benchmarks/benchmarks.repos
 
 
 # DSE Files
@@ -52,10 +44,11 @@ paper/*.tex
 
 /datasets
 /iros2020_results_backup
-/iros2020_results
+/icra2021_results/results
 !/datasets/README.md
 !/datasets/datasets.repos
 
 # macOS
 .DS_Store
 
+/openloris-scene-tools/

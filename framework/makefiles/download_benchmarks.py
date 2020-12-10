@@ -84,5 +84,5 @@ print("")
 print("benchmarks_status:")
 for item in targets:
     name = item["name"]
-    echo("************ Check-in %s in %s\"" % (name, item["target_dir"]))
+    echo("************ Check-in %s in %s" % (name, item["target_dir"]))
     print("\t@if [ -d %s ] ; then git -C %s diff; fi" % (item["target_dir"], item["target_dir"]))

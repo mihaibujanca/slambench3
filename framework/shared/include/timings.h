@@ -48,14 +48,5 @@ inline double tock() {
 		return total_time.count();
 #endif
 }
-//// this is duplicated to fix otherwise missing references in some of the algorithms
-//inline double TICK()
-//{
-//    return tock();
-//}
-//inline double TOCK(std::string str="", int size=0)
-//{
-//    return tock();
-//}
 
 #endif //TIMINGS_H

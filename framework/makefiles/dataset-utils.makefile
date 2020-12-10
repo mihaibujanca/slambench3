@@ -148,7 +148,7 @@ datasets/SVO/artificial.slam: ./datasets/SVO/artificial.dir
 
 ./datasets/BONN/%.slam : ./datasets/BONN/%.dir ./datasets/BONN/rgbd_bonn_groundtruth_1mm_section.ply
 	if [ ! -e ./build/bin/dataset-generator ] ; then make slambench ; fi
-	./build/bin/dataset-generator -d bonn -i $</* -o $@ -grey true -rgb true -gt true -depth true -ply datasets/BONN/rgbd_bonn_groundtruth_1mm_section.ply
+	./build/bin/dataset-generator -d bonn -i $</* -o $@ -grey true -rgb true -gt true -depth true
 
 #./datasets/BONN/%.slam : ./datasets/BONN/%.dir ./datasets/BONN/rgbd_bonn_groundtruth.ply
 #	if [ ! -e ./build/bin/dataset-generator ] ; then make slambench ; fi
@@ -265,6 +265,15 @@ datasets/SVO/artificial.slam: ./datasets/SVO/artificial.dir
 #		./build/bin/dataset-generator -d iclnuim -i $</* -o $@ -ply  datasets/ICL_NUIM/living-room.ply -grey true -rgb true -gt true -depth true -pf true \
 
 
+./datasets/VolumeDeform/%.dir :
+	mkdir $@
+	unzip $< -d $@
+
+./datasets/VolumeDeform/%.slam : ./datasets/VolumeDeform/%.dir
+	if [ ! -e ./build/bin/dataset-generator ] ; then make slambench ; fi
+	./build/bin/dataset-generator -d VolumeDeform -i $< -o $@ -grey true -rgb true -gt true -depth true
+
+
 .PRECIOUS: \
 ./datasets/TUM/%.tgz \
 ./datasets/TUM/%.dir \
@@ -282,4 +291,6 @@ datasets/SVO/artificial.slam: ./datasets/SVO/artificial.dir
 ./datasets/ETHI/%.dir \
 ./datasets/ETHI/%.zip \
 ./datasets/OpenLORIS/%.dir \
-./datasets/OpenLORIS/%-package.tar
+./datasets/OpenLORIS/%-package.tar \
+./datasets/VolumeDeform/%.dir \
+./datasets/VolumeDeform/%.zip

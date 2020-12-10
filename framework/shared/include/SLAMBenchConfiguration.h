@@ -36,6 +36,7 @@ static const unsigned int default_start_frame                  = 0;
 static const double default_realtime_mult                      = 1;
 static const std::string default_dump_volume_file              = "";
 static const std::string default_log_file                      = "";
+static const std::string default_tum_output                    = "";
 static const std::string default_save_map                      = "";
 static const std::vector<std::string> default_slam_libraries   = {};
 static const std::vector<std::string> default_input_files      = {};
@@ -52,15 +53,15 @@ private:
     std::vector<std::string> input_files_;
     std::vector<std::string> slam_library_names_;
     slambench::RowNumberColumn row_number_;
-    std::unique_ptr<slambench::ColumnWriter> writer_;
+//    std::unique_ptr<slambench::ColumnWriter> writer_;
+    slambench::ColumnWriter *writer_;
     std::shared_ptr<slambench::metrics::Metric> duration_metric_;
     std::shared_ptr<slambench::metrics::Metric> power_metric_;
-    slambench::io::SensorCollection* first_sensors_;
     std::vector<slambench::outputs::AlignmentOutput*> alignments_;
     std::string alignment_technique_ = "umeyama";
-    std::string output_filename_;
+    std::string tum_output_;
 
-    std::vector<std::string> input_filenames_;
+//    std::vector<std::string> input_filenames_;
     slambench::ParameterManager param_manager_;
     slambench::outputs::OutputManager ground_truth_;
 
@@ -91,7 +92,7 @@ public:
      * the sensor collection are registered as GT outputs, and all frames
      * within the collection are registered as GT output values.
      */
-    void InitGroundtruth(bool with_point_cloud = true);
+    void InitGroundtruth(bool with_point_cloud = false);
     void InitAlgorithms();
     void InitAlignment();
     void InitWriter();
@@ -113,7 +114,12 @@ public:
             log_stream_ = &std::cout;
         }
     }
-
+    inline void ResetSensors() {
+        param_manager_.ClearComponents();
+        for (slambench::io::Sensor *sensor : input_interface_manager_->GetCurrentInputInterface()->GetSensors()) {
+            GetParameterManager().AddComponent(dynamic_cast<ParameterComponent*>(&(*sensor)));
+        }
+    }
     void FireEndOfFrame() { for(auto i : frame_callbacks_) { i(); } }
     void StartStatistics();
     void PrintDse();

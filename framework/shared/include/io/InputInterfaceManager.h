@@ -25,13 +25,14 @@ namespace slambench {
 
         class InputInterfaceManager {
         public:
-            InputInterfaceManager(const std::vector<std::string>& library_filename);
-            ~InputInterfaceManager() = default;
+            InputInterfaceManager(const std::vector<std::string>& dataset_filenames);
+            ~InputInterfaceManager();
 
             slambench::io::InputInterface *GetCurrentInputInterface();
 
-            SLAMFrame* GetNextFrame();
+            SLAMFrame* GetNextFrame() const;
             SLAMFrame* GetClosestGTFrameToTime(slambench::TimeStamp& ts) const;
+            bool LoadNextInputInterface();
             bool initialized()
             {
                 return input_interfaces_.empty();
@@ -40,9 +41,9 @@ namespace slambench {
             bool updated_ = false;
         private:
             std::list<slambench::io::InputInterface *> input_interfaces_;
+            slambench::io::SensorCollection* first_sensors_;
 
         };
-
     }
 }
 

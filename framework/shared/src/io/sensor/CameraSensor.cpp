@@ -48,11 +48,9 @@ void CameraSensor::CopyEquidistantDistortion(const distortion_coefficients_t &ot
   }
 }
 void CameraSensor::CopyDistortion(const distortion_coefficients_t &other, const distortion_type_t& type) {
-  for(unsigned int i = 0; i < 4 ; ++i) {
+  for(unsigned int i = 0; i < 5 ; ++i) {
     Distortion[i] = other[i];
   }
-  if(type == distortion_type_t::Equidistant)
-      Distortion[4] = other[4];
 }
 
 void CameraSensor::CopyIntrinsics(const intrinsics_t &other) {

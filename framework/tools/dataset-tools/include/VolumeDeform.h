@@ -1,19 +1,18 @@
 /*
 
- Copyright (c) 2017 University of Edinburgh, Imperial College, University of
+ Copyright (c) 2020 University of Edinburgh, Imperial College, University of
  Manchester. Developed in the PAMELA project, EPSRC Programme Grant EP/K008730/1
 
  This code is licensed under the MIT License.
 
  */
 
-#ifndef FRAMEWORK_TOOLS_DATASET_TOOLS_INCLUDE_BONN_H_
-#define FRAMEWORK_TOOLS_DATASET_TOOLS_INCLUDE_BONN_H_
+#ifndef FRAMEWORK_TOOLS_DATASET_TOOLS_INCLUDE_VOLUMEDEFORM_H_
+#define FRAMEWORK_TOOLS_DATASET_TOOLS_INCLUDE_VOLUMEDEFORM_H_
 
 #include <ParameterComponent.h>
 #include <ParameterManager.h>
 #include <Parameters.h>
-
 #include <io/sensor/CameraSensor.h>
 #include <io/sensor/DepthSensor.h>
 #include <io/sensor/GroundTruthSensor.h>
@@ -25,35 +24,29 @@ namespace slambench {
 
     namespace io {
 
-        class BONNReader : public DatasetReader {
-           public:
+        class VolumeDeformReader : public DatasetReader {
+        private:
             static constexpr image_params_t image_params =
-                    { 640, 480, 30.0, 5000.0 };
+                    { 640, 480, 30.0, 1000.0 };
+//            fx,fy,cx,cy           same for rgb and depth
+            static constexpr CameraSensor::intrinsics_t intrinsics = {570.0 / image_params.width, 570.0 / image_params.height, 320.0 / image_params.width, 240.0 / image_params.height};
 
-            static constexpr CameraSensor::intrinsics_t intrinsics_rgb =
-                    {0.8481606891, 1.1303684792, 0.493114875, 0.4953252042};
-
-            static constexpr DepthSensor::intrinsics_t intrinsics_depth =
-                    {0.8481606891, 1.1303684792, 0.493114875, 0.4953252042};
-
-            static constexpr CameraSensor::distortion_coefficients_t distortion_rgb =
-                    {0.039903, -0.099343, -0.000730, -0.000144, 0.000000};
-
-            static constexpr DepthSensor::distortion_coefficients_t distortion_depth =
-                    {0.039903, -0.099343, -0.000730, -0.000144, 0.000000};
-
-            static constexpr DepthSensor::disparity_params_t disparity_params = {0.0002, 0.0};
-            static constexpr DepthSensor::disparity_type_t disparity_type = DepthSensor::affine_disparity;
-            static constexpr CameraSensor::distortion_type_t distortion_type = CameraSensor::distortion_type_t::RadialTangential;
-
+        public:
             std::string input;
             std::string plyfile;
             bool grey = true, rgb = true, depth = true, gt = true;
-
-            explicit BONNReader(const std::string& name) : DatasetReader(name) {
+            bool GetFrame(const std::string &dirname,
+                          int frame_no,
+                          SLAMFile &file,
+                          std::ifstream& infile,
+                          CameraSensor* rgb_sensor = nullptr,
+                          CameraSensor* grey_sensor = nullptr,
+                          DepthSensor* depth_sensor = nullptr,
+                          GroundTruthSensor* gt_sensor = nullptr);
+            explicit VolumeDeformReader(const std::string& name) : DatasetReader(name) {
 
                 this->addParameter(TypedParameter<std::string>("i", "input-directory",
-                                                               "path of the BONN dataset directory",
+                                                               "path of the VolumeDeform dataset directory",
                                                                &this->input, nullptr));
 
                 this->addParameter(TypedParameter<bool>("grey", "grey",
@@ -87,4 +80,4 @@ namespace slambench {
     }  // namespace io
 }  // namespace slambench
 
-#endif /* FRAMEWORK_TOOLS_DATASET_TOOLS_INCLUDE_BONN_H_ */
+#endif /* FRAMEWORK_TOOLS_DATASET_TOOLS_INCLUDE_VOLUMEDEFORM_H_ */

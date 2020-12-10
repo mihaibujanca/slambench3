@@ -27,16 +27,18 @@
 
 using namespace slambench::io;
 
-constexpr CameraSensor::intrinsics_t BONNReader::intrinsics_rgb;
-constexpr DepthSensor::intrinsics_t BONNReader::intrinsics_depth;
-constexpr CameraSensor::distortion_coefficients_t BONNReader::distortion_rgb;
-constexpr DepthSensor::distortion_coefficients_t BONNReader::distortion_depth;
-constexpr DepthSensor::disparity_params_t BONNReader::disparity_params;
-constexpr DepthSensor::disparity_type_t BONNReader::disparity_type;
-constexpr CameraSensor::distortion_type_t BONNReader::distortion_type;
-
 bool loadBONNDepthData(const std::string &dirname, SLAMFile &file) {
+    auto depth_sensor = DepthSensorBuilder()
+        .rate(BONNReader::image_params.rate)
+        .size(BONNReader::image_params.width, BONNReader::image_params.height)
+        .pose(slambench::io::Sensor::pose_t::Identity())
+        .intrinsics(BONNReader::intrinsics_depth)
+        .distortion(BONNReader::distortion_type, BONNReader::distortion_depth)
+        .disparity(BONNReader::disparity_type, BONNReader::disparity_params)
+        .index(file.Sensors.size())
+        .build();
 
+    file.Sensors.AddSensor(depth_sensor);
     std::string line;
 
     printf("Directory name: %s\n", dirname.c_str());
@@ -77,7 +79,7 @@ bool loadBONNDepthData(const std::string &dirname, SLAMFile &file) {
             std::string depth_filename = match[3];
 
             auto depth_frame = new ImageFileFrame();
-            depth_frame->FrameSensor = *file.Sensors.end();
+            depth_frame->FrameSensor = depth_sensor;
             depth_frame->Timestamp.S = timestampS;
             depth_frame->Timestamp.Ns = timestampNS;
 
@@ -103,6 +105,16 @@ bool loadBONNDepthData(const std::string &dirname, SLAMFile &file) {
 
 bool loadBONNRGBData(const std::string &dirname,
                      SLAMFile &file) {
+    auto rgb_sensor = RGBSensorBuilder()
+        .rate(BONNReader::image_params.rate)
+        .size(BONNReader::image_params.width, BONNReader::image_params.height)
+        .pose(slambench::io::Sensor::pose_t::Identity())
+        .intrinsics(BONNReader::intrinsics_rgb)
+        .distortion(BONNReader::distortion_type, BONNReader::distortion_rgb)
+        .index(file.Sensors.size())
+        .build();
+
+    file.Sensors.AddSensor(rgb_sensor);
 
     std::string line;
 
@@ -138,7 +150,7 @@ bool loadBONNRGBData(const std::string &dirname,
             std::string rgb_filename = match[3];
 
             auto rgb_frame = new ImageFileFrame();
-            rgb_frame->FrameSensor = *file.Sensors.end();
+            rgb_frame->FrameSensor = rgb_sensor;
             rgb_frame->Timestamp.S = timestampS;
             rgb_frame->Timestamp.Ns = timestampNS;
 
@@ -163,7 +175,16 @@ bool loadBONNRGBData(const std::string &dirname,
 }
 
 bool loadBONNGreyData(const std::string &dirname, SLAMFile &file) {
+    auto grey_sensor = GreySensorBuilder()
+        .rate(BONNReader::image_params.rate)
+        .size(BONNReader::image_params.width, BONNReader::image_params.height)
+        .pose(slambench::io::Sensor::pose_t::Identity())
+        .intrinsics(BONNReader::intrinsics_rgb)
+        .distortion(BONNReader::distortion_type, BONNReader::distortion_rgb)
+        .index(file.Sensors.size())
+        .build();
 
+    file.Sensors.AddSensor(grey_sensor);
     std::string line;
 
     std::ifstream infile(dirname + "/" + "rgb.txt");
@@ -198,7 +219,7 @@ bool loadBONNGreyData(const std::string &dirname, SLAMFile &file) {
             std::string rgb_filename = match[3];
 
             auto grey_frame = new ImageFileFrame();
-            grey_frame->FrameSensor = *file.Sensors.end();
+            grey_frame->FrameSensor = grey_sensor;
             grey_frame->Timestamp.S = timestampS;
             grey_frame->Timestamp.Ns = timestampNS;
 
@@ -223,6 +244,12 @@ bool loadBONNGreyData(const std::string &dirname, SLAMFile &file) {
 }
 
 bool loadBONNGroundTruthData(const std::string &dirname, SLAMFile &file) {
+
+    auto gt_sensor = GTSensorBuilder()
+        .index(file.Sensors.size())
+        .build();
+
+    file.Sensors.AddSensor(gt_sensor);
 
     std::ifstream infile(dirname + "/" + "groundtruth.txt");
 
@@ -275,7 +302,7 @@ bool loadBONNGroundTruthData(const std::string &dirname, SLAMFile &file) {
             pose.block(0, 3, 3, 1) << tx, ty, tz;
 
             auto gt_frame = new SLAMInMemoryFrame();
-            gt_frame->FrameSensor = *file.Sensors.end();
+            gt_frame->FrameSensor = gt_sensor;
             gt_frame->Timestamp.S = timestampS;
             gt_frame->Timestamp.Ns = timestampNS;
             gt_frame->Data = malloc(gt_frame->GetSize());
@@ -344,82 +371,32 @@ SLAMFile *BONNReader::GenerateSLAMFile() {
     auto slamfile_ptr = new SLAMFile();
     auto &slamfile = *slamfile_ptr;
 
-    Sensor::pose_t pose = Eigen::Matrix4f::Identity();
+    // load GT
+    if (gt && !loadBONNGroundTruthData(dirname, slamfile)) {
+        std::cerr << "Error while loading gt information." << std::endl;
+        delete slamfile_ptr;
+        return nullptr;
+    }
 
     // load Depth
-    if (depth) {
-        auto depth_sensor = DepthSensorBuilder()
-                .rate(image_params.rate)
-                .size(image_params.width, image_params.height)
-                .pose(pose)
-                .intrinsics(intrinsics_depth)
-                .distortion(distortion_type, distortion_depth)
-                .disparity(disparity_type, disparity_params)
-                .index(slamfile.Sensors.size())
-                .build();
-
-        slamfile.Sensors.AddSensor(depth_sensor);
-
-        if (!loadBONNDepthData(dirname, slamfile)) {
-            std::cout << "Error while loading depth information." << std::endl;
-            delete slamfile_ptr;
-            return nullptr;
-        }
+    if (depth && !loadBONNDepthData(dirname, slamfile)) {
+        std::cout << "Error while loading depth information." << std::endl;
+        delete slamfile_ptr;
+        return nullptr;
     }
 
     // load Grey
-    if (grey) {
-        auto grey_sensor = GreySensorBuilder()
-                .rate(image_params.rate)
-                .size(image_params.width, image_params.height)
-                .pose(pose)
-                .intrinsics(intrinsics_rgb)
-                .distortion(distortion_type, distortion_rgb)
-                .index(slamfile.Sensors.size())
-                .build();
-
-        slamfile.Sensors.AddSensor(grey_sensor);
-
-        if (!loadBONNGreyData(dirname, slamfile)) {
-            std::cerr << "Error while loading Grey information." << std::endl;
-            delete slamfile_ptr;
-            return nullptr;
-        }
+    if (grey && !loadBONNGreyData(dirname, slamfile)) {
+        std::cerr << "Error while loading Grey information." << std::endl;
+        delete slamfile_ptr;
+        return nullptr;
     }
 
     // load RGB
-    if (rgb) {
-        auto rgb_sensor = RGBSensorBuilder()
-                .rate(image_params.rate)
-                .size(image_params.width, image_params.height)
-                .pose(pose)
-                .intrinsics(intrinsics_rgb)
-                .distortion(distortion_type, distortion_rgb)
-                .index(slamfile.Sensors.size())
-                .build();
-
-        slamfile.Sensors.AddSensor(rgb_sensor);
-
-        if (!loadBONNRGBData(dirname, slamfile)) {
-            std::cerr << "Error while loading RGB information." << std::endl;
-            delete slamfile_ptr;
-            return nullptr;
-        }
-    }
-
-    // load GT
-    if (gt) {
-        auto gt_sensor = GTSensorBuilder()
-                .index(slamfile.Sensors.size())
-                .build();
-
-        slamfile.Sensors.AddSensor(gt_sensor);
-
-        if(!loadBONNGroundTruthData(dirname, slamfile)) {
-            std::cerr << "Error while loading gt information." << std::endl;
-            delete slamfile_ptr;
-            return nullptr;
-        }
+    if(rgb && !loadBONNRGBData(dirname, slamfile)) {
+        std::cerr << "Error while loading RGB information." << std::endl;
+        delete slamfile_ptr;
+        return nullptr;
     }
 
     // load PointCloud

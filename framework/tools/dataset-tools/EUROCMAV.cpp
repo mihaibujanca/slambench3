@@ -219,7 +219,7 @@ SLAMFile *EUROCMAVReader::GenerateSLAMFile() {
   }
 
   auto slamfile = new SLAMFile();
-
+  std::sort(sensor_directories.begin(), sensor_directories.end());
   for (auto &dirname : sensor_directories) {
 
     // try and get sensor.yaml file
@@ -228,7 +228,7 @@ SLAMFile *EUROCMAVReader::GenerateSLAMFile() {
     YAML::Node sensor = YAML::LoadFile(filename.c_str());
 
     // check sensor type
-    std::string sensor_type = sensor["sensor_type"].as<std::string>();
+    auto sensor_type = sensor["sensor_type"].as<std::string>();
 
     if (sensor_type == "camera" and this->stereo) {
       std::cerr << "Found sensor type " << sensor_type << " from directory " << dirname << std::endl;
