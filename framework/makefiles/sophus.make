@@ -10,8 +10,13 @@ ${REPOS_DIR}/Sophus :
 
 
 ${DEPS_DIR}/Sophus : ${REPOS_DIR}/Sophus
+	if [ ! -e $(EIGEN3_INCLUDE_DIR) ] ; \
+	then \
+		echo "ERROR: Sophus requires EIGEN to be fully functional (make eigen).";\
+		exit 1;\
+	fi;
 	cd ${REPOS_DIR}/Sophus && mkdir build -p && rm build/* -rf
-	cd ${REPOS_DIR}/Sophus/build && cmake .. "-DCMAKE_INSTALL_PREFIX=$@" -DCMAKE_BUILD_TYPE=Release
+	cd ${REPOS_DIR}/Sophus/build && cmake .. "-DCMAKE_INSTALL_PREFIX=$@" -DCMAKE_BUILD_TYPE=Release  -DEIGEN3_INCLUDE_DIR=${EIGEN3_INCLUDE_DIR}
 	cd ${REPOS_DIR}/Sophus/build && make -j2
 	mkdir -p $@
 	cd ${REPOS_DIR}/Sophus/build && make install
