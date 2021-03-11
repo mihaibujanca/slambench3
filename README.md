@@ -8,6 +8,16 @@
 
 [![Build Status](https://travis-ci.org/pamela-project/slambench2.svg?branch=master)](https://travis-ci.org/pamela-project/slambench2)
 
+## Contents
+
+* [What is SLAMBench?](#what-is-slambench)
+* [How to set up SLAMBench?](#how-to-set-up-slambench)
+* [What algorithms does SLAMBench support?](#what-algorithms-does-slambench-support)
+* [How to run an existing algorithm with SLAMBench?](#how-to-run-an-existing-algorithm-with-slambench)
+* [How to add a new benchmark in SLAMBench?](#how-to-add-a-new-benchmark-in-slambench)
+* [Known Issues](#known-issues)
+* [Release History](#release-history)
+
 ## Most frequent questions ##
 
 ### Where are the algorithms ? ###
@@ -46,7 +56,7 @@ SLAMBench currently supports the following algorithms:
   **IMPORTANT: If you use any of those algorithms in scientific publications, you should refer to the respective publications.**
 
 
-In addition, if you use SLAMBench in scientific publications, we would appreciate citations to the following paper [https://www.research.ed.ac.uk/](https://www.research.ed.ac.uk/portal/en/publications/slambench2-multiobjective-headtohead-benchmarking-for-visual-slam(c3d189db-68ae-4182-8e46-d812db2955c9).html):
+In addition, if you use SLAMBench in scientific publications, we would appreciate citations to the following paper:
 ```
 @inproceedings{bujanca2019slambench,
   title={SLAMBench 3.0: Systematic automated reproducible evaluation of SLAM systems for robot vision challenges and scene understanding},
@@ -58,28 +68,19 @@ In addition, if you use SLAMBench in scientific publications, we would appreciat
 }
 ```
 
-# Table of contents #
-
-This README includes the following sections:
-
- * How to set up SLAMBench ?
- * How to run a benchmark with SLAMBench ?
- * How to add a new benchmark in SLAMBench ?
-
-
 ## How to set up SLAMBench ? ##
 
 As SLAMBench deals with multiple SLAM algorithms, dependencies might be difficult to install on any systems.
 To ease the usage of SLAMbench we provide auto-installation of dependencies and we recommend to use fresh installation of the operating systems Ubuntu 16/18 or Fedora 24/25/26/27 that are known to work fine.
 
-### Dependencies installations ###
+### Dependency installation ###
 
 #### Required by SLAMBench framework ####
 * CMake 2.8.11 or higher is required.
 * Make
 * GCC C/C++
-* Boost (Optionnal)
-* GLUT (Optionnal)
+* Boost (Optional)
+* GLUT (Optional)
 
 #### Required by benchmarks dependencies ####
 * Git
@@ -127,9 +128,9 @@ Install dependencies first [NOTE can be installed by the user on their system as
 make deps
 ```
 The idea is to maximise the chance of a good build, by selection the best cocktail of libraries.
-This will downdload and compile the following applications : Brisk, Ceres, CVD, Eigen3, Flann, FreeImage, G2O, Gvars, OpenCV, OpenGV, OpenTuner, Pangolin, PCL, Suitesparse, TooN.
+This will download and compile the following applications : Brisk, Ceres, CVD, Eigen3, Flann, FreeImage, G2O, Gvars, OpenCV, OpenGV, OpenTuner, Pangolin, PCL, Suitesparse, TooN.
 
-more informations are available in the ``framework/makefiles/README.md`` file.
+more information is available in the ``framework/makefiles/README.md`` file.
 
 #### 2. SLAMBench framework ####
 
@@ -192,8 +193,7 @@ build/lib/libkfusion-opencl-library.so
 
 ```
 
-We can see five different implementations (cpp, notoon, and openmp, cuda and opencl). The list of available binaries depends of the dependencies you installed beforehand. For example, you need CUDA to compile the kfusion-cuda. A complete list of the dependencies is available at the end of this README.
-
+We can see five different implementations (cpp, notoon, and openmp, cuda and opencl). The list of available binaries depends of the dependencies you installed beforehand. For example, you need CUDA to compile the kfusion-cuda. 
 
 
 ### Running a benchmark (e.g. KinectFusion) ###
@@ -470,4 +470,3 @@ Release candidate 1.1 (17 Mar 2015)
 Release candidate 1.0 (12 Nov 2014)
 
   * First public release
-
