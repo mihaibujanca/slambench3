@@ -1,9 +1,10 @@
-# README #
-
-SLAMBench 2.0
-
-  Copyright (c) 2014-2018 University of Edinburgh, Imperial College, University of Manchester.
-  Developed in the PAMELA project, EPSRC Programme Grant EP/K008730/1
+# SLAMBench 3.0 #
+  Copyright (c) 2014-2021 University of Edinburgh, Imperial College, University of Manchester.
+  Developed in the PAMELA project, EPSRC Programme Grant EP/K008730/1 and
+  
+  The RAIN Hub, funded by the Industrial Strategy Challenge Fund,
+  part of the UK government’s modern Industrial Strategy. The fund is
+  delivered by UK Research and Innovation and managed by EPSRC [EP/R026084/1].
 
 [![Build Status](https://travis-ci.org/pamela-project/slambench2.svg?branch=master)](https://travis-ci.org/pamela-project/slambench2)
 
@@ -11,23 +12,28 @@ SLAMBench 2.0
 
 ### Where are the algorithms ? ###
 
-If SLAMBench is already compatible with a wide range of algorithms they are not included in this repository. 
-However you can easily integrate those algorithms using the command :
+Use the following command to list all available algorithms:
 
 ```
 make usecases
 ```
 
-This command will explain in details how to integrate algorithms that are already compatible with slambench.
-
-## What is slambench ##
+## What is SLAMBench ##
 
 SLAMBench is a SLAM performance benchmark that combines a framework for quantifying quality-of-result with instrumentation of accuracy, execution time, memory usage and energy consumption. It also include a graphical interface to visualize these information.
 
 SLAMBench offers a platform for a broad spectrum of future research in jointly exploring the design space of algorithmic and implementation-level optimisations. It targets desktop, laptop, mobile and embedded platforms. Some of the benchmarks (in particular KFusion) were tested on Ubuntu, OS X and Android (more information about android here [https://github.com/bbodin/slambench-android](https://github.com/bbodin/slambench-android)).
 
-SLAMBench has currently been used with the following SLAM algorithms :
+SLAMBench currently supports the following algorithms:
 
+ * ORB-SLAM3 [Campos et al, ARXIV'20]: C++ as distributed by https://github.com/UZ-SLAMLab
+ * ReFusion [Palazollo et al. IROS'19]: CUDA as distributed by https://github.com/PRBonn
+ * OpenVINS [Geneva et al. IROS'19]: C++ as distributed by https://github.com/rpng/
+ * Supereight [Vespa et al. RA-L'18]: C++, OpenMP as distributed by https://github.com/emanuelev  
+ * BundleFusion [Dai et al. ACM TOG'17]: CUDA as distributed by https://github.com/niessner
+ * SemanticFusion [McCormac et al. ICRA'17]: CUDA as distributed by https://github.com/seaun163
+ * ORB-SLAM2 [Mur-Artal et al, TOR'15 and TOR'17]: C++ as distributed by https://github.com/raulmur
+ * DSO [Engel et al. Arxiv'16]: C++ as distributed by https://github.com/JakobEngel
  * ElasticFusion [Whelan et al, IJRR'16]: CUDA as distributed by https://github.com/mp3guy
  * InfiniTAMv2 [Kahler et al, ISMAR'15]: C++, OpenMP and CUDA versions as distributed by https://github.com/victorprad/
  * KinectFusion [Newcombe et al. ISMAR'11]: C++, OpenMP, OpenCL and CUDA inspired by https://github.com/GerhardR
@@ -42,16 +48,17 @@ SLAMBench has currently been used with the following SLAM algorithms :
 
 In addition, if you use SLAMBench in scientific publications, we would appreciate citations to the following paper [https://www.research.ed.ac.uk/](https://www.research.ed.ac.uk/portal/en/publications/slambench2-multiobjective-headtohead-benchmarking-for-visual-slam(c3d189db-68ae-4182-8e46-d812db2955c9).html):
 ```
-@inproceedings{Bodin2018,
-	author    = "Bruno Bodin and Harry Wagstaff and Sajad Saeedi and Luigi Nardi and Emanuele Vespa and Mayer, {John H} and Andy Nisbet and Mikel Luján and Steve Furber and Davison, {Andrew J} and Kelly, {Paul H.J.} and Michael O'Boyle",
-	title     = "SLAMBench2: Multi-Objective Head-to-Head Benchmarking for Visual SLAM",
-  	booktitle = "{IEEE Intl. Conf. on Robotics and Automation (ICRA)}",
-   	year = {2018},
-   	month = {May}
-    }
+@inproceedings{bujanca2019slambench,
+  title={SLAMBench 3.0: Systematic automated reproducible evaluation of SLAM systems for robot vision challenges and scene understanding},
+  author={Bujanca, Mihai and Gafton, Paul and Saeedi, Sajad and Nisbet, Andy and Bodin, Bruno and O'Boyle, Michael FP and Davison, Andrew J and Kelly, Paul HJ and Riley, Graham and Lennox, Barry and others},
+  booktitle={2019 International Conference on Robotics and Automation (ICRA)},
+  pages={6351--6358},
+  year={2019},
+  organization={IEEE}
+}
 ```
 
-# Table of content #
+# Table of contents #
 
 This README includes the following sections:
 
@@ -63,7 +70,7 @@ This README includes the following sections:
 ## How to set up SLAMBench ? ##
 
 As SLAMBench deals with multiple SLAM algorithms, dependencies might be difficult to install on any systems.
-To ease the usage of SLAMbench we provide auto-installation of dependencies and we recommend to use fresh installation of the operating systems Ubuntu 14/16 or Fedora 24/25/26/27 that are known to work fine.
+To ease the usage of SLAMbench we provide auto-installation of dependencies and we recommend to use fresh installation of the operating systems Ubuntu 16/18 or Fedora 24/25/26/27 that are known to work fine.
 
 ### Dependencies installations ###
 
@@ -114,7 +121,7 @@ With Fedora:
 
 #### 1. dependencies ####
 
-Install dependencies first [NOTE can be installed by the user on its system as well]:
+Install dependencies first [NOTE can be installed by the user on their system as well]:
 
 ```
 make deps
@@ -126,13 +133,11 @@ more informations are available in the ``framework/makefiles/README.md`` file.
 
 #### 2. SLAMBench framework ####
 
-SLAMBench is a framework that can be compiled by simply running:
+To compile SLAMBench (framework only, without any algorithms), run
 
 ```
 make slambench
 ```
-
-Although, by doing this, you only compile the libraries of SLAMBench.
 
 #### 3. Usescases ####
 
@@ -142,8 +147,7 @@ To compile a specific use-case, you will need to specify identifiers :
 make slambench APPS=kfusion,lsdslam
 ```
 
-The current benchmarks identifiers are efusion, infinitam, kfusion, lsdslam, monoslam, okvis, ptam, orbslam2, svo.
-You will find more information to downdload and compile use-cases with the ``make usecases`` command.
+You will find more information about the identifiers and instructions to download and compile use-cases with the ``make usecases`` command.
 
 #### 4. Datasets ####
 
@@ -157,7 +161,18 @@ As an example to download and generate the Living Room Trajectory 2 from the ICL
 > make datasets/ICL_NUIM/living_room_traj2_loop.slam
 ```
 
-A complete list of the datasets available is provided by the command ``make datasetslist``.
+SLAMBench currently supports the following datasets:
+
+* OpenLORIS [Shi et al, ICRA'20]: Lifelong SLAM dataset
+* Bonn Dynamic [Palazollo et al. IROS'19]: Dynamic scene dataset
+* UZH-FPV [Delmerico et al. ICRA'19]: Drone racing dataset
+* ETH Illumination [Park et al, ICRA'17]: Illumination changes dataset
+* VolumeDeform [Innmann et al, ECCV'16]: Non-rigid reconstruction
+* EuRoC MAV [Burri et al, IJRR'16]: Micro Aerial Vehicle dataset
+* ICL-NUIM [Handa et al, ICRA'14]: Synthetic dataset
+* TUM RGB-D [Sturm et al, IROS'12]: A standard SLAM benchmark
+
+A complete list of the dataset sequences available is provided by the command ``make datasets``.
 
 
 ## How to run an existing algorithm with SLAMBench ? ##
@@ -443,7 +458,7 @@ Version 2.0 (Feb 2018)
 
  * This release is a complete new version
 
-Release candidat 1.1 (17 Mar 2015)
+Release candidate 1.1 (17 Mar 2015)
 
   * Bugfix : Move bilateralFilterKernel from preprocessing to tracking
   * Bugfix : Wrong interpretation of ICP Threshold parameter.
@@ -452,7 +467,7 @@ Release candidat 1.1 (17 Mar 2015)
   * Performance : Add a dedicated buffer for the OpenCL rendering
   * Feature : Add OSX support
 
-Release candidat 1.0 (12 Nov 2014)
+Release candidate 1.0 (12 Nov 2014)
 
   * First public release
 
