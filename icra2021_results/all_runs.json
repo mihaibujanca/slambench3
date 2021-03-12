@@ -1,0 +1,157 @@
+{
+  "TUM" : {
+    "freiburg1/rgbd_dataset_freiburg1_360.slam" : {
+      "ORB_SLAM3" : [],
+      "refusion" : [],
+      "efusion" : []
+    },
+    "freiburg1/rgbd_dataset_freiburg1_desk.slam" : {
+      "ORB_SLAM3" : [],
+      "refusion" : [],
+      "efusion" : []
+    },
+    "freiburg1/rgbd_dataset_freiburg1_desk2.slam" : {
+      "ORB_SLAM3" : [],
+      "refusion" : [],
+      "efusion" : []
+    },
+    "freiburg1/rgbd_dataset_freiburg1_floor.slam" : {
+      "ORB_SLAM3" : [],
+      "refusion" : [],
+      "efusion" : []
+    },
+    "freiburg1/rgbd_dataset_freiburg1_plant.slam" :{
+      "ORB_SLAM3" : [],
+      "refusion" : [],
+      "efusion" : []
+    },
+    "freiburg1/rgbd_dataset_freiburg1_room.slam" : {
+      "ORB_SLAM3" : [],
+      "refusion" : [],
+      "efusion" : []
+    },
+    "freiburg1/rgbd_dataset_freiburg1_rpy.slam" : {
+      "ORB_SLAM3" : [],
+      "refusion" : [],
+      "efusion" : []
+    },
+    "freiburg1/rgbd_dataset_freiburg1_teddy.slam" : {
+      "ORB_SLAM3" : [],
+      "refusion" : [],
+      "efusion" : []
+    },
+    "freiburg1/rgbd_dataset_freiburg1_xyz.slam" : {
+      "ORB_SLAM3" : [],
+      "refusion" : [],
+      "efusion" : []
+    },
+    "freiburg2/rgbd_dataset_freiburg2_360_hemisphere.slam" : {
+      "ORB_SLAM3" : [],
+      "refusion" : [],
+      "efusion" : []
+    },
+    "freiburg2/rgbd_dataset_freiburg2_360_kidnap.slam" : {
+      "ORB_SLAM3" : [],
+      "refusion" : [],
+      "efusion" : []
+    },
+    "freiburg2/rgbd_dataset_freiburg2_coke.slam" : {
+      "ORB_SLAM3" : [],
+      "refusion" : [],
+      "efusion" : []
+    },
+    "freiburg2/rgbd_dataset_freiburg2_desk.slam" : {
+      "ORB_SLAM3" : [],
+      "refusion" : [],
+      "efusion" : []
+    },
+    "freiburg2/rgbd_dataset_freiburg2_desk_with_person.slam" : {
+      "ORB_SLAM3" : [],
+      "refusion" : [],
+      "efusion" : []
+    },
+    "freiburg2/rgbd_dataset_freiburg2_dishes.slam" : {
+      "ORB_SLAM3" : [],
+      "refusion" : [],
+      "efusion" : []
+    },
+    "freiburg2/rgbd_dataset_freiburg2_flowerbouquet.slam" : {
+      "ORB_SLAM3" : [],
+      "refusion" : [],
+      "efusion" : []
+    },
+    "freiburg2/rgbd_dataset_freiburg2_flowerbouquet_brownbackground.slam" : {
+      "ORB_SLAM3" : [],
+      "refusion" : [],
+      "efusion" : []
+    },
+    "freiburg2/rgbd_dataset_freiburg2_large_no_loop.slam" : {
+      "ORB_SLAM3" : [],
+      "refusion" : [],
+      "efusion" : []
+    },
+    "freiburg2/rgbd_dataset_freiburg2_large_with_loop.slam" : {
+      "ORB_SLAM3" : [],
+      "refusion" : [],
+      "efusion" : []
+    },
+    "freiburg2/rgbd_dataset_freiburg2_metallic_sphere.slam" : {
+      "ORB_SLAM3" : [],
+      "refusion" : [],
+      "efusion" : []
+    },
+    "freiburg2/rgbd_dataset_freiburg2_metallic_sphere2.slam" : {
+      "ORB_SLAM3" : [],
+      "refusion" : [],
+      "efusion" : []
+    },
+    "freiburg2/rgbd_dataset_freiburg2_pioneer_360.slam" : {
+      "ORB_SLAM3" : [],
+      "refusion" : [],
+      "efusion" : []
+    },
+    "freiburg2/rgbd_dataset_freiburg2_pioneer_slam.slam" : {
+      "ORB_SLAM3" : [],
+      "refusion" : [],
+      "efusion" : []
+    },
+    "freiburg2/rgbd_dataset_freiburg2_pioneer_slam2.slam" : {
+      "ORB_SLAM3" : [],
+      "refusion" : [],
+      "efusion" : []
+    },
+    "freiburg2/rgbd_dataset_freiburg2_pioneer_slam3.slam" : {
+      "ORB_SLAM3" : [],
+      "refusion" : [],
+      "efusion" : []
+    },
+    "freiburg2/rgbd_dataset_freiburg2_rpy.slam" : {
+      "ORB_SLAM3" : [],
+      "refusion" : [],
+      "efusion" : []
+    },
+    "freiburg2/rgbd_dataset_freiburg2_xyz.slam" : {
+      "ORB_SLAM3" : [],
+      "refusion" : [],
+      "efusion" : []
+    }
+  },
+  "EuRoCMAV" : {
+    "machine_hall/MH_01_easy/MH_01_easy.slam" : {
+      "ORB_SLAM3" : ["-voc", "/home/mihai/Projects/slambench4/benchmarks/orbslam3/src/original/Vocabulary/ORBvoc.txt", "-m", "stereo"]
+    },
+    "machine_hall/MH_02_easy/MH_02_easy.slam" : {
+      "ORB_SLAM3" : ["-voc", "/home/mihai/Projects/slambench4/benchmarks/orbslam3/src/original/Vocabulary/ORBvoc.txt", "-m", "stereo"]
+    },
+    "machine_hall/MH_03_medium/MH_03_medium.slam" : {
+      "ORB_SLAM3" : ["-voc", "/home/mihai/Projects/slambench4/benchmarks/orbslam3/src/original/Vocabulary/ORBvoc.txt", "-m", "stereo"]
+    },
+    "machine_hall/MH_04_difficult/MH_04_difficult.slam" : {
+      "ORB_SLAM3" : ["-voc", "/home/mihai/Projects/slambench4/benchmarks/orbslam3/src/original/Vocabulary/ORBvoc.txt", "-m", "stereo"]
+    },
+    "machine_hall/MH_05_difficult/MH_05_difficult.slam" : {
+      "ORB_SLAM3" : ["-voc", "/home/mihai/Projects/slambench4/benchmarks/orbslam3/src/original/Vocabulary/ORBvoc.txt", "-m", "stereo"]
+    }
+  },
+  "ICL_NUIM" : {}
+}
