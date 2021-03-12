@@ -19,7 +19,8 @@
 #include <map>
 #include <set>
 #include <vector>
-
+#include <functional>
+#include <iostream>
 namespace slambench {
 	namespace outputs {
 		class TrajectoryInterface;
@@ -35,7 +36,7 @@ namespace slambench {
 			typedef std::map<timestamp_t, const values::Value*> value_map_t;
 			
 			BaseOutput(const std::string &name, const values::ValueDescription &type, bool is_main_output = false);
-			virtual ~BaseOutput();
+			virtual ~BaseOutput() = default;
 			
 			const std::string &GetName() const { return name_; }
 			values::ValueType GetType() const { return type_.GetType(); }
@@ -55,6 +56,7 @@ namespace slambench {
 			
 			void AddUpdateCallback(callback_t callback) { update_callbacks_.push_back(callback); }
 			void RemoveUpdateCallback(callback_t callback);
+			virtual void reset() {}
 		protected:
 			void Updated() const;
 			
@@ -64,7 +66,7 @@ namespace slambench {
 			bool only_keep_most_recent_;
 			bool active_;
 			bool main_;
-			
+
 			std::vector<callback_t> update_callbacks_;
 		};
 		
@@ -74,25 +76,42 @@ namespace slambench {
 		class Output : public BaseOutput {
 		public:
 			Output(const std::string &name, values::ValueType type, bool main_output = false);
-			virtual ~Output() override;
+			~Output() override = default;
 			
 			void AddPoint(timestamp_t time, const values::Value *value);
 
 			const value_map_t &GetValues() const override;
 			const value_map_t::value_type &GetMostRecentValue() const override;
-		private:
-			value_map_t  values_;
+			void reset() override {
+				values_.clear();
+			}
+                        void resetAllPoses(std::vector<Eigen::Matrix4f> &new_poses) {
+                            if(new_poses.size() != values_.size()) {
+                                std::cerr<<"Called resetAllValues with incorrect number of new values. Old values size:" << values_.size()
+                                         << ", New values size:" << new_poses.size() << std::endl;
+                                return;
+                            }
+                            size_t i = 0;
+                            for(auto &keyval : values_) {
+                                delete keyval.second;
+                                keyval.second = new values::PoseValue(new_poses[i]);
+                                i++;
+                            }
+
+                        }
+
+                   private:
+			value_map_t values_;
 		};
 		
 		class DerivedOutput : public BaseOutput {
 		public:
 			DerivedOutput(const std::string &name, values::ValueType type, const std::initializer_list<BaseOutput*> &derived_from, bool main = false);
-			virtual ~DerivedOutput();
+			~DerivedOutput() override = default;
 			
 			bool Empty() const override;
 			const value_map_t::value_type& GetMostRecentValue() const override;
 			const BaseOutput::value_map_t& GetValues() const override;
-
 			void Invalidate();
 			
 		protected:
@@ -108,19 +127,27 @@ namespace slambench {
 		class AlignmentOutput : public DerivedOutput {
 		public:
 			AlignmentOutput(const std::string &name, TrajectoryInterface *gt_trajectory, BaseOutput *trajectory, TrajectoryAlignmentMethod *method);
-			virtual ~AlignmentOutput();
+			~AlignmentOutput() override = default;
 			
 			void Recalculate() override;
-		private:
-			TrajectoryInterface *gt_trajectory_;
+			Eigen::Matrix4f& getTransformation() {
+				return transformation_;
+			}
+			/* When freezed, the alignment will stop updating in recalculate() */
+			void SetFreeze(bool freeze) { freeze_ = freeze; }
+                        TrajectoryInterface *gt_trajectory_;
+
+                   private:
+			bool freeze_;
 			BaseOutput *trajectory_;
 			TrajectoryAlignmentMethod *method_;
+			Eigen::Matrix4f transformation_;
 		};
 		
 		class AlignedPoseOutput : public DerivedOutput {
 		public:
 			AlignedPoseOutput(const std::string &name, AlignmentOutput *alignment, BaseOutput *pose_output);
-			virtual ~AlignedPoseOutput();
+			~AlignedPoseOutput() override = default;
 			
 			void Recalculate() override;
 		private:
@@ -134,7 +161,7 @@ namespace slambench {
 		class AlignedPointCloudOutput : public DerivedOutput {
 		public:
 			AlignedPointCloudOutput(const std::string &name, AlignmentOutput *, BaseOutput *pc_output);
-			virtual ~AlignedPointCloudOutput();
+			~AlignedPointCloudOutput() override = default;
 
 			void Recalculate() override;
 
@@ -142,11 +169,42 @@ namespace slambench {
 			AlignmentOutput *alignment_;
 			BaseOutput *pointcloud_;
 		};
+
+		/**
+		 * An output which returns an aligned trajectory
+		 */
+		class AlignedTrajectoryOutput : public DerivedOutput {
+			public:
+				AlignedTrajectoryOutput(const std::string &name, AlignmentOutput *, BaseOutput *trajectory_output);
+				~AlignedTrajectoryOutput() override;
+
+				void Recalculate() override;
+			private:
+				AlignmentOutput *alignment_;
+				BaseOutput *trajectory_;
+		};
 		
+		/**
+		 * An output which shows the quality of the reconstruction
+		 */
+		class PointCloudHeatMap : public DerivedOutput {
+		public:
+			PointCloudHeatMap(const std::string &name,
+							  BaseOutput *gt_pointcloud, BaseOutput *pointcloud,
+							  const std::function<values::ColoredPoint3DF(const values::HeatMapPoint3DF&, double, double)> &convert);
+			~PointCloudHeatMap() override = default;
+
+			void Recalculate() override;
+			std::function<values::ColoredPoint3DF(const values::HeatMapPoint3DF&, double, double)> convert;
+		private:
+			BaseOutput *gt_pointcloud_;
+			BaseOutput *pointcloud_;
+		};
+
 		class PoseToXYZOutput : public BaseOutput {
 		public:
 			PoseToXYZOutput(BaseOutput *pose_output);
-			virtual ~PoseToXYZOutput();
+			~PoseToXYZOutput() override = default;
 			const BaseOutput::value_map_t& GetValues() const override;
 			const value_map_t::value_type& GetMostRecentValue() const override;
 			

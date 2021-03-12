@@ -17,6 +17,7 @@
 #include <io/sensor/CameraSensor.h>
 #include <io/sensor/DepthSensor.h>
 #include <io/sensor/GroundTruthSensor.h>
+#include <fstream>
 #include "DatasetReader.h"
 
 namespace slambench {
@@ -30,6 +31,7 @@ namespace slambench {
       CameraSensor *grey_sensor = nullptr;
       GroundTruthSensor *gt_sensor = nullptr;
 
+      std::ifstream istream;
       static constexpr DepthSensor::disparity_params_t disparity_params = {0.0002, 0.0};
       static constexpr DepthSensor::disparity_type_t disparity_type = DepthSensor::affine_disparity;
 
@@ -38,7 +40,9 @@ namespace slambench {
       bool AddFrames(const std::string &dirname, SLAMFile &file);
 
      public:
-      std::string input;
+      static constexpr image_params_t image_params = { 640, 480, 1, 5000.0 };
+
+        std::string input;
       bool grey = true, rgb = true, depth = true, gt = true;
       std::string plyfile = "";
       bool positive_focal = false;

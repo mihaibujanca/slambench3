@@ -16,6 +16,8 @@
 #include "io/sensor/PointCloudSensor.h"
 #include "io/format/PointCloud.h"
 
+#include <Eigen/Core>
+
 using namespace slambench::outputs;
 
 OutputManager::~OutputManager()
@@ -45,7 +47,9 @@ void OutputManager::RegisterOutput(BaseOutput* output)
 {
 	assert(output != nullptr);
 	if(output->IsMainOutput() && GetMainOutput(output->GetType())) {
-		throw std::logic_error("A main output for this type is already registered");
+		delete output_map_[output->GetName()];
+		output_map_.erase(output->GetName());
+		// throw std::logic_error("A main output for this type is already registered");
 	}
 	
 	output_map_[output->GetName()] = output;
@@ -55,6 +59,10 @@ bool OutputManager::WriteFile(const std::string& filename)
 {
 	OutputManagerWriter writer;
 	return writer.Write(*this, filename);
+}
+
+void OutputManager::reset() {
+    output_map_.clear();
 }
 
 void OutputManager::LoadGTOutputsFromSLAMFile(io::SLAMFile* file)
@@ -75,7 +83,6 @@ slambench::outputs::Output *createGTOutput(const slambench::io::Sensor* sensor) 
 	throw std::logic_error("Unrecognised ground truth sensor type");
 }
 
-
 void OutputManager::LoadGTOutputsFromSLAMFile(io::SensorCollection& sensors, io::FrameCollection* gt_frames, bool with_point_cloud) {
 
 	std::map<slambench::io::Sensor *, slambench::outputs::Output*> gt_outputs;
@@ -95,26 +102,21 @@ void OutputManager::LoadGTOutputsFromSLAMFile(io::SensorCollection& sensors, io:
 	for(unsigned frame_idx = 0; frame_idx < gt_frames->GetFrameCount(); ++frame_idx) {
 
 		auto i = gt_frames->GetFrame(frame_idx);
-
 		if(!i->FrameSensor->IsGroundTruth()) {
 			continue;
 		}
 
 		auto output = gt_outputs.at(i->FrameSensor);
 
-		if (i->FrameSensor->GetType() == slambench::io::GroundTruthSensor::kGroundTruthTrajectoryType) {
-
+		if(i->FrameSensor->GetType() == slambench::io::GroundTruthSensor::kGroundTruthTrajectoryType) {
 			Eigen::Matrix4f K;
 			memcpy(K.data(), i->GetData(), i->GetSize());
-
 			i->FreeData();
 			
 			output->AddPoint(i->Timestamp, new slambench::values::PoseValue(K));
 		}
 
-
-
-		if (with_point_cloud and i->FrameSensor->GetType() == slambench::io::PointCloudSensor::kPointCloudType) {
+		if(with_point_cloud and i->FrameSensor->GetType() == slambench::io::PointCloudSensor::kPointCloudType) {
 			
 			slambench::io::PointCloud *pc = slambench::io::PointCloud::FromRaw((char*)i->GetData());
 			i->FreeData();
@@ -126,6 +128,5 @@ void OutputManager::LoadGTOutputsFromSLAMFile(io::SensorCollection& sensors, io:
 			delete pc;
 			output->AddPoint(i->Timestamp, pcv);
 		}
-
 	}
 }

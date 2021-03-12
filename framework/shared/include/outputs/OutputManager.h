@@ -50,6 +50,7 @@ namespace slambench {
 			size_t OutputCount() const { return output_map_.size(); }
 			
 			FastLock &GetLock() { return lock_; }
+                        void reset();
 		private:
 			std::map<std::string, BaseOutput*> output_map_;
 			FastLock lock_;
