@@ -443,7 +443,7 @@ should always return ``true`` or an exception will be raised.
 
 Applications using CUDA require GCC 4.9 to work. To specify a new gcc compiler for CUDA only, you can use the ```CUDA_HOST_COMPILER``` flag as follows :
 ```
-make benchmark APPS=kfusion CUDA_HOST_COMPILER=/usr/local/gcc-4.9/bin/c++
+make slambench APPS=kfusion CUDA_HOST_COMPILER=/usr/local/gcc-4.9/bin/c++
 ```
 
 Modern O.S. are now using more recent version of this compiler, this introduce several compatibility issues.
