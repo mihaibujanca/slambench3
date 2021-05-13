@@ -180,7 +180,7 @@ A complete list of the dataset sequences available is provided by the command ``
 
 Once you have compile a benchmark, there are several ways to run it.
 For each implementation of this benchmark, you will find a specific library. 
-As an example, with KinectFusion, after running ```make benchmark APPS=kfusion```, you may found the following libraries in the ```build/lib``` directory :
+As an example, with KinectFusion, after running ```make slambench APPS=kfusion```, you may found the following libraries in the ```build/lib``` directory :
 
 ```
 > ls build/lib/libkfusion-*-library.so
@@ -437,20 +437,9 @@ Example :
 should always return ``true`` or an exception will be raised.
 
 
-# Know issues #
+# Known issues #
 
-### Know issue with CUDA ###
-
-Applications using CUDA require GCC 4.9 to work. To specify a new gcc compiler for CUDA only, you can use the ```CUDA_HOST_COMPILER``` flag as follows :
-```
-make benchmark APPS=kfusion CUDA_HOST_COMPILER=/usr/local/gcc-4.9/bin/c++
-```
-
-Modern O.S. are now using more recent version of this compiler, this introduce several compatibility issues.
-To fix one of them, in the compilation process, when compiling CUDA application we use the ``` -D_GLIBCXX_USE_CXX11_ABI=0 ``` flag.
 # TODO List #
-
-* Add office room dataset
 
 # Release history #
 
