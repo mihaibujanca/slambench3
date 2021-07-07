@@ -1,0 +1,47 @@
+# This file provides an example with the defaults for running ORBSLAM with TUM dataset
+
+title = "Configuration"
+
+frame_limit = 0
+log_file = "./log.txt"
+
+input_names = [
+    "freiburg1"
+]
+
+input_files = [
+    "./datasets/TUM/freiburg1/rgbd_dataset_freiburg1_xyz.slam"
+]
+
+library_names = ["orbslam2"]
+
+libraries = [
+    "./build/lib/liborbslam2-original-library.so"
+]
+
+[orbslam2]
+mode = "auto"
+vocabulary = "./benchmarks/orbslam2/src/original/Vocabulary/ORBvoc.bin"
+max_features = 1000
+scale_levels = 8
+scale_factor = 1.2
+initial_fast_threshold = 20
+initial_slow_threshold = 7
+fps = 40.0
+depth_threshold = 40
+
+#orbslam2.fps = 20.0 will also work
+
+[freiburg1]
+depth_intrinsics = [0.9235938, 1.229375, 0.5171875, 0.4875]
+depth_disparity = [0.001, 0]
+grey_intrinsics = [0.8082812, 1.076042, 0.4978125, 0.531875]
+rgb_intrinsics = [0.8082812,1.076042,0.4978125,0.531875]
+
+realtime_mode = false
+realtime_multiplier = 1
+dse = false
+alignment_technique = "original"
+
+
+
